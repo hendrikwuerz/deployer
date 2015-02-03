@@ -35,6 +35,23 @@ public class VersionsApi {
 
     }
 
+    public InputStream getWarForVersion(String version){
+
+        String url =
+                "http://nexus.poolingpeople.com/service/local/repositories/" +
+                "releases/content/com/poolingpeople/rest/0.0.1/rest-" + version + ".war";
+
+        Client client = ClientBuilder.newClient();
+        Response response = client
+                .target(url)
+                .request()
+                .header("Authorization", getBasicAuthentication())
+                .get();
+
+        InputStream warFileIS = response.readEntity(InputStream.class);
+        return warFileIS;
+    }
+
     private Response fetchVersionsFromNexus(String url){
         Client client = ClientBuilder.newClient();
         Response response = client

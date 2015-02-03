@@ -1,11 +1,16 @@
 package com.poolingpeople.deployer.versions.boundary;
 
 import org.apache.commons.compress.archivers.*;
+import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.Is;
 import org.junit.Before;
@@ -14,6 +19,7 @@ import org.junit.Test;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 
@@ -56,24 +62,42 @@ public class VersionsApiTest {
                 .target(url)
                 .request()
                 .header("Authorization", getBasicAuthentication())
-                .header("Accept", "application/java-archive")
-                .header("Content-Type", "application/java-archive")
                 .get();
 
-        FileOutputStream f = new FileOutputStream("file");
-//        f.write(response.readEntity(InputStream.class).toString().getBytes());
-        InputStream stream = response.readEntity(InputStream.class);
+        InputStream warFileIS = response.readEntity(InputStream.class);
+        ByteArrayOutputStream tarByteStream = new ByteArrayOutputStream();
+        TarArchiveOutputStream tarArchiveOS = new TarArchiveOutputStream(tarByteStream);
 
-        ArchiveOutputStream archiveOutputStream = new ArchiveStreamFactory().createArchiveOutputStream("s", f);
-//        ArchiveEntry archiveEntry = new ArchiveInputStream(stream);
-        archiveOutputStream.putArchiveEntry(null);
+        byte[] bytes = IOUtils.toByteArray(warFileIS);
+        TarArchiveEntry entry = new TarArchiveEntry("rest-0.0.1.war");
+        entry.setSize(bytes.length);
+        tarArchiveOS.putArchiveEntry(entry);
+        tarArchiveOS.write(bytes);
 
-        CompressorOutputStream gzippedOut =
-                new CompressorStreamFactory()
-                .createCompressorOutputStream(CompressorStreamFactory.GZIP, f);
+        warFileIS.close();
+        response.close();
 
-//        gzippedOut.
+        byte[] tarBytes = tarByteStream.toByteArray();
 
+        ByteArrayOutputStream gzipByteStream = new ByteArrayOutputStream();
+
+        GzipCompressorOutputStream gzippedOut = new GzipCompressorOutputStream(gzipByteStream);
+        gzippedOut.write(tarBytes);
+
+        tarArchiveOS.closeArchiveEntry();
+        gzippedOut.close();
+
+        File f = new File("/home/alacambra/test.tar.gz");
+        FileOutputStream fos = new FileOutputStream(f);
+        fos.write(gzipByteStream.toByteArray());
+        fos.close();
+
+
+//        client = ClientBuilder.newClient();
+//        response = client.target("")
+//                .request()
+//                .header("Content-Type", "application/java-archive")
+//                .post(Entity.entity(gzippedOut, "application/tar"));
 
 
     }
