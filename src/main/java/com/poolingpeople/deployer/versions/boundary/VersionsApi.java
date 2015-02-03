@@ -23,22 +23,29 @@ public class VersionsApi {
 
     public Collection<String> loadVersions(){
 
-        String endpoint = "http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/";
+        String snapshotEndpoint = "http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/";
+        String releasesEndpoint = "http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/";
 
-        Client client = ClientBuilder.newClient();
-        Response response = client
-                .target(endpoint)
-                .request()
-                .header("Authorization", getBasicAuthentication())
-                .header("Accept", "application/json; charset=UTF-8")
-                .header("Content-Type", "application/json")
-                .get();
+        Response response = fetchVersionsFromNexus(snapshotEndpoint);
 
         InputStream stream = response.readEntity(InputStream.class);
         Collection<String> versions = parseVersions(stream);
         response.close();
         return versions;
 
+    }
+
+    private Response fetchVersionsFromNexus(String url){
+        Client client = ClientBuilder.newClient();
+        Response response = client
+                .target(url)
+                .request()
+                .header("Authorization", getBasicAuthentication())
+                .header("Accept", "application/json; charset=UTF-8")
+                .header("Content-Type", "application/json")
+                .get();
+
+        return response;
     }
 
 

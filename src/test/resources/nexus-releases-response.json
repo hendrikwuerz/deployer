@@ -1,0 +1,36 @@
+{
+    "data":[
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/0.0.1/",
+            "relativePath":"/com/poolingpeople/rest/0.0.1/",
+            "text":"0.0.1",
+            "leaf":false,
+            "lastModified":"2015-01-30 07:44:52.0 UTC",
+            "sizeOnDisk":-1
+        },
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/maven-metadata.xml.sha1",
+            "relativePath":"/com/poolingpeople/rest/maven-metadata.xml.sha1",
+            "text":"maven-metadata.xml.sha1",
+            "leaf":true,
+            "lastModified":"2015-01-30 07:44:52.0 UTC",
+            "sizeOnDisk":40
+        },
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/maven-metadata.xml",
+            "relativePath":"/com/poolingpeople/rest/maven-metadata.xml",
+            "text":"maven-metadata.xml",
+            "leaf":true,
+            "lastModified":"2015-01-30 07:44:51.0 UTC",
+            "sizeOnDisk":301
+        },
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/maven-metadata.xml.md5",
+            "relativePath":"/com/poolingpeople/rest/maven-metadata.xml.md5",
+            "text":"maven-metadata.xml.md5",
+            "leaf":true,
+            "lastModified":"2015-01-30 07:44:52.0 UTC",
+            "sizeOnDisk":32
+        }
+    ]
+}
