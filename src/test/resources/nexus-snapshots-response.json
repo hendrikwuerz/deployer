@@ -1,0 +1,52 @@
+{
+    "data":[
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/0.0.2-SNAPSHOT/",
+            "relativePath":"/com/poolingpeople/rest/0.0.2-SNAPSHOT/",
+            "text":"0.0.2-SNAPSHOT",
+            "leaf":false,
+            "lastModified":"2015-01-21 09:12:23.0 UTC",
+            "sizeOnDisk":-1
+        },
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/0.0.0-SNAPSHOT/",
+            "relativePath":"/com/poolingpeople/rest/0.0.0-SNAPSHOT/",
+            "text":"0.0.0-SNAPSHOT",
+            "leaf":false,
+            "lastModified":"2014-12-03 12:49:27.0 UTC",
+            "sizeOnDisk":-1
+        },
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/maven-metadata.xml.sha1",
+            "relativePath":"/com/poolingpeople/rest/maven-metadata.xml.sha1",
+            "text":"maven-metadata.xml.sha1",
+            "leaf":true,
+            "lastModified":"2015-01-21 09:12:21.0 UTC",
+            "sizeOnDisk":40
+        },
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/maven-metadata.xml",
+            "relativePath":"/com/poolingpeople/rest/maven-metadata.xml",
+            "text":"maven-metadata.xml",
+            "leaf":true,
+            "lastModified":"2015-01-21 09:12:21.0 UTC",
+            "sizeOnDisk":361
+        },
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/maven-metadata.xml.md5",
+            "relativePath":"/com/poolingpeople/rest/maven-metadata.xml.md5",
+            "text":"maven-metadata.xml.md5",
+            "leaf":true,
+            "lastModified":"2015-01-21 09:12:21.0 UTC",
+            "sizeOnDisk":32
+        },
+        {
+            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/0.0.1-SNAPSHOT/",
+            "relativePath":"/com/poolingpeople/rest/0.0.1-SNAPSHOT/",
+            "text":"0.0.1-SNAPSHOT",
+            "leaf":false,
+            "lastModified":"2015-01-21 08:35:12.0 UTC",
+            "sizeOnDisk":-1
+        }
+    ]
+}
