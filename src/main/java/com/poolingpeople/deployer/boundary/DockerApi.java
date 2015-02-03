@@ -7,8 +7,38 @@ public class DockerApi {
 
     String endPoint = "";
 
-    public void buildContainer(){
+    public void buildImage(){
 
     }
+
+    public void deleteImage(){
+
+    }
+
+    public void ListImage(){
+
+    }
+
+    public void runContainer(){
+
+    }
+
+    public void startContainer(){
+
+    }
+
+    public void stopContainer(){
+
+    }
+
+    public void removeContainer(){
+
+    }
+
+    public void listContainer(){
+
+    }
+
+
 
 }
