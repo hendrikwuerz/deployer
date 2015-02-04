@@ -1,7 +1,6 @@
-package com.poolingpeople.deployer.versions.boundary;
+package com.poolingpeople.deployer.application.boundary;
 
 
-import javax.inject.Inject;
 import javax.json.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -12,14 +11,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-/**
- * Created by alacambra on 03.02.15.
- */
-public class VersionsApi {
 
+public class VersionsApi {
 
     public Collection<String> loadVersions(){
 
