@@ -27,7 +27,7 @@ public class ApplicationDockerPackage {
         return tarBytes;
     }
 
-    public void prepareTarStream(){
+    public ApplicationDockerPackage prepareTarStream(){
 
         ByteArrayOutputStream tarByteStream = new ByteArrayOutputStream();
         tarArchiveOS = new TarArchiveOutputStream(tarByteStream, "UTF-8");
@@ -39,6 +39,7 @@ public class ApplicationDockerPackage {
 
         tarBytes = tarByteStream.toByteArray();
         compressTarStream();
+        return this;
     }
 
     private void compressTarStream(){
@@ -85,7 +86,6 @@ public class ApplicationDockerPackage {
         InputStream stream = loadResource(resourceName);
         InputStreamReader streamReader = new InputStreamReader(stream, Charset.forName("UTF-8"));
         String targetString = readerToString(streamReader);
-        System.out.println(targetString);
 
         try {
 
@@ -116,6 +116,10 @@ public class ApplicationDockerPackage {
         }
     }
 
+    public TarArchiveOutputStream getTarArchiveOS() {
+        return tarArchiveOS;
+    }
+
     private InputStream loadResource(String resourceName){
         return this.getClass().getClassLoader().getResourceAsStream(resourceName);
     }
@@ -138,5 +142,13 @@ public class ApplicationDockerPackage {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setVersionsApi(VersionsApi versionsApi) {
+        this.versionsApi = versionsApi;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

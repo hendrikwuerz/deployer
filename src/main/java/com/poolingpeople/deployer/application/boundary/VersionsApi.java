@@ -34,11 +34,12 @@ public class VersionsApi {
 
         String url =
                 "http://nexus.poolingpeople.com/service/local/repositories/" +
-                "releases/content/com/poolingpeople/rest/0.0.1/rest-" + version + ".war";
+                "releases/content/com/poolingpeople/rest/0.0.1/rest-{version}.war";
 
         Client client = ClientBuilder.newClient();
         Response response = client
                 .target(url)
+                .resolveTemplate("version", version)
                 .request()
                 .header("Authorization", getBasicAuthentication())
                 .get();
