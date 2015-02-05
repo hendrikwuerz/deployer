@@ -5,8 +5,10 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
+import org.omg.CORBA.PUBLIC_MEMBER;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -21,7 +23,20 @@ public class ApplicationDockerPackageTest {
     public void setUp(){
         cut = new ApplicationDockerPackage();
         cut.versionsApi = new VersionsApi();
-        cut.version = "0.0.1";
+        cut.clusterConfig = new ClusterConfig();
+        cut.clusterConfig.setAppBaseName("rest");
+        cut.clusterConfig.setAppVersion("0.0.1");
+        cut.clusterConfig.setNeo4jId("myInstance");
+    }
+
+    @Test
+    public void testReplaceClusterBars(){
+        String target = "ENV neo4j {NEO_INSTANCE} \n ADD {PP_FINAL_NAME} /opt/jboss/wildfly/standalone/deployments/";
+        String expected = "ENV neo4j myInstance \n ADD rest-0.0.1.war /opt/jboss/wildfly/standalone/deployments/";
+
+        cut.replaceClusterBars(target);
+
+        assertThat(cut.replaceClusterBars(target), Is.is(expected));
     }
 
     @Test

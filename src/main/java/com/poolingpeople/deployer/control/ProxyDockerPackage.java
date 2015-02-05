@@ -1,139 +1,42 @@
 package com.poolingpeople.deployer.control;
 
+import com.poolingpeople.deployer.entity.ClusterConfig;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.print.Doc;
+import javax.swing.text.html.parser.Entity;
 import java.io.*;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
  * Created by alacambra on 03.02.15.
  */
-public class ProxyDockerPackage {
+public class ProxyDockerPackage extends DockerPackage {
 
-    boolean materiliazeFile = false;
-    String materializationPath = "";
+    @PersistenceContext
+    EntityManager em;
 
-    Logger logger = Logger.getLogger(this.getClass().getName());
+    @Override
+    protected DockerPackage addResources() {
 
-    public byte[] prepareDockerApplicationBuildTar(){
+        List<ClusterConfig> clusterConfigs =
+                em.createNamedQuery(ClusterConfig.getAllClusters)
+                .setParameter("serverDomain", clusterConfig.getServerDomain())
+                .getResultList();
 
-        ByteArrayOutputStream tarByteStream = new ByteArrayOutputStream();
-        TarArchiveOutputStream tarArchiveOS = new TarArchiveOutputStream(tarByteStream);
-        addWar(tarArchiveOS);
-
-        /*
-         * Compress the tar file
-         */
-        byte[] tarBytes = tarByteStream.toByteArray();
-        ByteArrayOutputStream gzipByteStream = new ByteArrayOutputStream();
-        GzipCompressorOutputStream gzippedOut;
-
-        try {
-
-            gzippedOut = new GzipCompressorOutputStream(gzipByteStream);
-            gzippedOut.write(tarBytes);
-            gzippedOut.close();
-            tarArchiveOS.closeArchiveEntry();
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        byte[] bytes =  gzipByteStream.toByteArray();
-        logger.finer("Final tar has " + bytes.length + " bytes");
-        return gzipByteStream.toByteArray();
+        return this;
     }
 
-    public byte[] prepareDockerProxyBuildTar(){
-
-        ByteArrayOutputStream tarByteStream = new ByteArrayOutputStream();
-        TarArchiveOutputStream tarArchiveOS = new TarArchiveOutputStream(tarByteStream);
-        addWar(tarArchiveOS);
-
-        /*
-         * Compress the tar file
-         */
-        byte[] tarBytes = tarByteStream.toByteArray();
-        ByteArrayOutputStream gzipByteStream = new ByteArrayOutputStream();
-        GzipCompressorOutputStream gzippedOut;
-
-        try {
-
-            gzippedOut = new GzipCompressorOutputStream(gzipByteStream);
-            gzippedOut.write(tarBytes);
-            gzippedOut.close();
-            tarArchiveOS.closeArchiveEntry();
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        byte[] bytes =  gzipByteStream.toByteArray();
-        logger.finer("Final tar has " + bytes.length + " bytes");
-        return gzipByteStream.toByteArray();
-    }
-
-    private void materializeTarFile(ByteArrayOutputStream gzipByteStream){
-
-        File f = new File("/home/alacambra/test.tar.gz");
-        FileOutputStream fos = null;
-
-        try {
-            fos = new FileOutputStream(f);
-            fos.write(gzipByteStream.toByteArray());
-            fos.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void nginxDocker(){
-        InputStream stream = loadResource("Dockerfile-nginx");
-
-    }
-
-    public void nginxDomainConfFile(){
-        InputStream stream = loadResource("site.conf");
-
-    }
-
-    public void neo4jDockerfile(){
-        InputStream stream = loadResource("Dockerfile-wf");
-
-    }
-
-    public void wfDockerFile(){
-        InputStream stream = loadResource("Dockerfile-neo4j");
-
-    }
-
-    private void addWar(TarArchiveOutputStream tarArchiveOS){
-
-        InputStream warFileIS = null;
-
-        try {
-
-            byte[] bytes = IOUtils.toByteArray(warFileIS);
-            TarArchiveEntry entry = new TarArchiveEntry("rest-0.0.1.war");
-            entry.setSize(bytes.length);
-            tarArchiveOS.putArchiveEntry(entry);
-            tarArchiveOS.write(bytes);
-
-        } catch (IOException e) {
-           throw new RuntimeException(e);
-        }
-    }
-
-    public void setMaterializationPath(String materializationPath) {
-        this.materializationPath = materializationPath;
-    }
-
-
-    private InputStream loadResource(String resourceName){
-        return this.getClass().getClassLoader().getResourceAsStream(resourceName);
+    @Override
+    String replaceClusterBars(String original) {
+        return original.replace("{NEO_INSTANCE}", clusterConfig.getNeo4jId())
+                .replace("{PP_FINAL_NAME}", clusterConfig.getFullApplicationName() + ".war");
     }
 }
