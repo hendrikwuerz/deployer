@@ -1,6 +1,7 @@
 package com.poolingpeople.deployer.control;
 
 import com.poolingpeople.deployer.application.boundary.VersionsApi;
+import com.poolingpeople.deployer.entity.ClusterConfig;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;

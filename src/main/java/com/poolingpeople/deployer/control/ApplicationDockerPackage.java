@@ -11,12 +11,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
 
-public class ApplicationDockerPackage extends DockerPackage {
+public class ApplicationDockerPackage extends DockerCluster {
 
     @Inject
     VersionsApi versionsApi;
-    ClusterConfig clusterConfig;
-    TarArchiveOutputStream tarArchiveOS;
 
     byte[] tarBytes;
 
@@ -27,7 +25,7 @@ public class ApplicationDockerPackage extends DockerPackage {
     }
 
     @Override
-    protected DockerPackage addResources() {
+    protected DockerCluster addResources() {
         addWar();
         addFile("Dockerfile-wf", "Dockerfile");
         addFile("standalone.conf", "standalone.conf");

@@ -17,8 +17,6 @@ public class DockerApiTest {
 
         cut = new DockerApi();
         cut.aPackage = new ApplicationDockerPackage();
-        cut.aPackage.setVersionsApi(new VersionsApi());
-        cut.aPackage.setVersion("0.0.1");
 
     }
 

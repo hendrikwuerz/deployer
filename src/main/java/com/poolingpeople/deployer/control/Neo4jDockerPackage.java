@@ -1,19 +1,9 @@
 package com.poolingpeople.deployer.control;
 
-import com.poolingpeople.deployer.application.boundary.VersionsApi;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-
-import javax.inject.Inject;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.logging.Logger;
-
-public class Neo4jDockerPackage extends DockerPackage {
+public class Neo4jDockerPackage extends DockerCluster {
 
     @Override
-    protected DockerPackage addResources() {
+    protected DockerCluster addResources() {
         addFile("Dockerfile-neo4j", "Dockerfile");
         return this;
     }

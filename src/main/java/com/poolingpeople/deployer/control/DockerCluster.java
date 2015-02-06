@@ -1,22 +1,18 @@
 package com.poolingpeople.deployer.control;
 
-import com.poolingpeople.deployer.application.boundary.VersionsApi;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 
-import javax.inject.Inject;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
  * Created by alacambra on 03.02.15.
  */
-public abstract class DockerPackage {
+public abstract class DockerCluster {
 
     ClusterConfig clusterConfig;
     TarArchiveOutputStream tarArchiveOS;
@@ -29,9 +25,9 @@ public abstract class DockerPackage {
         return tarBytes;
     }
 
-    protected abstract DockerPackage addResources();
+    protected abstract DockerCluster addResources();
 
-    public DockerPackage prepareTarStream(){
+    public DockerCluster prepareTarStream(){
 
         ByteArrayOutputStream tarByteStream = new ByteArrayOutputStream();
         tarArchiveOS = new TarArchiveOutputStream(tarByteStream, "UTF-8");

@@ -21,84 +21,169 @@ public class ClusterConfig {
     @Id
     Long id;
 
-    Integer portPrefix;
+    /**
+     * the first number from the port. Each cluster will be identified by this number.
+     */
+    String portPrefix;
+
+    /**
+     * neo4j instance name or dockerId (tbd.)
+     */
     String neo4jId;
+
+    /**
+     * port used for neo4j. Without cluster prefix
+     */
+    String neo4jPort = "7474";
+
+    /**
+     * wf instance name or dockerId (tbd.)
+     */
     String wildflyId;
+
+    /**
+     * port used for wf. Without cluster prefix
+     */
+    String wfPort = "8080";
+
+    /**
+     * port used for wf console. Without cluster prefix
+     */
+    String wfAdminPort = "9990";
+
+    /**
+     * version of the app (i.e. 0.0.1)
+     */
     String appVersion;
+
+    /**
+     * registered cname server domain. It identifies physical machine or aws instance
+     */
     String serverDomain;
+
+    /**
+     * subdomain given by a user to identify its deployment.
+     */
     String concretDomain;
+
+    /**
+     * name of the scenario loaded in the db
+     */
     String dbScenario;
+
+    /**
+     * name of the app without version (i.e. rest)
+     */
     String appBaseName;
 
     public String getAppBaseName() {
         return appBaseName;
     }
 
-    public void setAppBaseName(String appBaseName) {
+    public ClusterConfig setAppBaseName(String appBaseName) {
         this.appBaseName = appBaseName;
+        return this;
     }
 
+    /**
+     * builds the complete application name in the form appBaseName + - + version (i.e. rest-0.0.1)
+     * @return
+     */
     public String getFullApplicationName(){
-        return "rest-" + appVersion;
+        return appBaseName + "-" + appVersion;
     }
 
-    public Integer getPortPrefix() {
+    public String getPortPrefix() {
         return portPrefix;
     }
 
-    public void setPortPrefix(Integer portPrefix) {
+    public ClusterConfig setPortPrefix(String portPrefix) {
         this.portPrefix = portPrefix;
+        return this;
     }
 
     public String getNeo4jId() {
         return neo4jId;
     }
 
-    public void setNeo4jId(String neo4jId) {
+    public ClusterConfig setNeo4jId(String neo4jId) {
         this.neo4jId = neo4jId;
+        return this;
     }
 
     public String getWildflyId() {
         return wildflyId;
     }
 
-    public void setWildflyId(String wildflyId) {
+    public ClusterConfig setWildflyId(String wildflyId) {
         this.wildflyId = wildflyId;
+        return this;
     }
 
     public String getAppVersion() {
         return appVersion;
     }
 
-    public void setAppVersion(String appVersion) {
+    public ClusterConfig setAppVersion(String appVersion) {
         this.appVersion = appVersion;
+        return this;
     }
 
     public String getServerDomain() {
         return serverDomain;
     }
 
-    public void setServerDomain(String serverDomain) {
+    public ClusterConfig setServerDomain(String serverDomain) {
         this.serverDomain = serverDomain;
+        return this;
     }
 
     public String getConcretDomain() {
         return concretDomain;
     }
 
-    public void setConcretDomain(String concretDomain) {
+    public ClusterConfig setConcretDomain(String concretDomain) {
         this.concretDomain = concretDomain;
+        return this;
     }
 
     public String getDbScenario() {
         return dbScenario;
     }
 
-    public void setDbScenario(String dbScenario) {
+    public ClusterConfig setDbScenario(String dbScenario) {
         this.dbScenario = dbScenario;
+        return this;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public String getNeo4jPort() {
+        return neo4jPort;
+    }
+
+    public ClusterConfig setNeo4jPort(String neo4jPort) {
+        this.neo4jPort = neo4jPort;
+        return this;
+    }
+
+    public String getWfPort() {
+        return wfPort;
+    }
+
+    public ClusterConfig setWfPort(String wfPort) {
+        this.wfPort = wfPort;
+        return this;
+    }
+
+    public String getWfAdminPort() {
+        return wfAdminPort;
+    }
+
+    public ClusterConfig setWfAdminPort(String wfAdminPort) {
+        this.wfAdminPort = wfAdminPort;
+        return this;
     }
 }

@@ -4,39 +4,83 @@ import com.poolingpeople.deployer.entity.ClusterConfig;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.print.Doc;
-import javax.swing.text.html.parser.Entity;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Created by alacambra on 03.02.15.
  */
-public class ProxyDockerPackage extends DockerPackage {
+public class ProxyDockerPackage extends DockerCluster {
 
-    @PersistenceContext
-    EntityManager em;
+    @Inject
+    ClusterConfigProvider clusterConfigProvider;
 
-    @Override
-    protected DockerPackage addResources() {
+    private DomainConfigInfo currentDomainConfigInfo;
 
-        List<ClusterConfig> clusterConfigs =
-                em.createNamedQuery(ClusterConfig.getAllClusters)
-                .setParameter("serverDomain", clusterConfig.getServerDomain())
-                .getResultList();
-
-        return this;
+    private class DomainConfigInfo{
+        String domain;
+        String target;
+        String port;
     }
 
     @Override
+    protected DockerCluster addResources() {
+
+        Collection<ClusterConfig> configs = clusterConfigProvider.getCurrentClusters(clusterConfig.getServerDomain());
+
+        for(ClusterConfig config : configs){
+            addNeo4jFile(config);
+            addWebappFile(config);
+            addWfConsoleFile(config);
+        }
+
+        addFile("Dockerfile-nginx", "Dockerfile");
+        addFile("nginx.conf", "nginx.conf");
+        return this;
+    }
+
+    void addNeo4jFile(ClusterConfig config){
+        currentDomainConfigInfo = new DomainConfigInfo();
+        currentDomainConfigInfo.domain = "neo4j." + config.getConcretDomain() + "." + config.getServerDomain();
+        currentDomainConfigInfo.port = config.getPortPrefix() + config.getNeo4jPort();
+        currentDomainConfigInfo.target = config.getNeo4jId();
+
+        addFile("site.conf", "conf/" + currentDomainConfigInfo.domain + ".conf");
+    }
+
+    void addWfConsoleFile(ClusterConfig config){
+        currentDomainConfigInfo = new DomainConfigInfo();
+        currentDomainConfigInfo.domain = "admin." + config.getConcretDomain() + "." + config.getServerDomain();
+        currentDomainConfigInfo.port = config.getPortPrefix() + config.getWfAdminPort();
+        currentDomainConfigInfo.target = config.getWildflyId();
+
+        addFile("site.conf", "conf/" + currentDomainConfigInfo.domain + ".conf");
+    }
+
+    void addWebappFile(ClusterConfig config){
+        currentDomainConfigInfo = new DomainConfigInfo();
+        currentDomainConfigInfo.domain = config.getConcretDomain() + "." + config.getServerDomain();
+        currentDomainConfigInfo.port = config.getPortPrefix() + config.getWfPort();
+        currentDomainConfigInfo.target = config.getWildflyId();
+
+        addFile("site.conf", "conf/" + currentDomainConfigInfo.domain + ".conf");
+    }
+
+
+    @Override
     String replaceClusterBars(String original) {
-        return original.replace("{NEO_INSTANCE}", clusterConfig.getNeo4jId())
-                .replace("{PP_FINAL_NAME}", clusterConfig.getFullApplicationName() + ".war");
+
+        if ( currentDomainConfigInfo == null )
+            return original;
+
+        return original.replace("{DOMAIN}", currentDomainConfigInfo.domain)
+                .replace("{TARGET}", currentDomainConfigInfo.target)
+                .replace("{PORT}", String.valueOf(currentDomainConfigInfo.port));
     }
 }
