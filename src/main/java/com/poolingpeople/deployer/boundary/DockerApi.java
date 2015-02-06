@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Collection;
 
 import static javax.ws.rs.client.Entity.entity;
 
@@ -23,6 +24,10 @@ public class DockerApi {
     ApplicationDockerPackage aPackage;
 
     String endPoint = "http://localhost:5555";
+
+    public String getDockerInfo(){
+        return "";
+    }
 
     public String buildImage(String imageName){
         String url = endPoint + "/build?t={imageName}";
@@ -150,18 +155,21 @@ public class DockerApi {
 
     }
 
-    public String listContainer(){
+    public Collection<ContainerInfo> listContainers(){
         String url = endPoint + "/images/json?all=0";
         Client client = ClientBuilder.newClient();
 
         Response response = client
                 .target(url)
                 .request()
-                .accept(MediaType.TEXT_PLAIN)
+                .accept(MediaType.APPLICATION_JSON)
                 .get();
 
-        String r = response.readEntity(String.class);
-        return r;
+        InputStream r = response.readEntity(InputStream.class);
+        ContainersInfoReader reader = new ContainersInfoReader();
+        Collection<ContainerInfo> containers = reader.getContainers(r);
+
+        return containers;
 
     }
 

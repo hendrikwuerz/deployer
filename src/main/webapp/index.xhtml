@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>CookingHelper</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" />
+    <!--<h:outputStylesheet library="css" name="jsfcrud.css"/>-->
+</h:head>
+
+<h:body>
+    <h:form>
+        <div>
+            <label>version</label>
+            <h:inputText value="#{deployerUiController.version}" ></h:inputText>
+        </div>
+        <div>
+            <label>subdomain</label>
+            <h:inputText value="#{deployerUiController.subdomain}"></h:inputText>
+        </div>
+        <div>
+            <h:commandButton action="#{deployerUiController.deploy}" value="Deploy"></h:commandButton>
+        </div>
+    </h:form>
+</h:body>
+
+</html>
