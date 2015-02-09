@@ -1,8 +1,9 @@
-package com.poolingpeople.deployer.boundary;
+package com.poolingpeople.deployer.docker.boundary;
+
+import com.poolingpeople.deployer.docker.boundary.ContainerInfo;
 
 import javax.json.*;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 

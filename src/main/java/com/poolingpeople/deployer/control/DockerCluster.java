@@ -131,4 +131,6 @@ public abstract class DockerCluster {
     public void setClusterConfig(ClusterConfig clusterConfig) {
         this.clusterConfig = clusterConfig;
     }
+
+
 }

@@ -1,4 +1,4 @@
-package com.poolingpeople.deployer.boundary;
+package com.poolingpeople.deployer.docker.boundary;
 
 import java.util.Collection;
 

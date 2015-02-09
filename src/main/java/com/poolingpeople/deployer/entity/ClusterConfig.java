@@ -8,12 +8,12 @@ import javax.persistence.NamedQuery;
 /**
  * Created by alacambra on 2/5/15.
  */
-@Entity
-@NamedQueries({
-        @NamedQuery(name = "",
-                query = "SELECT cf from ClusterConfig as cf where cf.serverDomain like :serverDomain")
-}
-)
+//@Entity
+//@NamedQueries({
+//        @NamedQuery(name = "",
+//                query = "SELECT cf from ClusterConfig as cf where cf.serverDomain like :serverDomain")
+//}
+//)
 public class ClusterConfig {
 
     public static final String getAllClusters = "com.poolingpeople.deployer.entity.getAllClusters";

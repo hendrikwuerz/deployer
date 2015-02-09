@@ -16,14 +16,14 @@ import java.nio.charset.Charset;
 
 import static org.junit.Assert.*;
 
-public class ApplicationDockerPackageTest {
+public class ApplicationDockerPackageTestIT {
 
     ApplicationDockerPackage cut;
 
     @Before
     public void setUp(){
         cut = new ApplicationDockerPackage();
-        cut.versionsApi = new VersionsApi();
+//        cut.versionsApi = new VersionsApi();
         cut.clusterConfig = new ClusterConfig();
         cut.clusterConfig.setAppBaseName("rest");
         cut.clusterConfig.setAppVersion("0.0.1");

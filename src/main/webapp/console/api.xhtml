@@ -13,15 +13,9 @@
 <h:body>
     <h:form>
         <div>
-            <label>version</label>
-            <h:inputText value="#{deployerUiController.version}" ></h:inputText>
-        </div>
-        <div>
-            <label>subdomain</label>
-            <h:inputText value="#{deployerUiController.subdomain}"></h:inputText>
-        </div>
-        <div>
-            <h:commandButton action="#{deployerUiController.deploy}" value="Deploy"></h:commandButton>
+            <h:inputText value="#{consoleController.selectedContainerId}"></h:inputText>
+            <h:commandButton action="#{consoleController.showLogs()}" value="Show logs"></h:commandButton>
+            <h:outputText value="#{consoleController.logs}"></h:outputText>
         </div>
     </h:form>
 </h:body>

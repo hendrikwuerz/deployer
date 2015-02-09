@@ -1,22 +1,26 @@
-package com.poolingpeople.deployer.boundary;
+package com.poolingpeople.deployer.docker.boundary;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import java.awt.event.ContainerAdapter;
 
 /**
  * Created by alacambra on 05.02.15.
  */
 public class ContainerCreateBodyBuilder {
 
-    JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-    JsonArrayBuilder cmds = Json.createArrayBuilder();
-    JsonObjectBuilder exposedPortsBuilder = Json.createObjectBuilder();
+    private JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+    private JsonArrayBuilder cmds = Json.createArrayBuilder();
+    private JsonObjectBuilder exposedPortsBuilder = Json.createObjectBuilder();
 
     public JsonObjectBuilder getObjectBuilder() {
         return objectBuilder;
+    }
+
+    public ContainerCreateBodyBuilder(){
+        objectBuilder.add("Cmd", cmds);
+        exposedPortsBuilder.add(8081 + "/tcp", Json.createObjectBuilder().build());
+        objectBuilder.add("ExposedPorts", exposedPortsBuilder);
     }
 
     public ContainerCreateBodyBuilder startObject(){

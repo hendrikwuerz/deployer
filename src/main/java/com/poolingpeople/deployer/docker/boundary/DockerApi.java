@@ -1,9 +1,8 @@
-package com.poolingpeople.deployer.boundary;
+package com.poolingpeople.deployer.docker.boundary;
 
-import com.poolingpeople.deployer.control.ApplicationDockerPackage;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -12,6 +11,7 @@ import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.logging.Logger;
 
 import static javax.ws.rs.client.Entity.entity;
 
@@ -20,16 +20,15 @@ import static javax.ws.rs.client.Entity.entity;
  */
 public class DockerApi {
 
-    @Inject
-    ApplicationDockerPackage aPackage;
-
     String endPoint = "http://localhost:5555";
+
+    Logger logger = Logger.getLogger(this.getClass().getName());
 
     public String getDockerInfo(){
         return "";
     }
 
-    public String buildImage(String imageName){
+    public String buildImage(String imageName, byte[] tarBytes){
         String url = endPoint + "/build?t={imageName}";
 
         Client client = ClientBuilder.newClient();
@@ -38,9 +37,19 @@ public class DockerApi {
                 .resolveTemplate("imageName", imageName)
                 .request()
                 .accept(MediaType.APPLICATION_JSON)
-                .post(entity(new ByteArrayInputStream(aPackage.prepareTarStream().getBytes()), "application/tar"), Response.class);
+                .post(entity(new ByteArrayInputStream(tarBytes), "application/tar"), Response.class);
+
+        if(response.getStatus() != Response.Status.OK.getStatusCode()){
+            throw new RuntimeException("returned code " + response.getStatus());
+        }
 
         String r = response.readEntity(String.class);
+
+        if (r.contains("errorDetail")){
+            throw new RuntimeException(r);
+        }
+
+        logger.info(r);
         return r;
     }
 
@@ -72,6 +81,7 @@ public class DockerApi {
                 .get();
 
         String r = response.readEntity(String.class);
+        logger.info(r);
         return r;
 
     }
@@ -80,18 +90,29 @@ public class DockerApi {
         String url = endPoint + "/containers/create";
         Client client = ClientBuilder.newClient();
 
+        String body = bodyBuilder.getObjectBuilder().build().toString();
+
+        logger.info("creating container with body: " + body);
+
         Response response = client
                 .target(url)
                 .request()
                 .header("Content-Type", MediaType.APPLICATION_JSON)
-                .post(Entity.json(bodyBuilder.getObjectBuilder().build()));
+                .post(Entity.json(body));
 
-        String r = response.readEntity(String.class);
-        return r;
+        InputStream r = response.readEntity(InputStream.class);
+
+        if(response.getStatus() != Response.Status.CREATED.getStatusCode()){
+            throw new RuntimeException("returned code " + response.getStatus());
+        }
+
+        JsonObject object = Json.createReader(r).readObject();
+
+        return ((JsonString)object.get("Id")).getString();
 
     }
 
-    public String startContainer(String containerId){
+    public void startContainer(String containerId){
         String url = endPoint + "/containers/{containerId}/start";
         Client client = ClientBuilder.newClient();
 
@@ -102,8 +123,9 @@ public class DockerApi {
                 .header("Content-Type", "application/json")
                 .post(Entity.json(""));
 
-        String r = response.readEntity(String.class);
-        return r;
+        if(response.getStatus() != Response.Status.NO_CONTENT.getStatusCode()){
+            throw new RuntimeException("returned code " + response.getStatus());
+        }
 
     }
 
@@ -133,6 +155,23 @@ public class DockerApi {
                 .request()
                 .header("Content-Type", "application/json")
                 .post(Entity.json(""));
+
+        String r = response.readEntity(String.class);
+        return r;
+
+    }
+
+    public String getContainersLogs(String containerId, int tail){
+
+        String url = endPoint + "/containers/{containerId}/logs?stderr=1&stdout=1&timestamps=1&follow=0&tail={tail}";
+        Client client = ClientBuilder.newClient();
+
+        Response response = client
+                .target(url)
+                .resolveTemplate("containerId", containerId)
+                .resolveTemplate("tail", tail)
+                .request()
+                .get();
 
         String r = response.readEntity(String.class);
         return r;

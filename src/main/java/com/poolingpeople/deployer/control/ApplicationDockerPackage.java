@@ -13,16 +13,11 @@ import java.util.logging.Logger;
 
 public class ApplicationDockerPackage extends DockerCluster {
 
-    @Inject
-    VersionsApi versionsApi;
-
-    byte[] tarBytes;
+    InputStream warFileIS;
 
     Logger logger = Logger.getLogger(this.getClass().getName());
 
-    public byte[] getBytes(){
-        return tarBytes;
-    }
+
 
     @Override
     protected DockerCluster addResources() {
@@ -34,8 +29,6 @@ public class ApplicationDockerPackage extends DockerCluster {
     }
 
     public void addWar(){
-
-        InputStream warFileIS = versionsApi.getWarForVersion(clusterConfig.getAppVersion());
 
         try {
             byte[] bytes = new ByteArrayOutputStream().toByteArray();
@@ -54,5 +47,9 @@ public class ApplicationDockerPackage extends DockerCluster {
     String replaceClusterBars(String original){
         return original.replace("{NEO_INSTANCE}", clusterConfig.getNeo4jId())
                 .replace("{PP_FINAL_NAME}", clusterConfig.getFullApplicationName() + ".war");
+    }
+
+    public void setWarFileIS(InputStream warFileIS) {
+        this.warFileIS = warFileIS;
     }
 }

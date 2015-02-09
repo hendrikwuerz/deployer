@@ -1,5 +1,7 @@
 package com.poolingpeople.deployer.boundary;
 
+import com.poolingpeople.deployer.docker.boundary.ContainerInfo;
+import com.poolingpeople.deployer.docker.boundary.ContainersInfoReader;
 import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,7 +12,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 
-public class ContainersInfoReaderTest {
+public class ContainersInfoReaderTestUT {
 
     ContainersInfoReader cut;
 

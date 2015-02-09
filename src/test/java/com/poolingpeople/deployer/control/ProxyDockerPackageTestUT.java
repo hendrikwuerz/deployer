@@ -15,7 +15,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProxyDockerPackageTest {
+public class ProxyDockerPackageTestUT {
 
     ProxyDockerPackage cut;
 
