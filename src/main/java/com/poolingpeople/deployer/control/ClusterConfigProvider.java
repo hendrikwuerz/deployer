@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class ClusterConfigProvider {
 
-    @PersistenceContext
+//    @PersistenceContext
     EntityManager em;
 
     public Collection<ClusterConfig> getCurrentClusters(String domain){

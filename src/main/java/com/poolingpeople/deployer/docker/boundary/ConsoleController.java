@@ -1,24 +1,27 @@
 package com.poolingpeople.deployer.docker.boundary;
 
+import javax.enterprise.context.RequestScoped;
+import javax.faces.model.DataModel;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.Serializable;
+import java.util.stream.Collectors;
 
 /**
  * Created by alacambra on 09.02.15.
  */
 
 @Named
-public class ConsoleController {
+@RequestScoped
+public class ConsoleController{
 
     @Inject
     DockerApi api;
 
-    private String selectedContainerId = "";
-    private String logs;
+    DataModel<ContainerInfo> containers;
 
-    public void showLogs(){
-        logs = api.getContainersLogs(selectedContainerId, 50);
-    }
+    private String selectedContainerId = "";
+    private StringBuilder out = new StringBuilder();
 
     public void setSelectedContainerId(String selectedContainerId) {
         this.selectedContainerId = selectedContainerId;
@@ -29,6 +32,14 @@ public class ConsoleController {
     }
 
     public String getLogs() {
-        return logs;
+        return api.getContainersLogs(selectedContainerId, 50);
+    }
+
+    public String getContainers() {
+        return api.listContainers().stream().map(c -> c.toString()).collect(Collectors.joining("\r"));
+    }
+
+    public String getImages() {
+        return api.listImage();
     }
 }

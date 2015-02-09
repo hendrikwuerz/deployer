@@ -1,10 +1,10 @@
 package com.poolingpeople.deployer.docker.boundary;
 
-import com.poolingpeople.deployer.docker.boundary.ContainerInfo;
-
+import javax.inject.Inject;
 import javax.json.*;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -18,8 +18,8 @@ public class ContainersInfoReader {
 
         Collection<ContainerInfo> containers =
                 containersObjs.stream()
-                .map(s -> fromJson((JsonObject) s))
-                .collect(Collectors.toList());
+                        .map(s -> fromJson((JsonObject) s))
+                        .collect(Collectors.toList());
 
         return containers;
     }
@@ -28,30 +28,37 @@ public class ContainersInfoReader {
 
         ContainerInfo containerInfo = new ContainerInfo();
 
-        Collection<ContainerInfo.Port> ports =
-                json.getJsonArray("Ports")
-                        .stream().map(s -> getPort((JsonObject) s))
-                        .collect(Collectors.toList());
+        Optional.ofNullable(json.getJsonArray("Ports")).ifPresent(
+                jArr -> containerInfo.setPorts(
+                        jArr.stream().map(s -> getPort((JsonObject) s))
+                                .collect(Collectors.toList()))
+        );
 
-        Collection<String> names =
-                json.getJsonArray("Names")
-                        .stream().map(s -> ((JsonString) s).getString())
-                        .collect(Collectors.toList());
+        Optional.ofNullable(json.getJsonArray("Names")).ifPresent(
+                jArr -> containerInfo.setNames(
+                        jArr.stream().map(s -> ((JsonString) s).getString())
+                                .collect(Collectors.toList()))
+        );
+
+        Optional.ofNullable(json.get("Command")).ifPresent(
+                jStr -> containerInfo.setCommand(((JsonString)jStr).getString()));
+
+        Optional.ofNullable(json.get("Image")).ifPresent(
+                jStr -> containerInfo.setImage(((JsonString)jStr).getString()));
+
+        Optional.ofNullable(json.get("Status")).ifPresent(
+                jStr -> containerInfo.setStatus(((JsonString)jStr).getString()));
 
         containerInfo
-                .setCommand(json.getString("Command"))
                 .setCreated(json.getJsonNumber("Created").longValue())
-                .setId(json.getString("Id"))
-                .setImage(json.getString("Image"))
-                .setNames(names)
-                .setPorts(ports)
-                .setStatus(json.getString("Status"));
+                .setId(json.getString("Id"));
 
         return containerInfo;
 
     }
 
     private ContainerInfo.Port getPort(JsonObject portObj){
+
         ContainerInfo.Port port = new ContainerInfo.Port();
         port.ip = portObj.getString("IP");
         port.privatePort = portObj.getInt("PrivatePort");

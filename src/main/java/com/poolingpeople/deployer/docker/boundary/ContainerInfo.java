@@ -1,6 +1,7 @@
 package com.poolingpeople.deployer.docker.boundary;
 
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * Created by alacambra on 2/6/15.
@@ -87,6 +88,7 @@ public class ContainerInfo {
 
     @Override
     public String toString() {
-        return command + ":" + created + ":" + id + ":" + image + ":" + names + ":" + ports + ":" + status;
+        return command + ":" + new Date(created) + ":" + id + ":" + image
+                + ":" + names + ":" + ports + ":" + status + " ||";
     }
 }

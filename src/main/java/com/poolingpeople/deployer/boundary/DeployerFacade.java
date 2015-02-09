@@ -4,12 +4,14 @@ import com.poolingpeople.deployer.application.boundary.VersionsApi;
 import com.poolingpeople.deployer.control.ApplicationDockerPackage;
 import com.poolingpeople.deployer.control.Neo4jDockerPackage;
 import com.poolingpeople.deployer.control.ProxyDockerPackage;
-import com.poolingpeople.deployer.docker.boundary.ContainerCreateBodyBuilder;
+import com.poolingpeople.deployer.docker.boundary.CreateContainerBodyBuilder;
 import com.poolingpeople.deployer.docker.boundary.DockerApi;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.logging.Logger;
 
 /**
@@ -39,7 +41,7 @@ public class DeployerFacade {
 
 
 
-    public void deploy(String version, String subdomain){
+    public void deploy(@NotNull String version, @NotNull String subdomain, @NotNull String imageName){
 
         logger.info("starting");
 
@@ -58,13 +60,12 @@ public class DeployerFacade {
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
 
-        dockerApi.buildImage("wftest", applicationDockerPackage.getBytes());
-//        dockerApi.listImage();
-        ContainerCreateBodyBuilder builder = new ContainerCreateBodyBuilder();
-        builder.setImage("wftest").addTcpPort(8081);
-        String containerId = dockerApi.createContainer(builder);
+        dockerApi.buildImage(imageName, applicationDockerPackage.getBytes());
+        CreateContainerBodyBuilder builder = new CreateContainerBodyBuilder();
+        builder.setImage(imageName).exposeTcpPort(8081);
+        String containerId = dockerApi.createContainer(builder, imageName + new Date().getTime());
 
-        logger.finer("Container created:" + containerId);
+        logger.info("Container created:" + containerId);
         dockerApi.startContainer(containerId);
 
     }

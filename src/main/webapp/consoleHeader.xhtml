@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>CookingHelper</title>
+</h:head>
+
+<h:body>
+    <div>
+        <h:link outcome="/deployer/deployer" value="Deploy"/>
+        -
+        <h:link outcome="/console/containers-list" value="List containers"/>
+        -
+        <h:link outcome="/console/images-list" value="List images"/>
+        -
+        <h:link outcome="/console/container-logs" value="Logs"/>
+    </div>
+    <div class="">
+        <h3>
+            <ui:insert name="title">Default Title</ui:insert>
+        </h3>
+    </div>
+    <div style="margin: auto" class="">
+        <p>
+            <ui:insert name="body">Default Body</ui:insert>
+        </p>
+    </div>
+</h:body>
+
+</html>

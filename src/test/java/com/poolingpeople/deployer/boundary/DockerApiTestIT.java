@@ -1,7 +1,7 @@
 package com.poolingpeople.deployer.boundary;
 
 import com.poolingpeople.deployer.application.boundary.VersionsApi;
-import com.poolingpeople.deployer.docker.boundary.ContainerCreateBodyBuilder;
+import com.poolingpeople.deployer.docker.boundary.CreateContainerBodyBuilder;
 import com.poolingpeople.deployer.docker.boundary.DockerApi;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,9 +44,9 @@ public class DockerApiTestIT {
 
     @Test
     public void testCreateContainer() throws Exception {
-        ContainerCreateBodyBuilder builder = new ContainerCreateBodyBuilder();
-        builder.setImage("4d3dc25426d6").addTcpPort(8080);
-        System.out.println(cut.createContainer(builder));
+        CreateContainerBodyBuilder builder = new CreateContainerBodyBuilder();
+        builder.setImage("4d3dc25426d6").exposeTcpPort(8080);
+        System.out.println(cut.createContainer(builder, null));
     }
 
     @Test

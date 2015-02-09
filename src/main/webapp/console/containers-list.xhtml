@@ -7,10 +7,12 @@
 
 <ui:composition template="/consoleHeader.xhtml">
     <ui:define name="title">
-        <h:outputText value="Start"></h:outputText>
+        <h:outputText value="List of containers"></h:outputText>
     </ui:define>
     <ui:define name="body">
-        Nothing to do
+        <div>
+            <h:outputText  value="#{consoleController.containers}"></h:outputText>
+        </div>
     </ui:define>
 </ui:composition>
 </html>

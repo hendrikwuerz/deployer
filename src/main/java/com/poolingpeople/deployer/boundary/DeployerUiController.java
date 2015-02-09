@@ -1,19 +1,26 @@
 package com.poolingpeople.deployer.boundary;
 
+import javax.enterprise.context.RequestScoped;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.Serializable;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Created by alacambra on 2/6/15.
  */
 @Named
-public class DeployerUiController {
+@RequestScoped
+public class DeployerUiController implements Serializable{
 
     @Inject
     DeployerFacade facade;
 
     private String subdomain;
     private String version;
+    private String imageName;
 
     public void setSubdomain(String subdomain) {
         this.subdomain = subdomain;
@@ -23,7 +30,24 @@ public class DeployerUiController {
         this.version = version;
     }
 
-    public void deploy(){
+    public String getVersion() {
+        return version;
+    }
 
+    public String getSubdomain() {
+        return subdomain;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public void deploy(){
+        imageName = Optional.ofNullable(imageName).orElse(UUID.randomUUID().toString());
+        facade.deploy(version, subdomain, imageName);
     }
 }
