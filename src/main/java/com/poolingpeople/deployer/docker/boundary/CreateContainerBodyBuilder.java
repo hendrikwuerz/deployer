@@ -2,6 +2,7 @@ package com.poolingpeople.deployer.docker.boundary;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 /**
@@ -14,6 +15,7 @@ public class CreateContainerBodyBuilder {
     private JsonObjectBuilder exposedPortsBuilder = Json.createObjectBuilder();
     private boolean exposedPortsSet = false;
     private boolean cmdsSet = false;
+    private boolean hostConfigCreated = false;
 
     public JsonObjectBuilder getObjectBuilder() {
         return objectBuilder;
@@ -112,7 +114,7 @@ public class CreateContainerBodyBuilder {
     public CreateContainerBodyBuilder exposeTcpPort(int value){
 
         if(exposedPortsSet)
-            throw new RuntimeException("exposed ports already build.");
+            throw new RuntimeException("exposed ports already buildHostConfig.");
 
         exposedPortsBuilder.add(value + "/tcp", Json.createObjectBuilder().build());
         return this;
@@ -121,7 +123,7 @@ public class CreateContainerBodyBuilder {
     public CreateContainerBodyBuilder exposeUdpPort(int value){
 
         if(exposedPortsSet)
-            throw new RuntimeException("exposed ports already build.");
+            throw new RuntimeException("exposed ports already buildHostConfig.");
 
         exposedPortsBuilder.add(value + "/udp", Json.createObjectBuilder().build());
         return this;
@@ -130,7 +132,7 @@ public class CreateContainerBodyBuilder {
     public CreateContainerBodyBuilder buildExposedPorts(){
 
         if(exposedPortsSet)
-            throw new RuntimeException("exposed ports already build.");
+            throw new RuntimeException("exposed ports already buildHostConfig.");
 
         exposedPortsSet = true;
         objectBuilder.add("ExposedPorts", exposedPortsBuilder);
@@ -145,17 +147,26 @@ public class CreateContainerBodyBuilder {
     public CreateContainerBodyBuilder addCmd(String cmd){
 
         if(cmdsSet)
-            throw new RuntimeException("cmds already build.");
+            throw new RuntimeException("cmds already buildHostConfig.");
 
 
         cmds.add(cmd);
         return this;
     }
 
+    public HostConfigBodyBuilder createHostConfig(){
+
+        if(hostConfigCreated)
+            throw new RuntimeException("Host config already created");
+
+        hostConfigCreated = true;
+        return new HostConfigBodyBuilder(this);
+    }
+
     public CreateContainerBodyBuilder buildCmds(){
 
         if(cmdsSet)
-            throw new RuntimeException("cmds already build.");
+            throw new RuntimeException("cmds already buildHostConfig.");
 
         cmdsSet = true;
 
@@ -163,6 +174,9 @@ public class CreateContainerBodyBuilder {
         return this;
     }
 
+    void putHostConfigBodyBuilder(JsonObject hostConfigObject){
+        objectBuilder.add("HostConfig", hostConfigObject);
+    }
 
 
 

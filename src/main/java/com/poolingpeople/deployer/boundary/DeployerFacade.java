@@ -4,6 +4,7 @@ import com.poolingpeople.deployer.application.boundary.VersionsApi;
 import com.poolingpeople.deployer.control.ApplicationDockerPackage;
 import com.poolingpeople.deployer.control.Neo4jDockerPackage;
 import com.poolingpeople.deployer.control.ProxyDockerPackage;
+import com.poolingpeople.deployer.docker.boundary.ContainerNetworkSettings;
 import com.poolingpeople.deployer.docker.boundary.CreateContainerBodyBuilder;
 import com.poolingpeople.deployer.docker.boundary.DockerApi;
 import com.poolingpeople.deployer.entity.ClusterConfig;
@@ -45,14 +46,25 @@ public class DeployerFacade {
 
         logger.info("starting");
 
+        String neoName = "neo4j" + new Date().getTime();
+
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version)
                 .setServerDomain("dev.poolingpeople.com")
                 .setConcretDomain(subdomain)
-                .setNeo4jId("neo")
+                .setNeo4jId(neoName)
                 .setWildflyId("wf")
                 .setPortPrefix("1");
+
+        applicationDockerPackage.setClusterConfig(clusterConfig);
+        neo4jDockerPackage.prepareTarStream();
+        dockerApi.buildImage("neo4j", neo4jDockerPackage.getBytes());
+        CreateContainerBodyBuilder builder = new CreateContainerBodyBuilder();
+        builder.setImage("neo4j").buildExposedPorts().createHostConfig().bindTcpPort("7474", "17474").buildHostConfig();
+
+        String containerId = dockerApi.createContainer(builder, neoName);
+        dockerApi.startContainer(containerId);
 
 
         InputStream is = versionsApi.getWarForVersion(version);
@@ -60,10 +72,22 @@ public class DeployerFacade {
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
 
+
+        ContainerNetworkSettings settings = dockerApi.getContainerNetwotkSettings(containerId);
+        System.out.println("-------------------" + settings.getGateway());
+
         dockerApi.buildImage(imageName, applicationDockerPackage.getBytes());
-        CreateContainerBodyBuilder builder = new CreateContainerBodyBuilder();
-        builder.setImage(imageName).exposeTcpPort(8081);
-        String containerId = dockerApi.createContainer(builder, imageName + new Date().getTime());
+        builder = new CreateContainerBodyBuilder();
+        builder
+                .setImage(imageName)
+                .exposeTcpPort(8585)
+                .buildExposedPorts()
+                .createHostConfig()
+                .bindTcpPort("8080", "18080")
+                .bindTcpPort("9990", "19990")
+                .addLink(neoName, neoName)
+                .buildHostConfig();
+        containerId = dockerApi.createContainer(builder, imageName + new Date().getTime());
 
         logger.info("Container created:" + containerId);
         dockerApi.startContainer(containerId);

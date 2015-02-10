@@ -115,6 +115,25 @@ public class DockerApi implements Serializable{
 
     }
 
+    public ContainerNetworkSettings getContainerNetwotkSettings(String containerId){
+
+        String url = endPoint + "/containers/{containerId}/json";
+        Client client = ClientBuilder.newClient();
+
+        Response response = client
+                .target(url)
+                .resolveTemplate("containerId", containerId)
+                .request()
+                .header("Content-Type", "application/json")
+                .get();
+
+        if(response.getStatus() != Response.Status.OK.getStatusCode()){
+            throw new RuntimeException("returned code " + response.getStatus());
+        }
+
+        return new ContainerNetworkSettings(response.readEntity(JsonObject.class));
+    }
+
     public void startContainer(String containerId){
         String url = endPoint + "/containers/{containerId}/start";
         Client client = ClientBuilder.newClient();
@@ -176,25 +195,30 @@ public class DockerApi implements Serializable{
                 .request()
                 .get();
 
+        if(response.getStatus() != Response.Status.OK.getStatusCode()){
+            throw new RuntimeException("returned code " + response.getStatus());
+        }
+
         String r = response.readEntity(String.class);
         return r;
 
     }
 
-    public String removeContainer(String containerId){
-        String url = endPoint + "/containers/{containerId}";
+    public void removeContainer(String containerId, boolean force){
+        String url = endPoint + "/containers/{containerId}?force={force}";
         Client client = ClientBuilder.newClient();
 
         Response response = client
                 .target(url)
                 .resolveTemplate("containerId", containerId)
+                .resolveTemplate("force", force)
                 .request()
                 .accept(MediaType.TEXT_PLAIN)
                 .delete();
 
-        String r = response.readEntity(String.class);
-        return r;
-
+        if(response.getStatus() != Response.Status.NO_CONTENT.getStatusCode()){
+            throw new RuntimeException("returned code " + response.getStatus());
+        }
     }
 
     public Collection<ContainerInfo> listContainers(){
@@ -218,7 +242,5 @@ public class DockerApi implements Serializable{
         return containers;
 
     }
-
-
 
 }

@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 @Named
 @RequestScoped
-public class DeployerUiController implements Serializable{
+public class DeployerUiController{
 
     @Inject
     DeployerFacade facade;

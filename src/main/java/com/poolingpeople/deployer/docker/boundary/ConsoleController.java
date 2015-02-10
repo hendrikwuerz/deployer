@@ -32,7 +32,21 @@ public class ConsoleController{
     }
 
     public String getLogs() {
+
+        if("".equals(selectedContainerId))
+            return "no container selected";
+
         return api.getContainersLogs(selectedContainerId, 50);
+    }
+
+    public String getRemoveContainer(){
+
+        if("".equals(selectedContainerId))
+            return "no container selected";
+
+        api.removeContainer(selectedContainerId, true);
+        return "container removed";
+
     }
 
     public String getContainers() {

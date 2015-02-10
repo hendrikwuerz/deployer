@@ -1,3 +1,1 @@
 FROM tpires/neo4j
-RUN rm -Rf /var/lib/neo4j/data/*
-ADD graph.db /var/lib/neo4j/data/graph.db
