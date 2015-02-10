@@ -198,7 +198,7 @@ public class DockerApi implements Serializable{
     }
 
     public Collection<ContainerInfo> listContainers(){
-        String url = endPoint + "/images/json?all=0";
+        String url = endPoint + "/containers/json";
         Client client = ClientBuilder.newClient();
 
         Response response = client

@@ -21,6 +21,11 @@ public class ContainerInfo {
         Integer privatePort;
         Integer publicPort;
         String type = "tcp";
+
+        @Override
+        public String toString() {
+            return ip + ":" + publicPort + ":" + privatePort + "/" + type;
+        }
     }
 
     public String getCommand() {

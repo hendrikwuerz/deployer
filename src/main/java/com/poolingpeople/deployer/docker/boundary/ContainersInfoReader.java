@@ -60,12 +60,32 @@ public class ContainersInfoReader {
     private ContainerInfo.Port getPort(JsonObject portObj){
 
         ContainerInfo.Port port = new ContainerInfo.Port();
-        port.ip = portObj.getString("IP");
-        port.privatePort = portObj.getInt("PrivatePort");
-        port.publicPort =  portObj.getInt("PublicPort");
-        port.type = portObj.getString("Type");
+        Optional.ofNullable(portObj.get("IP")).ifPresent(jStr -> port.ip = getStringFromJsonValue(jStr));
+        Optional.ofNullable(portObj.get("PrivatePort")).ifPresent(jNum -> port.privatePort = getIntFromJsonValue(jNum));
+        Optional.ofNullable(portObj.get("Type")).ifPresent(jStr -> port.type = getStringFromJsonValue(jStr));
+        Optional.ofNullable(portObj.get("PublicPort")).ifPresent(jNum -> port.publicPort = getIntFromJsonValue(jNum));
 
         return port;
+    }
+
+    private String getStringFromJsonValue(JsonValue value){
+
+        if(value.getValueType() != JsonValue.ValueType.STRING){
+            throw new RuntimeException(value + " is not a JsonString value");
+        }
+
+        return ((JsonString)value).getString();
+
+    }
+
+    private int getIntFromJsonValue(JsonValue value){
+
+        if(value.getValueType() != JsonValue.ValueType.NUMBER){
+            throw new RuntimeException(value + " is not a Number value");
+        }
+
+        return ((JsonNumber)value).intValue();
+
     }
 
 }
