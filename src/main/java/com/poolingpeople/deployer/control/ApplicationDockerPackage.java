@@ -4,8 +4,10 @@ import com.poolingpeople.deployer.application.boundary.VersionsApi;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.utils.IOUtils;
 
 import javax.inject.Inject;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +33,7 @@ public class ApplicationDockerPackage extends DockerCluster {
     public void addWar(){
 
         try {
-            byte[] bytes = new ByteArrayOutputStream().toByteArray();
+            byte[] bytes = IOUtils.toByteArray(warFileIS);
             TarArchiveEntry entry = new TarArchiveEntry(clusterConfig.getFullApplicationName() + ".war");
             entry.setSize(bytes.length);
             tarArchiveOS.putArchiveEntry(entry);

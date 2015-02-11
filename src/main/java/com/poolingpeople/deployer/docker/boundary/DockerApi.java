@@ -56,7 +56,7 @@ public class DockerApi implements Serializable{
         return r;
     }
 
-    public String deleteImage(String imageName){
+    public void deleteImage(String imageName){
 
         String url = endPoint + "/images/{imageName}";
         Client client = ClientBuilder.newClient();
@@ -68,8 +68,9 @@ public class DockerApi implements Serializable{
                 .accept(MediaType.APPLICATION_JSON)
                 .delete();
 
-        String r = response.readEntity(String.class);
-        return r;
+        if(response.getStatus() != Response.Status.OK.getStatusCode()){
+            throw new RuntimeException("returned code " + response.getStatus());
+        }
     }
 
     public String listImage(){

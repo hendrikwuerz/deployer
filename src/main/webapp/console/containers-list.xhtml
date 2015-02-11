@@ -10,9 +10,48 @@
         <h:outputText value="List of containers"></h:outputText>
     </ui:define>
     <ui:define name="body">
-        <div>
-            <h:outputText  value="#{consoleController.containers}"></h:outputText>
-        </div>
+        <h:form>
+            <h:panelGroup id="messagePanel" layout="block">
+                <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
+            </h:panelGroup>
+            <h:outputText escape="false" value="No containers to show" rendered="#{containerController.containers.rowCount == 0}"/>
+            <h:panelGroup rendered="#{containerController.containers.rowCount > 0}">
+                <h:dataTable value="#{containerController.containers}" var="container" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="id"/>
+                        </f:facet>
+                        <h:outputText value="#{container.id}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="image"/>
+                        </f:facet>
+                        <h:outputText value="#{container.image}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="names"/>
+                        </f:facet>
+                        <h:outputText value="#{container.names}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="ports"/>
+                        </f:facet>
+                        <h:outputText value="#{container.ports}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="&nbsp;"/>
+                        </f:facet>
+                        <h:commandLink action="#{containerController.destroy}" value=" X "/>
+                    </h:column>
+                </h:dataTable>
+            </h:panelGroup>
+            <br />
+        </h:form>
+
     </ui:define>
 </ui:composition>
 </html>

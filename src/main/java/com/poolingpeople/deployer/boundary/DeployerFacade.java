@@ -57,34 +57,38 @@ public class DeployerFacade {
                 .setWildflyId("wf")
                 .setPortPrefix("1");
 
-        applicationDockerPackage.setClusterConfig(clusterConfig);
+        CreateContainerBodyBuilder builder = null;
+        String containerId = null;
+
+        neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
         dockerApi.buildImage("neo4j", neo4jDockerPackage.getBytes());
-        CreateContainerBodyBuilder builder = new CreateContainerBodyBuilder();
+        builder = new CreateContainerBodyBuilder();
         builder.setImage("neo4j").buildExposedPorts().createHostConfig().bindTcpPort("7474", "17474").buildHostConfig();
 
-        String containerId = dockerApi.createContainer(builder, neoName);
+        containerId = dockerApi.createContainer(builder, neoName);
         dockerApi.startContainer(containerId);
+
+        ContainerNetworkSettings settings = dockerApi.getContainerNetwotkSettings(containerId);
+        System.out.println("-------------------" + settings.getGateway());
+
 
 
         InputStream is = versionsApi.getWarForVersion(version);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
+        applicationDockerPackage.materializeTarFile("/home/alacambra/file.tar.gz");
 
-
-        ContainerNetworkSettings settings = dockerApi.getContainerNetwotkSettings(containerId);
-        System.out.println("-------------------" + settings.getGateway());
 
         dockerApi.buildImage(imageName, applicationDockerPackage.getBytes());
         builder = new CreateContainerBodyBuilder();
         builder
                 .setImage(imageName)
-                .exposeTcpPort(8585)
                 .buildExposedPorts()
                 .createHostConfig()
-                .bindTcpPort("8080", "18080")
-                .bindTcpPort("9990", "19990")
+                .bindTcpPort(clusterConfig.getWfPort(), clusterConfig.getPortPrefix() + clusterConfig.getWfPort())
+                .bindTcpPort(clusterConfig.getWfAdminPort(), clusterConfig.getPortPrefix() + clusterConfig.getWfAdminPort())
                 .addLink(neoName, neoName)
                 .buildHostConfig();
         containerId = dockerApi.createContainer(builder, imageName + new Date().getTime());

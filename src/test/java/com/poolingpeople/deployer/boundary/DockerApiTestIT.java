@@ -30,9 +30,7 @@ public class DockerApiTestIT {
 
     @Test
     public void testDeleteImage() throws Exception {
-        String r = cut.deleteImage("myNginx");
-        System.out.println(r);
-
+        cut.deleteImage("myNginx");
     }
 
     @Test
