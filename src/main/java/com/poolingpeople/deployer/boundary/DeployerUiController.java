@@ -5,6 +5,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,6 +40,6 @@ public class DeployerUiController{
 
     public void deploy(){
 
-//        facade.deploy(version, subdomain, imageName);
+        facade.deploy(version, subdomain, String.valueOf(new Date().getTime()));
     }
 }

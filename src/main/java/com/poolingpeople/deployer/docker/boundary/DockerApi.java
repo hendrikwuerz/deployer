@@ -99,7 +99,7 @@ public class DockerApi implements Serializable{
 
         Response response = client
                 .target(url)
-                .resolveTemplate("name", Optional.ofNullable(name).orElse(UUID.randomUUID().toString()))
+                .resolveTemplate("name", name)
                 .request()
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .post(Entity.json(body));
@@ -223,7 +223,7 @@ public class DockerApi implements Serializable{
     }
 
     public Collection<ContainerInfo> listContainers(){
-        String url = endPoint + "/containers/json";
+        String url = endPoint + "/containers/json?all=1";
         Client client = ClientBuilder.newClient();
 
         Response response = client

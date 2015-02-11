@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import java.util.Optional;
 
 /**
  * Created by alacambra on 2/5/15.
@@ -103,7 +104,7 @@ public class ClusterConfig {
     }
 
     public String getNeo4jId() {
-        return neo4jId;
+        return getPortPrefix() + "-neo4j-" + getDbScenario() + "-" + getConcretDomain() + "-" + getServerDomain();
     }
 
     public ClusterConfig setNeo4jId(String neo4jId) {
@@ -112,7 +113,7 @@ public class ClusterConfig {
     }
 
     public String getWildflyId() {
-        return wildflyId;
+        return getPortPrefix() + "-wf-" + getAppVersion() + "-" + getConcretDomain() + "-" + getServerDomain();
     }
 
     public ClusterConfig setWildflyId(String wildflyId) {
@@ -148,7 +149,7 @@ public class ClusterConfig {
     }
 
     public String getDbScenario() {
-        return dbScenario;
+        return Optional.ofNullable(dbScenario).orElse("none");
     }
 
     public ClusterConfig setDbScenario(String dbScenario) {

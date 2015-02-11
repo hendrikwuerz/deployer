@@ -12,10 +12,9 @@ import com.poolingpeople.deployer.entity.ClusterConfig;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -43,60 +42,81 @@ public class DeployerFacade {
 
     Logger logger = Logger.getLogger(this.getClass().getName());
 
+    public Collection<String> getActiveContainersNames(){
 
-    public Object getAvailableCluster(){
-        Object l = dockerApi.listContainers().stream().map(
-                c -> c.getNames().stream().filter(n -> n.lastIndexOf("/") == 0)).collect(Collectors.toList());
+        Collection<String> l = dockerApi.listContainers().stream().map(
+                c -> c.getNames())
+                .flatMap(names -> names.stream())
+                .filter(n -> n.lastIndexOf("/") == 0)
+                .map(n -> n.substring(1, n.length()))
+                .collect(Collectors.toList());
 
         return l;
+    }
+
+    public int getAvailableCluster(){
+
+        int maxClusters = 8;
+
+        Set<Integer> result = getActiveContainersNames().stream()
+                .map(c -> Integer.parseInt(c.split("-")[0]))
+                .collect(Collectors.toSet());
+
+        for(int i = 1; i < maxClusters; i++){
+            if(result.contains(i)) continue;
+
+            return i;
+        }
+
+        throw new RuntimeException("No more place for new clusters");
     }
 
     public void deploy(@NotNull String version, @NotNull String subdomain, @NotNull String imageName){
 
         logger.info("starting");
 
-        String neoName = "neo4j" + new Date().getTime();
-
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version)
                 .setServerDomain("dev.poolingpeople.com")
                 .setConcretDomain(subdomain)
-                .setNeo4jId(neoName)
-                .setWildflyId("wf")
-                .setPortPrefix("1");
-test for ClusterConfig loaded from container name
+                .setPortPrefix(String.valueOf(getAvailableCluster()));
+
         CreateContainerBodyBuilder builder = null;
         String containerId = null;
 
         neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
-        dockerApi.buildImage("neo4j", neo4jDockerPackage.getBytes());
-        builder = new CreateContainerBodyBuilder();
-        builder.setImage("neo4j").buildExposedPorts().createHostConfig().bindTcpPort("7474", "17474").buildHostConfig();
+        dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
 
-        containerId = dockerApi.createContainer(builder, neoName);
+        builder = new CreateContainerBodyBuilder();
+        builder.setImage(clusterConfig.getNeo4jId())
+                .buildExposedPorts()
+                .createHostConfig()
+                .bindTcpPort(clusterConfig.getNeo4jPort(), clusterConfig.getPortPrefix() + clusterConfig.getNeo4jPort())
+                .buildHostConfig();
+
+        containerId = dockerApi.createContainer(builder, clusterConfig.getNeo4jId());
         dockerApi.startContainer(containerId);
 
-        ContainerNetworkSettings settings = dockerApi.getContainerNetwotkSettings(containerId);
-        System.out.println("-------------------" + settings.getGateway());
+//        ContainerNetworkSettings settings = dockerApi.getContainerNetwotkSettings(containerId);
+//        System.out.println("-------------------" + settings.getGateway());
 
         InputStream is = versionsApi.getWarForVersion(version);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
 
-        dockerApi.buildImage(imageName, applicationDockerPackage.getBytes());
-        builder = new CreateContainerBodyBuilder();
-        builder
-                .setImage(imageName)
-                .buildExposedPorts()
+        dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
+        builder = new CreateContainerBodyBuilder()
+                .setImage(clusterConfig.getWildflyId())
                 .createHostConfig()
                 .bindTcpPort(clusterConfig.getWfPort(), clusterConfig.getPortPrefix() + clusterConfig.getWfPort())
                 .bindTcpPort(clusterConfig.getWfAdminPort(), clusterConfig.getPortPrefix() + clusterConfig.getWfAdminPort())
-                .addLink(neoName, neoName)
+                .addLink(clusterConfig.getNeo4jId(), clusterConfig.getNeo4jId())
                 .buildHostConfig();
-        containerId = dockerApi.createContainer(builder, imageName + new Date().getTime());
+
+        containerId = dockerApi.createContainer(builder, clusterConfig.getWildflyId());
 
         logger.info("Container created:" + containerId);
         dockerApi.startContainer(containerId);
