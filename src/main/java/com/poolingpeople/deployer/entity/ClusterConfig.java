@@ -215,6 +215,13 @@ public class ClusterConfig {
             return false;
         }
 
+        /*
+         * cluster values are not initialized
+         */
+        if(concretDomain == null || serverDomain == null){
+            return super.equals(obj);
+        }
+
         ClusterConfig ccfg = (ClusterConfig) obj;
         return concretDomain.equals(ccfg.getConcretDomain()) && serverDomain.equals(ccfg.getServerDomain());
 

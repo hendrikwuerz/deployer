@@ -12,8 +12,11 @@ import com.poolingpeople.deployer.entity.ClusterConfig;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Created by alacambra on 2/6/15.
@@ -41,6 +44,12 @@ public class DeployerFacade {
     Logger logger = Logger.getLogger(this.getClass().getName());
 
 
+    public Object getAvailableCluster(){
+        Object l = dockerApi.listContainers().stream().map(
+                c -> c.getNames().stream().filter(n -> n.lastIndexOf("/") == 0)).collect(Collectors.toList());
+
+        return l;
+    }
 
     public void deploy(@NotNull String version, @NotNull String subdomain, @NotNull String imageName){
 
@@ -56,7 +65,7 @@ public class DeployerFacade {
                 .setNeo4jId(neoName)
                 .setWildflyId("wf")
                 .setPortPrefix("1");
-
+test for ClusterConfig loaded from container name
         CreateContainerBodyBuilder builder = null;
         String containerId = null;
 
@@ -72,14 +81,10 @@ public class DeployerFacade {
         ContainerNetworkSettings settings = dockerApi.getContainerNetwotkSettings(containerId);
         System.out.println("-------------------" + settings.getGateway());
 
-
-
         InputStream is = versionsApi.getWarForVersion(version);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
-        applicationDockerPackage.materializeTarFile("/home/alacambra/file.tar.gz");
-
 
         dockerApi.buildImage(imageName, applicationDockerPackage.getBytes());
         builder = new CreateContainerBodyBuilder();

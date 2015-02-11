@@ -20,7 +20,6 @@ public class DeployerUiController{
 
     private String subdomain;
     private String version;
-    private String imageName;
 
     public void setSubdomain(String subdomain) {
         this.subdomain = subdomain;
@@ -38,16 +37,8 @@ public class DeployerUiController{
         return subdomain;
     }
 
-    public String getImageName() {
-        return imageName;
-    }
-
-    public void setImageName(String imageName) {
-        this.imageName = imageName;
-    }
-
     public void deploy(){
-        imageName = Optional.ofNullable(imageName).orElse(UUID.randomUUID().toString());
-        facade.deploy(version, subdomain, imageName);
+
+//        facade.deploy(version, subdomain, imageName);
     }
 }
