@@ -186,4 +186,37 @@ public class ClusterConfig {
         this.wfAdminPort = wfAdminPort;
         return this;
     }
+
+    public void loadFromContainerName(String containerName){
+        String[] conf = containerName.split("-");
+
+        if(conf.length != 5){
+            throw new RuntimeException("Invalid format for " + containerName);
+        }
+
+        setPortPrefix(conf[0]);
+
+        if(conf[1].equals("wf")){
+            setAppVersion(conf[2]);
+        }else if(conf[1].equals("neo4j")){
+            setDbScenario(conf[2]);
+        }else{
+            throw new RuntimeException("Invalid node name " + conf[1]);
+        }
+
+        setConcretDomain(conf[3]);
+        setServerDomain(conf[4]);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if(!(obj instanceof ClusterConfig)){
+            return false;
+        }
+
+        ClusterConfig ccfg = (ClusterConfig) obj;
+        return concretDomain.equals(ccfg.getConcretDomain()) && serverDomain.equals(ccfg.getServerDomain());
+
+    }
 }
