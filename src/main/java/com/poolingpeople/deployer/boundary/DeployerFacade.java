@@ -73,8 +73,6 @@ public class DeployerFacade {
 
     public void deploy(@NotNull String version, @NotNull String subdomain, @NotNull String imageName){
 
-        logger.info("starting");
-
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version)
@@ -99,8 +97,7 @@ public class DeployerFacade {
         containerId = dockerApi.createContainer(builder, clusterConfig.getNeo4jId());
         dockerApi.startContainer(containerId);
 
-//        ContainerNetworkSettings settings = dockerApi.getContainerNetwotkSettings(containerId);
-//        System.out.println("-------------------" + settings.getGateway());
+        ContainerNetworkSettings networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
 
         InputStream is = versionsApi.getWarForVersion(version);
         applicationDockerPackage.setClusterConfig(clusterConfig);
@@ -118,7 +115,7 @@ public class DeployerFacade {
 
         containerId = dockerApi.createContainer(builder, clusterConfig.getWildflyId());
 
-        logger.info("Container created:" + containerId);
+        logger.finer("Container created:" + containerId);
         dockerApi.startContainer(containerId);
 
     }

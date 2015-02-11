@@ -9,18 +9,7 @@ import java.util.Optional;
 /**
  * Created by alacambra on 2/5/15.
  */
-//@Entity
-//@NamedQueries({
-//        @NamedQuery(name = "",
-//                query = "SELECT cf from ClusterConfig as cf where cf.serverDomain like :serverDomain")
-//}
-//)
 public class ClusterConfig {
-
-    public static final String getAllClusters = "com.poolingpeople.deployer.entity.getAllClusters";
-
-    @Id
-    Long id;
 
     /**
      * the first number from the port. Each cluster will be identified by this number.
@@ -157,7 +146,13 @@ public class ClusterConfig {
         return this;
     }
 
-    public Long getId() {
+    public String getId() {
+
+        String id = "";
+
+        Optional.ofNullable(id += getConcretDomain() + "-").orElse("none-");
+        Optional.ofNullable(id += getServerDomain()).orElse("no_server");
+
         return id;
     }
 
@@ -188,7 +183,8 @@ public class ClusterConfig {
         return this;
     }
 
-    public void loadFromContainerName(String containerName){
+    public ClusterConfig loadFromContainerName(String containerName){
+
         String[] conf = containerName.split("-");
 
         if(conf.length != 5){
@@ -207,6 +203,21 @@ public class ClusterConfig {
 
         setConcretDomain(conf[3]);
         setServerDomain(conf[4]);
+
+        return this;
+    }
+
+    public ClusterConfig mergeWith(ClusterConfig clusterConfig){
+
+        if(!equals(clusterConfig)) return this;
+
+        if(getAppVersion() == null){
+            setAppVersion(clusterConfig.getAppVersion());
+        } else {
+            setDbScenario(clusterConfig.getDbScenario());
+        }
+
+        return this;
     }
 
     @Override
@@ -223,8 +234,12 @@ public class ClusterConfig {
             return super.equals(obj);
         }
 
-        ClusterConfig ccfg = (ClusterConfig) obj;
-        return concretDomain.equals(ccfg.getConcretDomain()) && serverDomain.equals(ccfg.getServerDomain());
+        return getId().equals(((ClusterConfig) obj).getId());
 
+    }
+
+    @Override
+    public String toString() {
+        return getId();
     }
 }
