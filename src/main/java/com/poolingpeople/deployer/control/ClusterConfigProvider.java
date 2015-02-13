@@ -19,7 +19,8 @@ public class ClusterConfigProvider {
     public Collection<ClusterConfig> getCurrentClusters(String domain){
 
         Collection<List<ClusterConfig>> cfgs =
-                getActiveContainerNames().stream().map(cf -> new ClusterConfig().loadFromContainerName(cf))
+                getActiveContainerNames().stream().filter(name -> !name.equals("proxy"))
+                        .map(cf -> new ClusterConfig().loadFromContainerName(cf))
                         .collect(Collectors.groupingBy(ClusterConfig::getId))
                         .values();
 
@@ -38,8 +39,9 @@ public class ClusterConfigProvider {
 
     private Collection<String> getActiveContainerNames(){
 
-        Collection<String> l = dockerApi.listContainers().stream().map(
-                c -> c.getNames())
+        Collection<String> l =
+                dockerApi.listContainers()
+                        .stream().map(c -> c.getNames())
                 .flatMap(names -> names.stream())
                 .filter(n -> n.lastIndexOf("/") == 0)
                 .map(n -> n.substring(1, n.length()))

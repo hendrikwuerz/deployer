@@ -21,7 +21,11 @@
             </div>
             <div>
                 <label>serverName</label>
-                <h:inputText value="test.poolingpeople.com"></h:inputText>
+                <h:inputText value="#{deployerUiController.server}"></h:inputText>
+            </div>
+            <div>
+                <label>serverIp</label>
+                <h:inputText value="#{deployerUiController.serverIp}"></h:inputText>
             </div>
             <div>
                 <h:commandButton action="#{deployerUiController.deploy}" value="Deploy"></h:commandButton>

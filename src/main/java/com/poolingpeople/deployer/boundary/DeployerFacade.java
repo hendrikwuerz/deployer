@@ -61,7 +61,7 @@ public class DeployerFacade {
 
         int maxClusters = 8;
 
-        Set<Integer> result = getActiveContainersNames().stream()
+        Set<Integer> result = getActiveContainersNames().stream().filter(name -> !name.equals("proxy"))
                 .map(c -> Integer.parseInt(c.split("-")[0]))
                 .collect(Collectors.toSet());
 
@@ -74,12 +74,15 @@ public class DeployerFacade {
         throw new RuntimeException("No more place for new clusters");
     }
 
-    public void deploy(@NotNull String version, @NotNull String subdomain, @NotNull String imageName){
+    public void deploy(
+            @NotNull String version, @NotNull String subdomain, @NotNull String server, @NotNull String serverIp){
+
+        dockerApi.setEndPoint(server, "5555");
 
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version)
-                .setServerDomain("dev.poolingpeople.com")
+                .setServerDomain(server)
                 .setConcretDomain(subdomain)
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
 
@@ -124,10 +127,10 @@ public class DeployerFacade {
 
     }
 
-    public void createProxy(){
-        Collection<ClusterConfig> clusterConfigs = clusterConfigProvider.getCurrentClusters("");
-        proxyDockerPackage.setClusterConfigs(clusterConfigs).prepareTarStream();
-    }
+//    public void createProxy(){
+//        Collection<ClusterConfig> clusterConfigs = clusterConfigProvider.getCurrentClusters("");
+//        proxyDockerPackage.setClusterConfigs(clusterConfigs).prepareTarStream();
+//    }
 }
 
 

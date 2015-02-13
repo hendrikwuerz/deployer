@@ -56,7 +56,7 @@ public class DeployerFacadeTestIT {
 
     @Test
     public void testDeploy(){
-        cut.deploy("0.0.1", "test", null);
+        cut.deploy("0.0.1", "test", null, "1.1.1.1");
     }
 
 

@@ -21,6 +21,10 @@
         <h:link outcome="/console/container-logs" value="Logs"/>
         -
         <h:link outcome="/console/remove-container" value="remove container"/>
+        -
+        <h:form>
+            <h:commandLink action="#{consoleController.reloadProxy}">Reload proxy</h:commandLink>
+        </h:form>
     </div>
     <div class="">
         <h3>

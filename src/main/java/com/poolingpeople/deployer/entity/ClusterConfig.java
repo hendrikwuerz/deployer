@@ -51,6 +51,9 @@ public class ClusterConfig {
      */
     String serverDomain;
 
+
+    String serverIp;
+
     /**
      * subdomain given by a user to identify its deployment.
      */
@@ -69,7 +72,7 @@ public class ClusterConfig {
     /**
      *
      */
-    String gateway;
+    String gateway = "prod.poolingpeople.com";
 
     public String getAppBaseName() {
         return appBaseName;
@@ -126,6 +129,14 @@ public class ClusterConfig {
 
     public String getServerDomain() {
         return serverDomain;
+    }
+
+    public void setServerIp(String serverIp) {
+        this.serverIp = serverIp;
+    }
+
+    public String getServerIp() {
+        return serverIp;
     }
 
     public ClusterConfig setServerDomain(String serverDomain) {

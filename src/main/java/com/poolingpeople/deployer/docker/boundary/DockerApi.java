@@ -1,5 +1,6 @@
 package com.poolingpeople.deployer.docker.boundary;
 
+import javax.annotation.PostConstruct;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -23,9 +24,13 @@ import static javax.ws.rs.client.Entity.entity;
  */
 public class DockerApi implements Serializable{
 
-    String endPoint = "http://localhost:5555";
+    String endPoint = "http://prod.poolingpeople.com:5555";
 
     Logger logger = Logger.getLogger(this.getClass().getName());
+
+    public void setEndPoint(String ip, String port) {
+        this.endPoint = "http://" + ip + ":" + port;
+    }
 
     public String getDockerInfo(){
         return "";

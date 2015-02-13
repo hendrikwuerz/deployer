@@ -18,6 +18,9 @@ public class ConsoleController{
     @Inject
     DockerApi api;
 
+    @Inject
+    ConsoleFacade facade;
+
     DataModel<ContainerInfo> containers;
 
     private String selectedContainerId = "";
@@ -55,6 +58,10 @@ public class ConsoleController{
 
     public String getImages() {
         return api.listImage();
+    }
+
+    public void reloadProxy(){
+        facade.createProxy();
     }
 
 //    public String destroy() {

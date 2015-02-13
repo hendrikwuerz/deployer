@@ -21,6 +21,8 @@ public class DeployerUiController{
 
     private String subdomain;
     private String version;
+    private String server = "prod.poolingpeople.com";
+    private String serverIp = "54.154.110.209";
 
     public void setSubdomain(String subdomain) {
         this.subdomain = subdomain;
@@ -38,8 +40,23 @@ public class DeployerUiController{
         return subdomain;
     }
 
-    public void deploy(){
+    public String getServer() {
+        return server;
+    }
 
-        facade.deploy(version, subdomain, String.valueOf(new Date().getTime()));
+    public void setServer(String server) {
+        this.server = server;
+    }
+
+    public void deploy(){
+        facade.deploy(version, subdomain, server, serverIp);
+    }
+
+    public String getServerIp() {
+        return serverIp;
+    }
+
+    public void setServerIp(String serverIp) {
+        this.serverIp = serverIp;
     }
 }

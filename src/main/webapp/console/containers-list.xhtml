@@ -43,6 +43,12 @@
                     </h:column>
                     <h:column>
                         <f:facet name="header">
+                            <h:outputText value="status"/>
+                        </f:facet>
+                        <h:outputText value="#{container.status}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
                             <h:outputText value="&nbsp;"/>
                         </f:facet>
                         <h:commandLink action="#{containerController.destroy}" value=" X "/>
