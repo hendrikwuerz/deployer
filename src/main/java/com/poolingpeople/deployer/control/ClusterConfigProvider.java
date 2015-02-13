@@ -33,7 +33,7 @@ public class ClusterConfigProvider {
 
     private ClusterConfig merge(ClusterConfig a, ClusterConfig b){
         b.mergeWith(a);
-        return a;
+        return b;
     }
 
     private Collection<String> getActiveContainerNames(){
