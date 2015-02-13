@@ -18,8 +18,7 @@ import java.util.List;
  */
 public class ProxyDockerPackage extends DockerCluster {
 
-    @Inject
-    ClusterConfigProvider clusterConfigProvider;
+    private Collection<ClusterConfig> configs;
 
     private DomainConfigInfo currentDomainConfigInfo;
 
@@ -27,12 +26,11 @@ public class ProxyDockerPackage extends DockerCluster {
         String domain;
         String target;
         String port;
+        String gateway;
     }
 
     @Override
     protected DockerCluster addResources() {
-
-        Collection<ClusterConfig> configs = clusterConfigProvider.getCurrentClusters(clusterConfig.getServerDomain());
 
         for(ClusterConfig config : configs){
             addNeo4jFile(config);
@@ -45,11 +43,17 @@ public class ProxyDockerPackage extends DockerCluster {
         return this;
     }
 
+    public ProxyDockerPackage setClusterConfigs(Collection<ClusterConfig> clusterConfigs) {
+        configs = clusterConfigs;
+        return this;
+    }
+
     void addNeo4jFile(ClusterConfig config){
         currentDomainConfigInfo = new DomainConfigInfo();
         currentDomainConfigInfo.domain = "neo4j." + config.getConcretDomain() + "." + config.getServerDomain();
         currentDomainConfigInfo.port = config.getPortPrefix() + config.getNeo4jPort();
         currentDomainConfigInfo.target = config.getNeo4jId();
+        currentDomainConfigInfo.gateway = config.getGateway();
 
         addFile("site.conf", "conf/" + currentDomainConfigInfo.domain + ".conf");
     }
@@ -59,6 +63,7 @@ public class ProxyDockerPackage extends DockerCluster {
         currentDomainConfigInfo.domain = "admin." + config.getConcretDomain() + "." + config.getServerDomain();
         currentDomainConfigInfo.port = config.getPortPrefix() + config.getWfAdminPort();
         currentDomainConfigInfo.target = config.getWildflyId();
+        currentDomainConfigInfo.gateway = config.getGateway();
 
         addFile("site.conf", "conf/" + currentDomainConfigInfo.domain + ".conf");
     }
@@ -68,6 +73,7 @@ public class ProxyDockerPackage extends DockerCluster {
         currentDomainConfigInfo.domain = config.getConcretDomain() + "." + config.getServerDomain();
         currentDomainConfigInfo.port = config.getPortPrefix() + config.getWfPort();
         currentDomainConfigInfo.target = config.getWildflyId();
+        currentDomainConfigInfo.gateway = config.getGateway();
 
         addFile("site.conf", "conf/" + currentDomainConfigInfo.domain + ".conf");
     }
@@ -80,7 +86,7 @@ public class ProxyDockerPackage extends DockerCluster {
             return original;
 
         return original.replace("{DOMAIN}", currentDomainConfigInfo.domain)
-                .replace("{TARGET}", currentDomainConfigInfo.target)
+                .replace("{TARGET}", currentDomainConfigInfo.gateway)
                 .replace("{PORT}", String.valueOf(currentDomainConfigInfo.port));
     }
 }

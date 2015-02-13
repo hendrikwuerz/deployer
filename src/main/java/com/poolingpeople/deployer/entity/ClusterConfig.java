@@ -66,6 +66,11 @@ public class ClusterConfig {
      */
     String appBaseName;
 
+    /**
+     *
+     */
+    String gateway;
+
     public String getAppBaseName() {
         return appBaseName;
     }
@@ -241,5 +246,14 @@ public class ClusterConfig {
     @Override
     public String toString() {
         return getId();
+    }
+
+    public String getGateway() {
+        return gateway;
+    }
+
+    public ClusterConfig setGateway(String gateway) {
+        this.gateway = gateway;
+        return this;
     }
 }

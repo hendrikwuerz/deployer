@@ -2,6 +2,7 @@ package com.poolingpeople.deployer.boundary;
 
 import com.poolingpeople.deployer.application.boundary.VersionsApi;
 import com.poolingpeople.deployer.control.ApplicationDockerPackage;
+import com.poolingpeople.deployer.control.ClusterConfigProvider;
 import com.poolingpeople.deployer.control.Neo4jDockerPackage;
 import com.poolingpeople.deployer.control.ProxyDockerPackage;
 import com.poolingpeople.deployer.docker.boundary.ContainerNetworkSettings;
@@ -14,7 +15,6 @@ import javax.validation.constraints.NotNull;
 import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +39,9 @@ public class DeployerFacade {
 
     @Inject
     ClusterConfig clusterConfig;
+
+    @Inject
+    ClusterConfigProvider clusterConfigProvider;
 
     Logger logger = Logger.getLogger(this.getClass().getName());
 
@@ -98,6 +101,7 @@ public class DeployerFacade {
         dockerApi.startContainer(containerId);
 
         ContainerNetworkSettings networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
+        clusterConfig.setGateway(networkSettings.getGateway());
 
         InputStream is = versionsApi.getWarForVersion(version);
         applicationDockerPackage.setClusterConfig(clusterConfig);
@@ -119,4 +123,27 @@ public class DeployerFacade {
         dockerApi.startContainer(containerId);
 
     }
+
+    public void createProxy(){
+        Collection<ClusterConfig> clusterConfigs = clusterConfigProvider.getCurrentClusters("");
+        proxyDockerPackage.setClusterConfigs(clusterConfigs).prepareTarStream();
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

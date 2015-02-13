@@ -58,4 +58,17 @@ public class DeployerFacadeTestIT {
     public void testDeploy(){
         cut.deploy("0.0.1", "test", null);
     }
+
+
+//    @Test
+//    public void testCreateProxy(){
+//
+//        Collection<ClusterConfig> clusterConfigs = new ArrayList<>();
+//
+//
+//        when(cut.clusterConfigProvider.getCurrentClusters("")).thenReturn(clusterConfigs);
+//
+//        cut.createProxy();
+//    }
+
 }

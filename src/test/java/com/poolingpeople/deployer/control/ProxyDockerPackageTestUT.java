@@ -22,13 +22,13 @@ public class ProxyDockerPackageTestUT {
     @Before
     public void setUp() throws Exception {
         cut = new ProxyDockerPackage();
-        cut.clusterConfigProvider = mock(ClusterConfigProvider.class);
         cut.clusterConfig = new ClusterConfig().setServerDomain("test.com");
     }
 
     @Test
     public void testGenerateTar() throws Exception {
         Collection<ClusterConfig> configs = new ArrayList<>();
+        cut.setClusterConfigs(configs);
         configs.add(
                 new ClusterConfig().setAppBaseName("rest")
                         .setAppVersion("0.0.1")
@@ -37,6 +37,7 @@ public class ProxyDockerPackageTestUT {
                         .setPortPrefix("1")
                         .setServerDomain("test.com")
                         .setWildflyId("wfid")
+                        .setGateway("123.234.5.5")
         );
 
         configs.add(
@@ -47,10 +48,22 @@ public class ProxyDockerPackageTestUT {
                         .setPortPrefix("2")
                         .setServerDomain("test.com")
                         .setWildflyId("wfid2")
+                        .setGateway("123.234.5.5")
         );
 
-        when(cut.clusterConfigProvider.getCurrentClusters("test.com")).thenReturn(configs);
+        configs.add(
+                new ClusterConfig().setAppBaseName("rest")
+                        .setAppVersion("0.0.3")
+                        .setNeo4jId("neoId3")
+                        .setConcretDomain("al")
+                        .setPortPrefix("3")
+                        .setServerDomain("test.com")
+                        .setWildflyId("wfid3")
+                        .setGateway("123.234.5.5")
+        );
+
         cut.prepareTarStream();
+        cut.materializeTarFile("/home/alacambra/proxy.tar.gz");
         assertThat(cut.getBytes().length, is(not(0)));
 
     }
