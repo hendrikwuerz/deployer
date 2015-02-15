@@ -50,6 +50,10 @@ public class ContainerInfo {
         return id;
     }
 
+    public String getShortId() {
+        return id.substring(0,10);
+    }
+
     public ContainerInfo setId(String id) {
         this.id = id;
         return this;

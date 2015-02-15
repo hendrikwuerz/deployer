@@ -1,6 +1,7 @@
 package com.poolingpeople.deployer.docker.boundary;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -13,8 +14,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 import static javax.ws.rs.client.Entity.entity;
@@ -24,12 +23,16 @@ import static javax.ws.rs.client.Entity.entity;
  */
 public class DockerApi implements Serializable{
 
-    String endPoint = "http://prod.poolingpeople.com:5555";
+    @Inject
+    DockerEndPointProvider endPointProvider;
+
+    String endPoint = null;
 
     Logger logger = Logger.getLogger(this.getClass().getName());
 
-    public void setEndPoint(String ip, String port) {
-        this.endPoint = "http://" + ip + ":" + port;
+    @PostConstruct
+    public void init(){
+        endPoint = "http://" + endPointProvider.getDockerHost() + ":" + endPointProvider.getPort();
     }
 
     public String getDockerInfo(){
@@ -100,7 +103,7 @@ public class DockerApi implements Serializable{
 
         String body = bodyBuilder.getObjectBuilder().build().toString();
 
-        logger.info("creating container with body: " + body);
+        logger.fine("creating container with body: " + body);
 
         Response response = client
                 .target(url)
@@ -144,6 +147,8 @@ public class DockerApi implements Serializable{
         String url = endPoint + "/containers/{containerId}/start";
         Client client = ClientBuilder.newClient();
 
+        logger.fine("Starting container " + containerId);
+
         Response response = client
                 .target(url)
                 .resolveTemplate("containerId", containerId)
@@ -151,16 +156,16 @@ public class DockerApi implements Serializable{
                 .header("Content-Type", "application/json")
                 .post(Entity.json(""));
 
-        if(response.getStatus() != Response.Status.NO_CONTENT.getStatusCode()){
-            throw new RuntimeException("returned code " + response.getStatus());
-        }
+        checkStatusResponseCode(response.getStatus());
 
     }
 
-    public String stopContainer(String containerId){
+    public void stopContainer(String containerId){
         String url = endPoint + "/containers/{containerId}/stop";
         Client client = ClientBuilder.newClient();
 
+        logger.fine("Stoping container " + containerId);
+
         Response response = client
                 .target(url)
                 .resolveTemplate("containerId", containerId)
@@ -168,12 +173,11 @@ public class DockerApi implements Serializable{
                 .header("Content-Type", "application/json")
                 .post(Entity.json(""));
 
-        String r = response.readEntity(String.class);
-        return r;
+        checkStatusResponseCode(response.getStatus());
 
     }
 
-    public String killContainer(String containerId){
+    public void killContainer(String containerId){
         String url = endPoint + "/containers/{containerId}/kill";
         Client client = ClientBuilder.newClient();
 
@@ -184,8 +188,7 @@ public class DockerApi implements Serializable{
                 .header("Content-Type", "application/json")
                 .post(Entity.json(""));
 
-        String r = response.readEntity(String.class);
-        return r;
+        checkStatusResponseCode(response.getStatus());
 
     }
 
@@ -247,6 +250,21 @@ public class DockerApi implements Serializable{
 
         return containers;
 
+    }
+
+    private void checkStatusResponseCode(int status){
+        if(Response.Status.fromStatusCode(status).getFamily() == Response.Status.Family.CLIENT_ERROR){
+            throw new RuntimeException("returned code " + status);
+        } else if(Response.Status.fromStatusCode(status).getFamily() == Response.Status.Family.SERVER_ERROR){
+            throw new RuntimeException("returned code " + status);
+        }else if(Response.Status.fromStatusCode(status).getFamily() == Response.Status.Family.INFORMATIONAL){
+            logger.fine("returned code " + status);
+        }else if(Response.Status.fromStatusCode(status).getFamily() == Response.Status.Family.REDIRECTION){
+            logger.fine("returned code " + status);
+        }
+        else if(Response.Status.fromStatusCode(status).getFamily() != Response.Status.Family.SUCCESSFUL){
+            throw new RuntimeException("returned code " + status);
+        }
     }
 
 }

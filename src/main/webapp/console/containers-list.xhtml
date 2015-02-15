@@ -21,7 +21,7 @@
                         <f:facet name="header">
                             <h:outputText value="id"/>
                         </f:facet>
-                        <h:outputText value="#{container.id}"/>
+                        <h:outputText value="#{container.shortId}"/>
                     </h:column>
                     <h:column>
                         <f:facet name="header">
@@ -52,6 +52,18 @@
                             <h:outputText value="&nbsp;"/>
                         </f:facet>
                         <h:commandLink action="#{containerController.destroy}" value=" X "/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="&nbsp;"/>
+                        </f:facet>
+                        <h:commandLink action="#{containerController.start}" value="Start"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="&nbsp;"/>
+                        </f:facet>
+                        <h:commandLink action="#{containerController.stop}" value="Stop"/>
                     </h:column>
                 </h:dataTable>
             </h:panelGroup>

@@ -77,8 +77,6 @@ public class DeployerFacade {
     public void deploy(
             @NotNull String version, @NotNull String subdomain, @NotNull String server, @NotNull String serverIp){
 
-        dockerApi.setEndPoint(server, "5555");
-
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version)
