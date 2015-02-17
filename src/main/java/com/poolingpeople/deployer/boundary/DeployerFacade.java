@@ -8,6 +8,7 @@ import com.poolingpeople.deployer.control.ProxyDockerPackage;
 import com.poolingpeople.deployer.docker.boundary.ContainerNetworkSettings;
 import com.poolingpeople.deployer.docker.boundary.CreateContainerBodyBuilder;
 import com.poolingpeople.deployer.docker.boundary.DockerApi;
+import com.poolingpeople.deployer.docker.boundary.DockerEndPointProvider;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 
 import javax.inject.Inject;
@@ -43,6 +44,9 @@ public class DeployerFacade {
     @Inject
     ClusterConfigProvider clusterConfigProvider;
 
+    @Inject
+    DockerEndPointProvider endPointProvider;
+
     Logger logger = Logger.getLogger(this.getClass().getName());
 
     public Collection<String> getActiveContainersNames(){
@@ -75,12 +79,12 @@ public class DeployerFacade {
     }
 
     public void deploy(
-            @NotNull String version, @NotNull String subdomain, @NotNull String server, @NotNull String serverIp){
+            @NotNull String version, @NotNull String subdomain){
 
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version)
-                .setServerDomain(server)
+                .setServerDomain(endPointProvider.getDockerHost())
                 .setConcretDomain(subdomain)
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
 

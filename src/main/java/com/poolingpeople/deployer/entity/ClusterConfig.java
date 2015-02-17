@@ -72,7 +72,7 @@ public class ClusterConfig {
     /**
      *
      */
-    String gateway = "prod.poolingpeople.com";
+    String gateway = "";
 
     public String getAppBaseName() {
         return appBaseName;
@@ -219,6 +219,7 @@ public class ClusterConfig {
 
         setConcretDomain(conf[3]);
         setServerDomain(conf[4]);
+        setGateway(conf[4]);
 
         return this;
     }

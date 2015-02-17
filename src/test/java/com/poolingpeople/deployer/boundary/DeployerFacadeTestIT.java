@@ -54,10 +54,10 @@ public class DeployerFacadeTestIT {
                 "1-neo4j-pivotal15_01_2015-albert-test.poolingpeople.com"));
     }
 
-    @Test
-    public void testDeploy(){
-        cut.deploy("0.0.1", "test", null, "1.1.1.1");
-    }
+//    @Test
+//    public void testDeploy(){
+//        cut.deploy("0.0.1", "test", null, "1.1.1.1");
+//    }
 
 
 //    @Test
