@@ -1,10 +1,12 @@
-package com.poolingpeople.deployer.docker.boundary;
+package com.poolingpeople.deployer.boundary;
+
+import com.poolingpeople.deployer.docker.boundary.ContainerInfo;
+import com.poolingpeople.deployer.docker.boundary.DockerApi;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.model.DataModel;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.Serializable;
 import java.util.stream.Collectors;
 
 /**
