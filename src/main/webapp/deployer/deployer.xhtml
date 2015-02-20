@@ -13,7 +13,9 @@
         <h:form>
             <div>
                 <label>version</label>
-                <h:inputText value="#{deployerUiController.version}" ></h:inputText>
+                <h:selectOneRadio value="#{deployerUiController.version}" layout="pageDirection">
+                    <f:selectItems value="#{deployerUiController.availableVersions}" var="version" itemLabel="#{version}" itemValue="#{version}"></f:selectItems>
+                </h:selectOneRadio>
             </div>
             <div>
                 <label>subdomain</label>

@@ -133,6 +133,11 @@ public class DeployerFacade {
 //        Collection<ClusterConfig> clusterConfigs = clusterConfigProvider.getCurrentClusters("");
 //        proxyDockerPackage.setClusterConfigs(clusterConfigs).prepareTarStream();
 //    }
+
+    public Collection<String> loadVersions() {
+        return versionsApi.loadVersions();
+    }
+
 }
 
 

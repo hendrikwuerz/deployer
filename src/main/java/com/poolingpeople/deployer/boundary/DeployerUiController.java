@@ -5,6 +5,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,6 +37,10 @@ public class DeployerUiController{
 
     public String getSubdomain() {
         return subdomain;
+    }
+
+    public Collection<String> getAvailableVersions() {
+        return facade.loadVersions();
     }
 
     public void deploy(){

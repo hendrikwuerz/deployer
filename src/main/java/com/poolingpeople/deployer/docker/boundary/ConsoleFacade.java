@@ -30,7 +30,7 @@ public class ConsoleFacade {
 
         }
         proxyDockerPackage.setClusterConfigs(clusterConfigs).prepareTarStream();
-        proxyDockerPackage.materializeTarFile("/home/alacambra/proxy.tar.gz");
+//        proxyDockerPackage.materializeTarFile("/home/alacambra/proxy.tar.gz");
         dockerApi.buildImage("proxy", proxyDockerPackage.getBytes());
 
         String containerId = null;
