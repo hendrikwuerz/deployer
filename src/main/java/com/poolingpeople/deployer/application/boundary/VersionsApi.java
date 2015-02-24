@@ -21,7 +21,7 @@ public class VersionsApi {
         String snapshotEndpoint = "http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/";
         String releasesEndpoint = "http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/";
 
-        Response response = fetchVersionsFromNexus(snapshotEndpoint);
+        Response response = fetchVersionsFromNexus(releasesEndpoint);
 
         InputStream stream = response.readEntity(InputStream.class);
         Collection<String> versions = parseVersions(stream);
