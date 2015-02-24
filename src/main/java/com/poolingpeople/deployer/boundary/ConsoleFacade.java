@@ -31,6 +31,7 @@ public class ConsoleFacade {
         } catch (RuntimeException e){
 
         }
+
         proxyDockerPackage.setClusterConfigs(clusterConfigs).prepareTarStream();
         dockerApi.buildImage("proxy", proxyDockerPackage.getBytes());
 
