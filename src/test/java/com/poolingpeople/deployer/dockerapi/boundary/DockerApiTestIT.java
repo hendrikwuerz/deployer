@@ -1,10 +1,13 @@
-package com.poolingpeople.deployer.boundary;
+package com.poolingpeople.deployer.dockerapi.boundary;
 
 import com.poolingpeople.deployer.application.boundary.VersionsApi;
 import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyBuilder;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
+import org.apache.commons.compress.utils.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.*;
 
 import static org.mockito.Mockito.mock;
 
@@ -69,6 +72,15 @@ public class DockerApiTestIT {
 
     @Test
     public void testListContainer() throws Exception {
+
+    }
+
+    @Test
+    public void testCopyFiles() throws IOException {
+        cut.endPoint = "http://prod.poolingpeople.com:5555";
+        InputStream inputStream = cut.copyFiles("3224415425", "/var/lib/neo4j/data/graph.db/");
+        FileOutputStream outputStream = new FileOutputStream("/home/alacambra/deleteme.tar");
+        IOUtils.copy(inputStream, outputStream);
 
     }
 }
