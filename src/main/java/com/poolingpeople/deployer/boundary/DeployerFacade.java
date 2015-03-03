@@ -117,7 +117,6 @@ public class DeployerFacade {
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
-        applicationDockerPackage.materializeTarFile("/home/alacambra/test.tar.gz");
 
         dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
         builder = new CreateContainerBodyBuilder()
