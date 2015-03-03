@@ -65,7 +65,8 @@ public class DeployerFacade {
 
         int maxClusters = 8;
 
-        Set<Integer> result = getActiveContainersNames().stream().filter(name -> !name.equals("proxy"))
+        Set<Integer> result = getActiveContainersNames().stream()//.filter(name -> !name.equals("proxy"))
+                .filter(name -> isValidClusterName(name))
                 .map(c -> Integer.parseInt(c.split("-")[0]))
                 .collect(Collectors.toSet());
 
@@ -76,6 +77,10 @@ public class DeployerFacade {
         }
 
         throw new RuntimeException("No more place for new clusters");
+    }
+
+    private boolean isValidClusterName(String name){
+        return name.split("-").length == 5;
     }
 
     public void deploy(
@@ -112,6 +117,7 @@ public class DeployerFacade {
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
+        applicationDockerPackage.materializeTarFile("/home/alacambra/test.tar.gz");
 
         dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
         builder = new CreateContainerBodyBuilder()
