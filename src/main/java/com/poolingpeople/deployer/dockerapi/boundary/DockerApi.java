@@ -31,6 +31,14 @@ public class DockerApi implements Serializable{
 
     Logger logger = Logger.getLogger(this.getClass().getName());
 
+    public DockerApi(DockerEndPointProvider endPointProvider) {
+        this.endPointProvider = endPointProvider;
+        init();
+    }
+
+    public DockerApi() {
+    }
+
     @PostConstruct
     public void init(){
         endPoint = "http://" + endPointProvider.getDockerHost() + ":" + endPointProvider.getPort();
