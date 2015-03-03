@@ -2,7 +2,7 @@ package com.poolingpeople.deployer.boundary;
 
 import com.poolingpeople.deployer.control.ClusterConfigProvider;
 import com.poolingpeople.deployer.control.ProxyDockerPackage;
-import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyBuilder;
+import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyWriter;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 
@@ -37,7 +37,7 @@ public class ConsoleFacade {
 
         String containerId = null;
 
-        CreateContainerBodyBuilder builder = new CreateContainerBodyBuilder()
+        CreateContainerBodyWriter builder = new CreateContainerBodyWriter()
                 .setImage("proxy")
                 .createHostConfig()
                 .bindTcpPort("80", "80")

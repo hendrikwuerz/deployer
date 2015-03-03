@@ -22,9 +22,9 @@ import javax.json.*;
  "Devices": []
  }
  */
-public class HostConfigBodyBuilder {
+public class HostConfigBodyWriter {
 
-    private CreateContainerBodyBuilder containerBodyBuilder;
+    private CreateContainerBodyWriter containerBodyBuilder;
     private JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
     private JsonArrayBuilder binds = Json.createArrayBuilder();
     private JsonArrayBuilder links = Json.createArrayBuilder();
@@ -34,11 +34,11 @@ public class HostConfigBodyBuilder {
     private boolean privileged = false;
     private JsonArrayBuilder dns = Json.createArrayBuilder();
 
-    public HostConfigBodyBuilder(CreateContainerBodyBuilder containerBodyBuilder) {
+    public HostConfigBodyWriter(CreateContainerBodyWriter containerBodyBuilder) {
         this.containerBodyBuilder = containerBodyBuilder;
     }
 
-    public CreateContainerBodyBuilder buildHostConfig(){
+    public CreateContainerBodyWriter buildHostConfig(){
 
         objectBuilder.add("Binds", binds);
         objectBuilder.add("Links", links);
@@ -53,12 +53,12 @@ public class HostConfigBodyBuilder {
         return containerBodyBuilder;
     }
 
-    public HostConfigBodyBuilder bindTcpPort(String exposedPort, String mappedPort){
+    public HostConfigBodyWriter bindTcpPort(String exposedPort, String mappedPort){
         portBindings.add(exposedPort + "/tcp", Json.createArrayBuilder().add(Json.createObjectBuilder().add("HostPort", mappedPort)));
         return this;
     }
 
-    public HostConfigBodyBuilder addLink(String containerName, String alias){
+    public HostConfigBodyWriter addLink(String containerName, String alias){
         links.add(containerName + ":" + alias);
         return this;
     }

@@ -97,7 +97,7 @@ public class DockerApi implements Serializable{
 
     }
 
-    public String createContainer(CreateContainerBodyBuilder bodyBuilder, String name){
+    public String createContainer(CreateContainerBodyWriter bodyBuilder, String name){
         String url = endPoint + "/containers/create?name={name}";
         Client client = ClientBuilder.newClient();
 
@@ -124,7 +124,7 @@ public class DockerApi implements Serializable{
 
     }
 
-    public ContainerNetworkSettings getContainerNetwotkSettings(String containerId){
+    public ContainerNetworkSettingsReader getContainerNetwotkSettings(String containerId){
 
         String url = endPoint + "/containers/{containerId}/json";
         Client client = ClientBuilder.newClient();
@@ -140,7 +140,7 @@ public class DockerApi implements Serializable{
             throw new RuntimeException("returned code " + response.getStatus());
         }
 
-        return new ContainerNetworkSettings(response.readEntity(JsonObject.class));
+        return new ContainerNetworkSettingsReader(response.readEntity(JsonObject.class));
     }
 
     public void startContainer(String containerId){
