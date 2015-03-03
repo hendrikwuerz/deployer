@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -50,10 +51,7 @@ public class DockerApi implements Serializable{
                 .accept(MediaType.APPLICATION_JSON)
                 .post(entity(new ByteArrayInputStream(tarBytes), "application/tar"), Response.class);
 
-        if(response.getStatus() != Response.Status.OK.getStatusCode()){
-            throw new RuntimeException("returned code " + response.getStatus());
-        }
-
+        checkStatusResponseCode(response.getStatus());
         String r = response.readEntity(String.class);
 
         if (r.contains("errorDetail")){
@@ -76,9 +74,8 @@ public class DockerApi implements Serializable{
                 .accept(MediaType.APPLICATION_JSON)
                 .delete();
 
-        if(response.getStatus() != Response.Status.OK.getStatusCode()){
-            throw new RuntimeException("returned code " + response.getStatus());
-        }
+        checkStatusResponseCode(response.getStatus());
+
     }
 
     public String listImage(){
@@ -92,6 +89,7 @@ public class DockerApi implements Serializable{
                 .accept(MediaType.TEXT_PLAIN)
                 .get();
 
+        checkStatusResponseCode(response.getStatus());
         String r = response.readEntity(String.class);
         return r;
 
@@ -114,9 +112,7 @@ public class DockerApi implements Serializable{
 
         InputStream r = response.readEntity(InputStream.class);
 
-        if(response.getStatus() != Response.Status.CREATED.getStatusCode()){
-            throw new RuntimeException("returned code " + response.getStatus());
-        }
+        checkStatusResponseCode(response.getStatus());
 
         JsonObject object = Json.createReader(r).readObject();
 
@@ -136,9 +132,7 @@ public class DockerApi implements Serializable{
                 .header("Content-Type", "application/json")
                 .get();
 
-        if(response.getStatus() != Response.Status.OK.getStatusCode()){
-            throw new RuntimeException("returned code " + response.getStatus());
-        }
+        checkStatusResponseCode(response.getStatus());
 
         return new ContainerNetworkSettings(response.readEntity(JsonObject.class));
     }
@@ -204,9 +198,7 @@ public class DockerApi implements Serializable{
                 .request()
                 .get();
 
-        if(response.getStatus() != Response.Status.OK.getStatusCode()){
-            throw new RuntimeException("returned code " + response.getStatus());
-        }
+        checkStatusResponseCode(response.getStatus());
 
         String r = response.readEntity(String.class);
         return r;
@@ -225,9 +217,8 @@ public class DockerApi implements Serializable{
                 .accept(MediaType.TEXT_PLAIN)
                 .delete();
 
-        if(response.getStatus() != Response.Status.NO_CONTENT.getStatusCode()){
-            throw new RuntimeException("returned code " + response.getStatus());
-        }
+        checkStatusResponseCode(response.getStatus());
+
     }
 
     public Collection<ContainerInfo> listContainers(){
@@ -240,9 +231,7 @@ public class DockerApi implements Serializable{
                 .accept(MediaType.APPLICATION_JSON)
                 .get();
 
-        if(response.getStatus() != Response.Status.OK.getStatusCode()){
-            throw new RuntimeException("returned code " + response.getStatus());
-        }
+        checkStatusResponseCode(response.getStatus());
 
         InputStream r = response.readEntity(InputStream.class);
         ContainersInfoReader reader = new ContainersInfoReader();
@@ -250,6 +239,25 @@ public class DockerApi implements Serializable{
 
         return containers;
 
+    }
+
+    public InputStream copyFiles(String containerId, String filePath){
+        String url = endPoint + "/containers/{containerId}/copy";
+        Client client = ClientBuilder.newClient();
+
+        String json = Json.createObjectBuilder().add("Resource", filePath).build().toString();
+
+        Response response = client
+                .target(url)
+                .resolveTemplate("containerId", containerId)
+                .request()
+                .accept(MediaType.APPLICATION_JSON)
+                .post(Entity.json(json));
+
+        checkStatusResponseCode(response.getStatus());
+
+        InputStream stream = response.readEntity(InputStream.class);
+        return stream;
     }
 
     private void checkStatusResponseCode(int status){
@@ -261,8 +269,7 @@ public class DockerApi implements Serializable{
             logger.fine("returned code " + status);
         }else if(Response.Status.fromStatusCode(status).getFamily() == Response.Status.Family.REDIRECTION){
             logger.fine("returned code " + status);
-        }
-        else if(Response.Status.fromStatusCode(status).getFamily() != Response.Status.Family.SUCCESSFUL){
+        }else if(Response.Status.fromStatusCode(status).getFamily() != Response.Status.Family.SUCCESSFUL){
             throw new RuntimeException("returned code " + status);
         }
     }
