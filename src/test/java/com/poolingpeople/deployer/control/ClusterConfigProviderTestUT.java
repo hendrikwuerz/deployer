@@ -1,7 +1,7 @@
 package com.poolingpeople.deployer.control;
 
-import com.poolingpeople.deployer.docker.boundary.ContainerInfo;
-import com.poolingpeople.deployer.docker.boundary.DockerApi;
+import com.poolingpeople.deployer.dockerapi.boundary.ContainerInfo;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 import org.junit.Before;
 import org.junit.Test;

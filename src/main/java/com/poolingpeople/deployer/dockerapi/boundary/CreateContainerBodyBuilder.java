@@ -1,4 +1,4 @@
-package com.poolingpeople.deployer.docker.boundary;
+package com.poolingpeople.deployer.dockerapi.boundary;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;

@@ -1,8 +1,8 @@
 package com.poolingpeople.deployer.boundary;
 
 import com.poolingpeople.deployer.application.boundary.VersionsApi;
-import com.poolingpeople.deployer.docker.boundary.CreateContainerBodyBuilder;
-import com.poolingpeople.deployer.docker.boundary.DockerApi;
+import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyBuilder;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import org.junit.Before;
 import org.junit.Test;
 

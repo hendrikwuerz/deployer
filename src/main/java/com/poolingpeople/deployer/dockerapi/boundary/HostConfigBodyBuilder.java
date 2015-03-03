@@ -1,7 +1,6 @@
-package com.poolingpeople.deployer.docker.boundary;
+package com.poolingpeople.deployer.dockerapi.boundary;
 
 import javax.json.*;
-import javax.jws.Oneway;
 
 /**
  * Created by alacambra on 09.02.15.

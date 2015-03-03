@@ -1,6 +1,5 @@
-package com.poolingpeople.deployer.docker.boundary;
+package com.poolingpeople.deployer.dockerapi.boundary;
 
-import javax.inject.Inject;
 import javax.json.*;
 import java.io.InputStream;
 import java.util.Collection;

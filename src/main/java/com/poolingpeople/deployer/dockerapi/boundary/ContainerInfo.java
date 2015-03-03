@@ -1,4 +1,4 @@
-package com.poolingpeople.deployer.docker.boundary;
+package com.poolingpeople.deployer.dockerapi.boundary;
 
 import java.util.Collection;
 import java.util.Date;

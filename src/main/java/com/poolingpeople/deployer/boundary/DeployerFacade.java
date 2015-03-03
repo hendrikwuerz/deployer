@@ -5,10 +5,10 @@ import com.poolingpeople.deployer.control.ApplicationDockerPackage;
 import com.poolingpeople.deployer.control.ClusterConfigProvider;
 import com.poolingpeople.deployer.control.Neo4jDockerPackage;
 import com.poolingpeople.deployer.control.ProxyDockerPackage;
-import com.poolingpeople.deployer.docker.boundary.ContainerNetworkSettings;
-import com.poolingpeople.deployer.docker.boundary.CreateContainerBodyBuilder;
-import com.poolingpeople.deployer.docker.boundary.DockerApi;
-import com.poolingpeople.deployer.docker.boundary.DockerEndPointProvider;
+import com.poolingpeople.deployer.dockerapi.boundary.ContainerNetworkSettings;
+import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyBuilder;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 
 import javax.inject.Inject;

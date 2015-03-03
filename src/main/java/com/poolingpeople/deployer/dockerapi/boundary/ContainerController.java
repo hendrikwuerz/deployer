@@ -1,14 +1,11 @@
-package com.poolingpeople.deployer.docker.boundary;
+package com.poolingpeople.deployer.dockerapi.boundary;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.model.CollectionDataModel;
 import javax.faces.model.DataModel;
-import javax.faces.model.ListDataModel;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.sound.midi.Soundbank;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 /**
  * Created by alacambra on 09.02.15.

@@ -2,8 +2,8 @@ package com.poolingpeople.deployer.boundary;
 
 import com.poolingpeople.deployer.application.boundary.VersionsApi;
 import com.poolingpeople.deployer.control.ApplicationDockerPackage;
-import com.poolingpeople.deployer.docker.boundary.ContainerInfo;
-import com.poolingpeople.deployer.docker.boundary.DockerApi;
+import com.poolingpeople.deployer.dockerapi.boundary.ContainerInfo;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 import org.junit.Before;
 import org.junit.Test;
