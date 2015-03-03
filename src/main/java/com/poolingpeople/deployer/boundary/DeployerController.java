@@ -15,7 +15,7 @@ import java.util.UUID;
  */
 @Named
 @RequestScoped
-public class DeployerUiController{
+public class DeployerController {
 
     @Inject
     DeployerFacade facade;

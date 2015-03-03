@@ -16,10 +16,7 @@ import java.util.logging.Logger;
 public class ApplicationDockerPackage extends DockerCluster {
 
     InputStream warFileIS;
-
     Logger logger = Logger.getLogger(this.getClass().getName());
-
-
 
     @Override
     protected DockerCluster addResources() {
@@ -46,7 +43,7 @@ public class ApplicationDockerPackage extends DockerCluster {
         }
     }
 
-    String replaceClusterBars(String original){
+    protected String replaceClusterBars(String original){
         return original.replace("{NEO_INSTANCE}", clusterConfig.getNeo4jId())
                 .replace("{PP_FINAL_NAME}", clusterConfig.getFullApplicationName() + ".war");
     }
