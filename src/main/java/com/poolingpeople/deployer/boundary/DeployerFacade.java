@@ -10,6 +10,7 @@ import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyBuilder;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
 import com.poolingpeople.deployer.entity.ClusterConfig;
+import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -47,6 +48,10 @@ public class DeployerFacade {
     @Inject
     DockerEndPointProvider endPointProvider;
 
+    @Inject
+    DbSnapshot dbSnapshot;
+
+
     Logger logger = Logger.getLogger(this.getClass().getName());
 
     public Collection<String> getActiveContainersNames(){
@@ -83,8 +88,7 @@ public class DeployerFacade {
         return name.split("-").length == 5;
     }
 
-    public void deploy(
-            @NotNull String version, @NotNull String subdomain){
+    public void deploy(@NotNull String version, @NotNull String subdomain){
 
         clusterConfig
                 .setAppBaseName("rest")
@@ -93,6 +97,12 @@ public class DeployerFacade {
                 .setConcretDomain(subdomain)
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
 
+        deployNeo4jDb();
+        deployWarApplication(version);
+
+    }
+
+    private void deployNeo4jDb(){
         CreateContainerBodyBuilder builder = null;
         String containerId = null;
 
@@ -112,6 +122,12 @@ public class DeployerFacade {
 
         ContainerNetworkSettings networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
         clusterConfig.setGateway(networkSettings.getGateway());
+    }
+
+    private void deployWarApplication(String version){
+
+        CreateContainerBodyBuilder builder = null;
+        String containerId = null;
 
         InputStream is = versionsApi.getWarForVersion(version);
         applicationDockerPackage.setClusterConfig(clusterConfig);
@@ -119,6 +135,7 @@ public class DeployerFacade {
         applicationDockerPackage.prepareTarStream();
 
         dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
+
         builder = new CreateContainerBodyBuilder()
                 .setImage(clusterConfig.getWildflyId())
                 .createHostConfig()
@@ -131,13 +148,15 @@ public class DeployerFacade {
 
         logger.finer("Container created:" + containerId);
         dockerApi.startContainer(containerId);
-
     }
 
     public Collection<String> loadVersions() {
         return versionsApi.loadVersions();
     }
 
+    public Collection<String> loadDbSnapshots() {
+        return dbSnapshot.getDbSnapshotsList();
+    }
 }
 
 

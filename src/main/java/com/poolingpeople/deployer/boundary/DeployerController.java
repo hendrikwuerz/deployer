@@ -22,6 +22,7 @@ public class DeployerController {
 
     private String subdomain;
     private String version;
+    private String dbSnapshotName;
 
     public void setSubdomain(String subdomain) {
         this.subdomain = subdomain;
@@ -43,7 +44,19 @@ public class DeployerController {
         return facade.loadVersions();
     }
 
+    public Collection<String> getDbSnapshotsList() {
+        return facade.loadDbSnapshots();
+    }
+
     public void deploy(){
         facade.deploy(version, subdomain);
+    }
+
+    public String getDbSnapshotName() {
+        return dbSnapshotName;
+    }
+
+    public void setDbSnapshotName(String dbSnapshotName) {
+        this.dbSnapshotName = dbSnapshotName;
     }
 }

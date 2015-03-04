@@ -12,14 +12,20 @@
     <ui:define name="body">
         <h:form>
             <div>
-                <label>version</label>
+                <label>subdomain</label>
+                <h:inputText value="#{deployerController.subdomain}"></h:inputText>
+            </div>
+            <div>
+                <label>Application version</label>
                 <h:selectOneRadio value="#{deployerController.version}" layout="pageDirection">
-                    <f:selectItems value="#{deployerController.availableVersions}" var="version" itemLabel="#{version}" itemValue="#{version}"></f:selectItems>
+                    <f:selectItems value="#{deployerController.availableVersions}" var="version" itemLabel="#{version}"></f:selectItems>
                 </h:selectOneRadio>
             </div>
             <div>
-                <label>subdomain</label>
-                <h:inputText value="#{deployerController.subdomain}"></h:inputText>
+                <label>Database Snapshot Base</label>
+                <h:selectOneRadio value="#{deployerController.dbSnapshotName}" layout="pageDirection">
+                    <f:selectItems value="#{deployerController.dbSnapshotsList}" var="dbSnapshot" itemLabel="#{dbSnapshotName}"></f:selectItems>
+                </h:selectOneRadio>
             </div>
             <div>
                 <h:commandButton action="#{deployerController.deploy}" value="Deploy"></h:commandButton>

@@ -24,8 +24,8 @@ public class DbSnapshotMakerManagerTestIT {
 
     }
 
-    @Test
-    public void testFetchSnapshot(){
-        cut.fetchSnapshot("testDb");
-    }
+//    @Test
+//    public void testFetchSnapshot(){
+//        cut.fetchSnapshot("testDb");
+//    }
 }
