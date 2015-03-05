@@ -88,24 +88,26 @@ public class DeployerFacade {
         return name.split("-").length == 5;
     }
 
-    public void deploy(@NotNull String version, @NotNull String subdomain){
+    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName){
 
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version)
                 .setServerDomain(endPointProvider.getDockerHost())
                 .setConcretDomain(subdomain)
+                .setDbScenario(dbSnapshotName)
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
 
-        deployNeo4jDb();
+        deployNeo4jDb(dbSnapshotName);
         deployWarApplication(version);
 
     }
 
-    private void deployNeo4jDb(){
+    private void deployNeo4jDb(String dbSnapshotName){
         CreateContainerBodyBuilder builder = null;
         String containerId = null;
 
+        neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
         neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
         dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());

@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by alacambra on 2/6/15.
@@ -45,11 +46,11 @@ public class DeployerController {
     }
 
     public Collection<String> getDbSnapshotsList() {
-        return facade.loadDbSnapshots();
+        return facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).collect(Collectors.toList());
     }
 
     public void deploy(){
-        facade.deploy(version, subdomain);
+        facade.deploy(version, subdomain, dbSnapshotName);
     }
 
     public String getDbSnapshotName() {

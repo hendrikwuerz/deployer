@@ -55,14 +55,18 @@ public class DbSnapshot {
         throw new RuntimeException("not implemented");
     }
 
-    public InputStream fetchSnapshot(String snapshotName){
+    public InputStream fetchSnapshot(){
+
+        if("".equals(snapshotName) || snapshotName == null){
+            throw new RuntimeException("Snapshot name must be given");
+        }
 
         AmazonS3 s3client = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey));
 
         S3Object s3Object = s3client.getObject(
                 new GetObjectRequest(
                         bucketName,
-                        "neo4j-db/" + snapshotName + ".tar"));
+                        "neo4j-db/" + snapshotName));
 
         InputStream stream = s3Object.getObjectContent();
 
