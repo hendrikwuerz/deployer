@@ -16,7 +16,7 @@ public class DbSnapshotMakerManagerTestIT {
 
     @Test
     public void testMakeSnapshot() throws Exception {
-        cut.makeSnapshot("3d96af9b48", "/var/lib/neo4j/data/graph.db/", "testDb");
+//        cut.makeSnapshot("3d96af9b48", "/var/lib/neo4j/data/graph.db/", "testDb");
     }
 
     @Test

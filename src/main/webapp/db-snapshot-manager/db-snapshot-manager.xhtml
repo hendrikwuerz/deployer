@@ -16,10 +16,32 @@
                 <h:inputText value="#{dbSnapshotController.dbSnapshotName}"></h:inputText>
             </div>
             <div>
-                <label>Current Active db servers</label>
-                <h:selectOneRadio value="#{dbSnapshotController.instanceName}" layout="pageDirection">
-                    <f:selectItems value="#{dbSnapshotController.currentDbInstances}" var="version" itemLabel="#{version}"></f:selectItems>
-                </h:selectOneRadio>
+                <h:dataTable value="#{dbSnapshotController.containers}" var="container" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="id"/>
+                        </f:facet>
+                        <h:outputText value="#{container.shortId}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="names"/>
+                        </f:facet>
+                        <h:outputText value="#{container.names}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="status"/>
+                        </f:facet>
+                        <h:outputText value="#{container.status}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="&nbsp;"/>
+                        </f:facet>
+                        <h:commandLink action="#{dbSnapshotController.makeSnapshot}" value="SnapshotMe"/>
+                    </h:column>
+                </h:dataTable>
             </div>
             <div>
                 <h:commandButton action="#{dbSnapshotController.makeSnapshot}" value="Make snapshot"></h:commandButton>
