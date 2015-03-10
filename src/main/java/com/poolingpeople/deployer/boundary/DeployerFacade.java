@@ -15,6 +15,7 @@ import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 /**
  * Created by alacambra on 2/6/15.
  */
-public class DeployerFacade {
+public class DeployerFacade implements Serializable {
 
     @Inject
     VersionsApi versionsApi;
@@ -88,7 +89,7 @@ public class DeployerFacade {
         return name.split("-").length == 5;
     }
 
-    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName){
+    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area){
 
         clusterConfig
                 .setAppBaseName("rest")
@@ -99,7 +100,7 @@ public class DeployerFacade {
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
 
         deployNeo4jDb(dbSnapshotName);
-        deployWarApplication(version);
+        deployWarApplication(version, area);
 
     }
 
@@ -126,12 +127,12 @@ public class DeployerFacade {
         clusterConfig.setGateway(networkSettings.getGateway());
     }
 
-    private void deployWarApplication(String version){
+    private void deployWarApplication(String version, String area){
 
         CreateContainerBodyBuilder builder = null;
         String containerId = null;
 
-        InputStream is = versionsApi.getWarForVersion(version);
+        InputStream is = versionsApi.getWarForVersion(version, area);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
@@ -152,8 +153,8 @@ public class DeployerFacade {
         dockerApi.startContainer(containerId);
     }
 
-    public Collection<String> loadVersions() {
-        return versionsApi.loadVersions();
+    public Collection<String> loadVersions(String area) {
+        return versionsApi.loadVersions(area);
     }
 
     public Collection<String> loadDbSnapshots() {

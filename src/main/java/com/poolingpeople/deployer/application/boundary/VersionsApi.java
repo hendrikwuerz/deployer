@@ -18,12 +18,17 @@ public class VersionsApi {
 
     Logger logger = Logger.getLogger(getClass().getName());
 
-    public Collection<String> loadVersions(){
+    /**
+     * @param area
+     *          "snapshots" or "releases"
+     * @return
+     *          A collection of all available versions
+     */
+    public Collection<String> loadVersions(String area){
 
-        String snapshotEndpoint = "http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/";
-        String releasesEndpoint = "http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/";
+        String endpoint = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/rest/";
 
-        Response response = fetchVersionsFromNexus(releasesEndpoint);
+        Response response = fetchVersionsFromNexus(endpoint);
         InputStream stream = response.readEntity(InputStream.class);
         Collection<String> versions = parseVersions(stream);
         response.close();
@@ -31,17 +36,35 @@ public class VersionsApi {
 
     }
 
-    public InputStream getWarForVersion(String version){
+    /**
+     *
+     * @param version
+     *          The wished version
+     * @param area
+     *          "snapshots" or "releases"
+     * @return
+     *          The requested war file
+     */
+    public InputStream getWarForVersion(String version, String area){
 
         String url =
                 "http://nexus.poolingpeople.com/service/local/repositories/" +
-                "releases/content/com/poolingpeople/rest/{version}/rest-{version}.war";
+                "{area}/content/com/poolingpeople/rest/{version}/rest-{version}.war";
+
+        // TODO: modify url ???
+        if(area.equals("snapshots")) {
+            url = "http://nexus.poolingpeople.com/service/local/repositories/" +
+                    "snapshots/content/com/poolingpeople/rest/0.0.0-SNAPSHOT/rest-0.0.0-20141202.110626-1.war";
+            url = "http://nexus.poolingpeople.com/service/local/repositories/" +
+                    "snapshots/content/com/poolingpeople/rest/0.0.2-SNAPSHOT/rest-0.0.2-20150121.091129-1.war";
+        }
 
         System.out.println(url);
         Client client = ClientBuilder.newClient();
         Response response = client
                 .target(url)
                 .resolveTemplate("version", version)
+                .resolveTemplate("area", area)
                 .request()
                 .header("Authorization", getBasicAuthentication())
                 .get();
