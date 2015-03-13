@@ -22,6 +22,10 @@ public class ContainerInfo {
         Integer publicPort;
         String type = "tcp";
 
+        public String getLink() {
+            return "http://" + ip + ":" + publicPort;
+        }
+
         @Override
         public String toString() {
             return ip + ":" + publicPort + ":" + privatePort + "/" + type;
@@ -93,6 +97,23 @@ public class ContainerInfo {
     public ContainerInfo setStatus(String status) {
         this.status = status;
         return this;
+    }
+
+    public int getCluster() {
+        try {
+            return Integer.parseInt(getImage().split("-")[0]);
+        } catch (NumberFormatException e) {
+            //e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public String getServer() {
+        try {
+            return getImage().split("-")[1];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "";
+        }
     }
 
     @Override
