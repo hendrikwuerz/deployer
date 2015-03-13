@@ -73,7 +73,7 @@ public class DeployerFacade implements Serializable {
 
         Set<Integer> result = getActiveContainersNames().stream()//.filter(name -> !name.equals("proxy"))
                 .filter(name -> isValidClusterName(name))
-                .map(c -> Integer.parseInt(c.split("-")[0]))
+                .map(c -> Integer.parseInt(c.split(ClusterConfig.clusterSeparator)[0]))
                 .collect(Collectors.toSet());
 
         for(int i = 1; i < maxClusters; i++){
@@ -86,7 +86,7 @@ public class DeployerFacade implements Serializable {
     }
 
     private boolean isValidClusterName(String name){
-        return name.split("-").length == 5;
+        return name.split(ClusterConfig.clusterSeparator).length == 5;
     }
 
     public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area){
