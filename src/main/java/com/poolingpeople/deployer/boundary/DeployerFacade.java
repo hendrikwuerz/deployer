@@ -5,8 +5,8 @@ import com.poolingpeople.deployer.control.ApplicationDockerPackage;
 import com.poolingpeople.deployer.control.ClusterConfigProvider;
 import com.poolingpeople.deployer.control.Neo4jDockerPackage;
 import com.poolingpeople.deployer.control.ProxyDockerPackage;
-import com.poolingpeople.deployer.dockerapi.boundary.ContainerNetworkSettings;
-import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyBuilder;
+import com.poolingpeople.deployer.dockerapi.boundary.ContainerNetworkSettingsReader;
+import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyWriter;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
 import com.poolingpeople.deployer.entity.ClusterConfig;
@@ -105,7 +105,7 @@ public class DeployerFacade implements Serializable {
     }
 
     private void deployNeo4jDb(String dbSnapshotName){
-        CreateContainerBodyBuilder builder = null;
+        CreateContainerBodyWriter builder = null;
         String containerId = null;
 
         neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
@@ -113,7 +113,7 @@ public class DeployerFacade implements Serializable {
         neo4jDockerPackage.prepareTarStream();
         dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
 
-        builder = new CreateContainerBodyBuilder();
+        builder = new CreateContainerBodyWriter();
         builder.setImage(clusterConfig.getNeo4jId())
                 .buildExposedPorts()
                 .createHostConfig()
@@ -123,13 +123,13 @@ public class DeployerFacade implements Serializable {
         containerId = dockerApi.createContainer(builder, clusterConfig.getNeo4jId());
         dockerApi.startContainer(containerId);
 
-        ContainerNetworkSettings networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
+        ContainerNetworkSettingsReader networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
         clusterConfig.setGateway(networkSettings.getGateway());
     }
 
     private void deployWarApplication(String version, String area){
 
-        CreateContainerBodyBuilder builder = null;
+        CreateContainerBodyWriter builder = null;
         String containerId = null;
 
         InputStream is = versionsApi.getWarForVersion(version, area);
@@ -139,7 +139,7 @@ public class DeployerFacade implements Serializable {
 
         dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
 
-        builder = new CreateContainerBodyBuilder()
+        builder = new CreateContainerBodyWriter()
                 .setImage(clusterConfig.getWildflyId())
                 .createHostConfig()
                 .bindTcpPort(clusterConfig.getWfPort(), clusterConfig.getPortPrefix() + clusterConfig.getWfPort())
