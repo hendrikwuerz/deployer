@@ -1,5 +1,7 @@
 package com.poolingpeople.deployer.dockerapi.boundary;
 
+import com.poolingpeople.deployer.entity.ClusterConfig;
+
 import java.util.Collection;
 import java.util.Date;
 
@@ -21,6 +23,10 @@ public class ContainerInfo {
         Integer privatePort;
         Integer publicPort;
         String type = "tcp";
+
+        public String getLink() {
+            return "http://" + ip + ":" + publicPort;
+        }
 
         @Override
         public String toString() {
@@ -93,6 +99,23 @@ public class ContainerInfo {
     public ContainerInfo setStatus(String status) {
         this.status = status;
         return this;
+    }
+
+    public int getCluster() {
+        try {
+            return Integer.parseInt(getImage().split(ClusterConfig.clusterSeparator)[0]);
+        } catch (NumberFormatException e) {
+            //e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public String getServer() {
+        try {
+            return getImage().split(ClusterConfig.clusterSeparator)[1];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "";
+        }
     }
 
     @Override

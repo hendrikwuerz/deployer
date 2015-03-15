@@ -1,2 +1,6 @@
 *.iml
 .idea/
+target
+src/main/resources/aws-secret-key
+src/main/resources/aws-access-key
+scripts/deployment/deployer.war

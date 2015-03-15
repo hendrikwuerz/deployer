@@ -37,6 +37,8 @@ public abstract class DockerCluster {
 
         tarBytes = tarByteStream.toByteArray();
         compressTarStream();
+
+//        materializeTarFile("/home/alacambra/some.tar.gz");
         return this;
     }
 

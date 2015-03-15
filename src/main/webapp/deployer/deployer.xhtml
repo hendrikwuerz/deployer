@@ -7,23 +7,16 @@
 
 <ui:composition template="/consoleHeader.xhtml">
     <ui:define name="title">
-        <h:outputText value="Deployer"></h:outputText>
+        <h:outputText value="Snapshot-Release-Switch"></h:outputText>
     </ui:define>
     <ui:define name="body">
         <h:form>
-            <div>
-                <label>version</label>
-                <h:selectOneRadio value="#{deployerController.version}" layout="pageDirection">
-                    <f:selectItems value="#{deployerController.availableVersions}" var="version" itemLabel="#{version}" itemValue="#{version}"></f:selectItems>
-                </h:selectOneRadio>
-            </div>
-            <div>
-                <label>subdomain</label>
-                <h:inputText value="#{deployerController.subdomain}"></h:inputText>
-            </div>
-            <div>
-                <h:commandButton action="#{deployerController.deploy}" value="Deploy"></h:commandButton>
-            </div>
+            <h:commandButton value="Releases" action="#{deployerController.selectArea}">
+                <f:param name="area" value="releases"></f:param>
+            </h:commandButton>
+            <h:commandButton value="Snapshots" action="#{deployerController.selectArea}">
+                <f:param name="area" value="snapshots"></f:param>
+            </h:commandButton>
         </h:form>
     </ui:define>
 </ui:composition>

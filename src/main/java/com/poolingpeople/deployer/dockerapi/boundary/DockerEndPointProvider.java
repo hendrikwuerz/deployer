@@ -13,6 +13,14 @@ public class DockerEndPointProvider implements Serializable{
     String ip = "localhost";
     String port = "5555";
 
+    public DockerEndPointProvider(String ip, String port) {
+        this.ip = ip;
+        this.port = port;
+    }
+
+    public DockerEndPointProvider() {
+    }
+
     public String getDockerHost() {
         return ip;
     }

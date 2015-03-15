@@ -6,23 +6,29 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 
 public class VersionsApi {
 
-    public Collection<String> loadVersions(){
+    Logger logger = Logger.getLogger(getClass().getName());
 
-        String snapshotEndpoint = "http://nexus.poolingpeople.com/service/local/repositories/snapshots/content/com/poolingpeople/rest/";
-        String releasesEndpoint = "http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/";
+    /**
+     * @param area
+     *          "snapshots" or "releases"
+     * @return
+     *          A collection of all available versions
+     */
+    public Collection<String> loadVersions(String area){
 
-        Response response = fetchVersionsFromNexus(releasesEndpoint);
+        String endpoint = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/rest/";
 
+        Response response = fetchVersionsFromNexus(endpoint);
         InputStream stream = response.readEntity(InputStream.class);
         Collection<String> versions = parseVersions(stream);
         response.close();
@@ -30,21 +36,41 @@ public class VersionsApi {
 
     }
 
-    public InputStream getWarForVersion(String version){
+    /**
+     *
+     * @param version
+     *          The wished version
+     * @param area
+     *          "snapshots" or "releases"
+     * @return
+     *          The requested war file
+     */
+    public InputStream getWarForVersion(String version, String area){
 
         String url =
                 "http://nexus.poolingpeople.com/service/local/repositories/" +
-                "releases/content/com/poolingpeople/rest/0.0.1/rest-{version}.war";
+                "{area}/content/com/poolingpeople/rest/{version}/rest-{version}.war";
 
+        // TODO: modify url ???
+        if(area.equals("snapshots")) {
+            url = "http://nexus.poolingpeople.com/service/local/repositories/" +
+                    "snapshots/content/com/poolingpeople/rest/0.0.0-SNAPSHOT/rest-0.0.0-20141202.110626-1.war";
+            url = "http://nexus.poolingpeople.com/service/local/repositories/" +
+                    "snapshots/content/com/poolingpeople/rest/0.0.2-SNAPSHOT/rest-0.0.2-20150121.091129-1.war";
+        }
+
+        System.out.println(url);
         Client client = ClientBuilder.newClient();
         Response response = client
                 .target(url)
                 .resolveTemplate("version", version)
+                .resolveTemplate("area", area)
                 .request()
                 .header("Authorization", getBasicAuthentication())
                 .get();
 
-        InputStream warFileIS = response.readEntity(InputStream.class);
+        checkStatusResponseCode(response.getStatus());
+        InputStream warFileIS = response.readEntity(InputStream.class);;
         return warFileIS;
     }
 
@@ -58,6 +84,7 @@ public class VersionsApi {
                 .header("Content-Type", "application/json")
                 .get();
 
+        checkStatusResponseCode(response.getStatus());
         return response;
     }
 
@@ -77,7 +104,6 @@ public class VersionsApi {
                 .filter(s -> !s.endsWith(".xml"))
                 .filter(s -> !s.endsWith(".md5"))
                 .collect(Collectors.toSet());
-
         return versions;
     }
 
@@ -89,6 +115,21 @@ public class VersionsApi {
             return "BASIC " + DatatypeConverter.printBase64Binary(token.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException ex) {
             throw new IllegalStateException("Cannot encode with UTF-8", ex);
+        }
+    }
+
+    private void checkStatusResponseCode(int status){
+        if(Response.Status.fromStatusCode(status).getFamily() == Response.Status.Family.CLIENT_ERROR){
+            throw new RuntimeException("returned code " + status);
+        } else if(Response.Status.fromStatusCode(status).getFamily() == Response.Status.Family.SERVER_ERROR){
+            throw new RuntimeException("returned code " + status);
+        }else if(Response.Status.fromStatusCode(status).getFamily() == Response.Status.Family.INFORMATIONAL){
+            logger.fine("returned code " + status);
+        }else if(Response.Status.fromStatusCode(status).getFamily() == Response.Status.Family.REDIRECTION){
+            logger.fine("returned code " + status);
+        }
+        else if(Response.Status.fromStatusCode(status).getFamily() != Response.Status.Family.SUCCESSFUL){
+            throw new RuntimeException("returned code " + status);
         }
     }
 }

@@ -11,6 +11,8 @@ import java.util.Optional;
  */
 public class ClusterConfig {
 
+    public static final String clusterSeparator = "--";
+
     /**
      * the first number from the port. Each cluster will be identified by this number.
      */
@@ -88,7 +90,7 @@ public class ClusterConfig {
      * @return
      */
     public String getFullApplicationName(){
-        return appBaseName + "-" + appVersion;
+        return appBaseName + clusterSeparator + appVersion;
     }
 
     public String getPortPrefix() {
@@ -101,7 +103,7 @@ public class ClusterConfig {
     }
 
     public String getNeo4jId() {
-        return getPortPrefix() + "-neo4j-" + getDbScenario() + "-" + getConcretDomain() + "-" + getServerDomain();
+        return getPortPrefix() + clusterSeparator + "neo4j" + clusterSeparator + getDbScenario() + clusterSeparator + getConcretDomain() + clusterSeparator + getServerDomain();
     }
 
     public ClusterConfig setNeo4jId(String neo4jId) {
@@ -110,7 +112,8 @@ public class ClusterConfig {
     }
 
     public String getWildflyId() {
-        return getPortPrefix() + "-wf-" + getAppVersion() + "-" + getConcretDomain() + "-" + getServerDomain();
+        return getPortPrefix() + clusterSeparator + "wf" + clusterSeparator
+                + getAppVersion() + clusterSeparator + getConcretDomain() + clusterSeparator + getServerDomain();
     }
 
     public ClusterConfig setWildflyId(String wildflyId) {
@@ -166,7 +169,7 @@ public class ClusterConfig {
 
         String id = "";
 
-        Optional.ofNullable(id += getConcretDomain() + "-").orElse("none-");
+        Optional.ofNullable(id += getConcretDomain() + clusterSeparator).orElse("none" + clusterSeparator);
         Optional.ofNullable(id += getServerDomain()).orElse("no_server");
 
         return id;
@@ -201,7 +204,7 @@ public class ClusterConfig {
 
     public ClusterConfig loadFromContainerName(String containerName){
 
-        String[] conf = containerName.split("-");
+        String[] conf = containerName.split(clusterSeparator);
 
         if(conf.length != 5){
             throw new RuntimeException("Invalid format for " + containerName);

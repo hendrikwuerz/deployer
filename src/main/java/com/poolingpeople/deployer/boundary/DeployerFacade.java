@@ -5,15 +5,17 @@ import com.poolingpeople.deployer.control.ApplicationDockerPackage;
 import com.poolingpeople.deployer.control.ClusterConfigProvider;
 import com.poolingpeople.deployer.control.Neo4jDockerPackage;
 import com.poolingpeople.deployer.control.ProxyDockerPackage;
-import com.poolingpeople.deployer.dockerapi.boundary.ContainerNetworkSettingsReader;
-import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyWriter;
+import com.poolingpeople.deployer.dockerapi.boundary.ContainerNetworkSettings;
+import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyBuilder;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
 import com.poolingpeople.deployer.entity.ClusterConfig;
+import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 /**
  * Created by alacambra on 2/6/15.
  */
-public class DeployerFacade {
+public class DeployerFacade implements Serializable {
 
     @Inject
     VersionsApi versionsApi;
@@ -47,6 +49,10 @@ public class DeployerFacade {
     @Inject
     DockerEndPointProvider endPointProvider;
 
+    @Inject
+    DbSnapshot dbSnapshot;
+
+
     Logger logger = Logger.getLogger(this.getClass().getName());
 
     public Collection<String> getActiveContainersNames(){
@@ -65,8 +71,9 @@ public class DeployerFacade {
 
         int maxClusters = 8;
 
-        Set<Integer> result = getActiveContainersNames().stream().filter(name -> !name.equals("proxy"))
-                .map(c -> Integer.parseInt(c.split("-")[0]))
+        Set<Integer> result = getActiveContainersNames().stream()//.filter(name -> !name.equals("proxy"))
+                .filter(name -> isValidClusterName(name))
+                .map(c -> Integer.parseInt(c.split(ClusterConfig.clusterSeparator)[0]))
                 .collect(Collectors.toSet());
 
         for(int i = 1; i < maxClusters; i++){
@@ -78,24 +85,35 @@ public class DeployerFacade {
         throw new RuntimeException("No more place for new clusters");
     }
 
-    public void deploy(
-            @NotNull String version, @NotNull String subdomain){
+    private boolean isValidClusterName(String name){
+        return name.split(ClusterConfig.clusterSeparator).length == 5;
+    }
+
+    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area){
 
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version)
                 .setServerDomain(endPointProvider.getDockerHost())
                 .setConcretDomain(subdomain)
+                .setDbScenario(dbSnapshotName)
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
 
-        CreateContainerBodyWriter builder = null;
+        deployNeo4jDb(dbSnapshotName);
+        deployWarApplication(version, area);
+
+    }
+
+    private void deployNeo4jDb(String dbSnapshotName){
+        CreateContainerBodyBuilder builder = null;
         String containerId = null;
 
+        neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
         neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
         dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
 
-        builder = new CreateContainerBodyWriter();
+        builder = new CreateContainerBodyBuilder();
         builder.setImage(clusterConfig.getNeo4jId())
                 .buildExposedPorts()
                 .createHostConfig()
@@ -105,16 +123,23 @@ public class DeployerFacade {
         containerId = dockerApi.createContainer(builder, clusterConfig.getNeo4jId());
         dockerApi.startContainer(containerId);
 
-        ContainerNetworkSettingsReader networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
+        ContainerNetworkSettings networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
         clusterConfig.setGateway(networkSettings.getGateway());
+    }
 
-        InputStream is = versionsApi.getWarForVersion(version);
+    private void deployWarApplication(String version, String area){
+
+        CreateContainerBodyBuilder builder = null;
+        String containerId = null;
+
+        InputStream is = versionsApi.getWarForVersion(version, area);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
 
         dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
-        builder = new CreateContainerBodyWriter()
+
+        builder = new CreateContainerBodyBuilder()
                 .setImage(clusterConfig.getWildflyId())
                 .createHostConfig()
                 .bindTcpPort(clusterConfig.getWfPort(), clusterConfig.getPortPrefix() + clusterConfig.getWfPort())
@@ -126,18 +151,15 @@ public class DeployerFacade {
 
         logger.finer("Container created:" + containerId);
         dockerApi.startContainer(containerId);
-
     }
 
-//    public void createProxy(){
-//        Collection<ClusterConfig> clusterConfigs = clusterConfigProvider.getCurrentClusters("");
-//        proxyDockerPackage.setClusterConfigs(clusterConfigs).prepareTarStream();
-//    }
-
-    public Collection<String> loadVersions() {
-        return versionsApi.loadVersions();
+    public Collection<String> loadVersions(String area) {
+        return versionsApi.loadVersions(area);
     }
 
+    public Collection<String> loadDbSnapshots() {
+        return dbSnapshot.getDbSnapshotsList();
+    }
 }
 
 

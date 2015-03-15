@@ -7,7 +7,7 @@
 
 <h:head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>CookingHelper</title>
+    <title>Deployer tool</title>
 </h:head>
 
 <h:body>
@@ -22,11 +22,14 @@
         <h:form>
             <h:link outcome="/deployer/deployer" value="Deploy"/>
             -
+            <h:link outcome="/console/clusters-list" value="List clusters"/>
+            -
             <h:link outcome="/console/containers-list" value="List containers"/>
             -
             <!--<h:link outcome="/console/images-list" value="List images"/>-->
             <h:link outcome="/console/container-logs" value="Logs"/>
             -
+            <h:link outcome="/db-snapshot-manager/db-snapshot-manager" value="db snapshot manager"/>
             <!--<h:link outcome="/console/remove-container" value="remove container"/>-->
 
             <h:commandLink action="#{consoleController.reloadProxy}">Reload proxy</h:commandLink>
