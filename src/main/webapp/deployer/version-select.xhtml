@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<ui:composition template="/consoleHeader.xhtml">
+    <ui:define name="title">
+        <h:outputText value="Deployer"></h:outputText>
+    </ui:define>
+    <ui:define name="body">
+        <h:form>
+            <div>
+                <label>subdomain</label>
+                <h:inputText value="#{deployerController.subdomain}"></h:inputText>
+            </div>
+            <div>
+                <label>Application version in #{deployerController.area}</label>
+                <h:selectOneRadio value="#{deployerController.version}" layout="pageDirection">
+                    <f:selectItems value="#{deployerController.availableVersions}" var="version" itemLabel="#{version}"></f:selectItems>
+                </h:selectOneRadio>
+            </div>
+            <div>
+                <label>Database Snapshot Base</label>
+                <h:selectOneRadio value="#{deployerController.dbSnapshotName}" layout="pageDirection">
+                    <f:selectItems value="#{deployerController.dbSnapshotsList}" var="dbSnapshot" itemLabel="#{dbSnapshotName}"></f:selectItems>
+                </h:selectOneRadio>
+            </div>
+            <div>
+                <h:commandButton action="#{deployerController.deploy}" value="Deploy"></h:commandButton>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

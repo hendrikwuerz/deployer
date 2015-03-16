@@ -5,8 +5,8 @@ import com.poolingpeople.deployer.control.ApplicationDockerPackage;
 import com.poolingpeople.deployer.control.ClusterConfigProvider;
 import com.poolingpeople.deployer.control.Neo4jDockerPackage;
 import com.poolingpeople.deployer.control.ProxyDockerPackage;
-import com.poolingpeople.deployer.dockerapi.boundary.ContainerNetworkSettings;
-import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyBuilder;
+import com.poolingpeople.deployer.dockerapi.boundary.ContainerNetworkSettingsReader;
+import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyWriter;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
 import com.poolingpeople.deployer.entity.ClusterConfig;
@@ -15,6 +15,7 @@ import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 /**
  * Created by alacambra on 2/6/15.
  */
-public class DeployerFacade {
+public class DeployerFacade implements Serializable {
 
     @Inject
     VersionsApi versionsApi;
@@ -88,7 +89,7 @@ public class DeployerFacade {
         return name.split(ClusterConfig.clusterSeparator).length == 5;
     }
 
-    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName){
+    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area){
 
         clusterConfig
                 .setAppBaseName("rest")
@@ -99,12 +100,12 @@ public class DeployerFacade {
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
 
         deployNeo4jDb(dbSnapshotName);
-        deployWarApplication(version);
+        deployWarApplication(version, area);
 
     }
 
     private void deployNeo4jDb(String dbSnapshotName){
-        CreateContainerBodyBuilder builder = null;
+        CreateContainerBodyWriter builder = null;
         String containerId = null;
 
         neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
@@ -112,7 +113,7 @@ public class DeployerFacade {
         neo4jDockerPackage.prepareTarStream();
         dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
 
-        builder = new CreateContainerBodyBuilder();
+        builder = new CreateContainerBodyWriter();
         builder.setImage(clusterConfig.getNeo4jId())
                 .buildExposedPorts()
                 .createHostConfig()
@@ -122,23 +123,23 @@ public class DeployerFacade {
         containerId = dockerApi.createContainer(builder, clusterConfig.getNeo4jId());
         dockerApi.startContainer(containerId);
 
-        ContainerNetworkSettings networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
+        ContainerNetworkSettingsReader networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
         clusterConfig.setGateway(networkSettings.getGateway());
     }
 
-    private void deployWarApplication(String version){
+    private void deployWarApplication(String version, String area){
 
-        CreateContainerBodyBuilder builder = null;
+        CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        InputStream is = versionsApi.getWarForVersion(version);
+        InputStream is = versionsApi.getWarForVersion(version, area);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileIS(is);
         applicationDockerPackage.prepareTarStream();
 
         dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
 
-        builder = new CreateContainerBodyBuilder()
+        builder = new CreateContainerBodyWriter()
                 .setImage(clusterConfig.getWildflyId())
                 .createHostConfig()
                 .bindTcpPort(clusterConfig.getWfPort(), clusterConfig.getPortPrefix() + clusterConfig.getWfPort())
@@ -152,8 +153,8 @@ public class DeployerFacade {
         dockerApi.startContainer(containerId);
     }
 
-    public Collection<String> loadVersions() {
-        return versionsApi.loadVersions();
+    public Collection<String> loadVersions(String area) {
+        return versionsApi.loadVersions(area);
     }
 
     public Collection<String> loadDbSnapshots() {
