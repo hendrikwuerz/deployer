@@ -36,6 +36,7 @@ public class ProxyDockerPackage extends DockerCluster {
             addNeo4jFile(config);
             addWebappFile(config);
             addWfConsoleFile(config);
+            addTalkWSConsoleFile(config);
         }
 
         addFile("Dockerfile-nginx", "Dockerfile");
@@ -66,6 +67,16 @@ public class ProxyDockerPackage extends DockerCluster {
         currentDomainConfigInfo.gateway = config.getGateway();
 
         addFile("site.conf", "conf/" + currentDomainConfigInfo.domain + ".conf");
+    }
+
+    void addTalkWSConsoleFile(ClusterConfig config){
+        currentDomainConfigInfo = new DomainConfigInfo();
+        currentDomainConfigInfo.domain = "tws." + config.getConcretDomain() + "." + config.getServerDomain();
+        currentDomainConfigInfo.port = config.getPortPrefix() + config.getWfAdminPort();
+        currentDomainConfigInfo.target = config.getWildflyId();
+        currentDomainConfigInfo.gateway = config.getGateway();
+
+        addFile("talk-ws.conf", "conf/" + currentDomainConfigInfo.domain + ".conf");
     }
 
     void addWebappFile(ClusterConfig config){
