@@ -23,6 +23,7 @@ public class DeployerController implements Serializable {
     private String version;
     private String dbSnapshotName;
     private String area;
+    private boolean forceDownload; // force download even if cache file was found
 
     public void setSubdomain(String subdomain) {
         this.subdomain = subdomain;
@@ -49,7 +50,7 @@ public class DeployerController implements Serializable {
     }
 
     public void deploy(){
-        facade.deploy(version, subdomain, dbSnapshotName, area);
+        facade.deploy(version, subdomain, dbSnapshotName, area, forceDownload);
     }
 
     public String getDbSnapshotName() {
@@ -68,9 +69,18 @@ public class DeployerController implements Serializable {
 
     public void setArea(String area) {
         this.area = area;
+        forceDownload = area.equals("snapshots"); // default select force download for snapshots
     }
 
     public String getArea() {
         return area;
+    }
+
+    public void setForceDownload(boolean forceDownload) {
+        this.forceDownload = forceDownload;
+    }
+
+    public boolean getForceDownload() {
+        return forceDownload;
     }
 }

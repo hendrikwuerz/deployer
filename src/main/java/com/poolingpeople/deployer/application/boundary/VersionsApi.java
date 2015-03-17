@@ -1,6 +1,8 @@
 package com.poolingpeople.deployer.application.boundary;
 
 
+import org.apache.commons.compress.utils.IOUtils;
+
 import javax.json.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -42,10 +44,47 @@ public class VersionsApi {
      *          The wished version
      * @param area
      *          "snapshots" or "releases"
+     * @param forceDownload
+     *          download war again even if it is cached
      * @return
      *          The requested war file
      */
-    public InputStream getWarForVersion(String version, String area){
+    public InputStream getWarForVersion(String version, String area, boolean forceDownload) {
+
+        InputStream warFileIS;
+
+        File cacheFile = getCacheFile(version, area);
+
+        // use cache only if file exists, and no force is set
+        // only releases are cached because snapshots can be changed
+        if(cacheFile.exists() && !forceDownload) { // no need to download again -> use cache
+            try {
+                warFileIS = new FileInputStream(cacheFile);
+                System.out.println("Use cached file " + cacheFile.getAbsolutePath());
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                warFileIS = downloadWarForVersion(version, area);
+            }
+
+        } else { // no cache found
+            warFileIS = downloadWarForVersion(version, area);
+        }
+
+        return warFileIS;
+    }
+
+    /**
+     * download the war for the passed version and area.
+     * The result will also be stored in a cache file if downloading a release.
+     * @param version
+     *          The wished
+     * @param area
+     *          "snapshots" or "releases"
+     * @return
+     *          The InputStream of the war
+     */
+    private InputStream downloadWarForVersion(String version, String area) {
 
         String url =
                 "http://nexus.poolingpeople.com/service/local/repositories/" +
@@ -70,8 +109,32 @@ public class VersionsApi {
                 .get();
 
         checkStatusResponseCode(response.getStatus());
-        InputStream warFileIS = response.readEntity(InputStream.class);;
+        InputStream warFileIS = response.readEntity(InputStream.class);
+
+        // cache result
+        try {
+            File cacheFile = getCacheFile(version, area);
+            FileOutputStream stream = new FileOutputStream(cacheFile);
+            IOUtils.copy(warFileIS, stream);
+            stream.close();
+            System.out.println("Save war for caching in " + cacheFile.getAbsolutePath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return warFileIS;
+
+    }
+
+    /**
+     * get the file object to cache the downloaded war
+     * @param version
+     *          The version which should be stored
+     * @return
+     *          The file where the data is stored
+     */
+    private File getCacheFile(String version, String area) {
+        return new File("cache-" + area + "-version-" + version + ".war");
     }
 
     private Response fetchVersionsFromNexus(String url){
