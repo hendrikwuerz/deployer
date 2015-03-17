@@ -15,7 +15,9 @@ public class Neo4jDockerPackage extends DockerCluster {
         String dockerFileToUse = dbSnapshot == null ? "" : "-withdb";
 
         addFile("Dockerfile-neo4j" +dockerFileToUse, "Dockerfile");
-        addDbSnapshot();
+
+        if(dbSnapshot != null)
+            addDbSnapshot();
         return this;
     }
 

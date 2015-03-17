@@ -11,9 +11,11 @@ import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
+import org.apache.commons.compress.utils.IOUtils;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.*;
@@ -108,7 +110,9 @@ public class DeployerFacade implements Serializable {
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
+        if(dbSnapshotName != null)
+            neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
+
         neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
         dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
@@ -132,9 +136,10 @@ public class DeployerFacade implements Serializable {
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        InputStream is = versionsApi.getWarForVersion(version, area);
+        byte[] bytes = versionsApi.getWarForVersion(version, area);
+
         applicationDockerPackage.setClusterConfig(clusterConfig);
-        applicationDockerPackage.setWarFileIS(is);
+        applicationDockerPackage.setWarFileBytes(bytes);
         applicationDockerPackage.prepareTarStream();
 
         dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
