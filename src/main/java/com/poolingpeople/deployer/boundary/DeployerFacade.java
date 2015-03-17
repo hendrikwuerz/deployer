@@ -93,7 +93,7 @@ public class DeployerFacade implements Serializable {
 
         clusterConfig
                 .setAppBaseName("rest")
-                .setAppVersion(version)
+                .setAppVersion(version.toLowerCase()) // docker does not accept capitals
                 .setServerDomain(endPointProvider.getDockerHost())
                 .setConcretDomain(subdomain)
                 .setDbScenario(dbSnapshotName)
