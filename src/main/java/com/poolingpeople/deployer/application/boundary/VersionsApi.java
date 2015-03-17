@@ -1,9 +1,12 @@
 package com.poolingpeople.deployer.application.boundary;
 
+import org.apache.commons.compress.utils.IOUtils;
+import org.apache.http.conn.EofSensorInputStream;
 
 import javax.json.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
@@ -45,7 +48,7 @@ public class VersionsApi {
      * @return
      *          The requested war file
      */
-    public InputStream getWarForVersion(String version, String area){
+    synchronized public byte[] getWarForVersion(String version, String area){
 
         String url =
                 "http://nexus.poolingpeople.com/service/local/repositories/" +
@@ -61,17 +64,36 @@ public class VersionsApi {
 
         System.out.println(url);
         Client client = ClientBuilder.newClient();
-        Response response = client
+        Invocation.Builder req =  client
                 .target(url)
                 .resolveTemplate("version", version)
                 .resolveTemplate("area", area)
-                .request()
-                .header("Authorization", getBasicAuthentication())
+                .request();
+
+        Response response =
+                req.header("Authorization", getBasicAuthentication())
                 .get();
 
         checkStatusResponseCode(response.getStatus());
-        InputStream warFileIS = response.readEntity(InputStream.class);;
-        return warFileIS;
+        InputStream warFileIS = response.readEntity(InputStream.class);
+
+        try {
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            int b;
+            while ((b = warFileIS.read()) != -1){
+                outputStream.write(b);
+            }
+
+            byte[] bytes = outputStream.toByteArray();
+            return bytes;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 
     private Response fetchVersionsFromNexus(String url){
