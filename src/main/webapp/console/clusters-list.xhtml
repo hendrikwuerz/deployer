@@ -37,6 +37,12 @@
                     </h:column>
                     <h:column>
                         <f:facet name="header">
+                            <h:outputText value="domain"/>
+                        </f:facet>
+                        <h:outputText value="#{cluster.domainLink}" escape="false"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
                             <h:outputText value="status"/>
                         </f:facet>
                         <h:outputText value="#{cluster.status}"/>

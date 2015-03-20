@@ -118,6 +118,17 @@ public class ContainerInfo {
         }
     }
 
+    public String getDomainLink() {
+        try {
+            String[] parts = getImage().split(ClusterConfig.clusterSeparator);
+            String subdomain = parts[3];
+            String host = parts[4].split(":")[0];
+            return subdomain + "." + host;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "";
+        }
+    }
+
     @Override
     public String toString() {
         return command + ":" + new Date(created) + ":" + id + ":" + image

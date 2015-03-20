@@ -73,6 +73,12 @@ public class ClusterInfo {
         return sb.toString();
     }
 
+    public String getDomainLink() {
+        Optional<ContainerInfo> first = containers.stream().findFirst();
+        if(first.isPresent()) return "<a href='http://" + first.get().getDomainLink() + "' target='_blank'>" + first.get().getDomainLink() + "</a>";
+        return "";
+    }
+
     public String getStatus() {
         if(containers.stream().filter( container -> container.getStatus().startsWith("Up") ).count() == containers.size()) {
             return "Up";
