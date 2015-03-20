@@ -9,6 +9,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -130,11 +132,41 @@ public class VersionsApi {
      * get the file object to cache the downloaded war
      * @param version
      *          The version which should be stored
+     * @param area
+     *          "snapshots" or "releases"
      * @return
      *          The file where the data is stored
      */
     private File getCacheFile(String version, String area) {
-        return new File("cache-" + area + "-version-" + version + ".war");
+        return new File("cache/cache-" + area + "-version-" + version + ".war");
+    }
+
+    /**
+     * list all cached files
+     * @return
+     *          A collection of all cached files
+     */
+    public Collection<File> getCachedFiles() {
+        try {
+            Collection<File> files = new ArrayList<>();
+
+            // Check folder to exists
+            File folder = new File("cache");
+            if(!folder.exists()) {
+                folder.mkdir();
+            }
+
+            // find files
+            Files.walk(Paths.get("cache")).forEach(filePath -> {
+                if (Files.isRegularFile(filePath)) {
+                    files.add(filePath.toFile());
+                }
+            });
+            return files;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private Response fetchVersionsFromNexus(String url){
