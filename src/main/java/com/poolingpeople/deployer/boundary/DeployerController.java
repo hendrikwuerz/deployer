@@ -1,10 +1,12 @@
 package com.poolingpeople.deployer.boundary;
 
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,11 +44,17 @@ public class DeployerController implements Serializable {
     }
 
     public Collection<String> getAvailableVersions() {
-        return facade.loadVersions(area);
+        Collection<String> availableVersions = facade.loadVersions(area);
+        // set a default value if nothing is selected
+        if(version == null) availableVersions.stream().findAny().ifPresent( element -> version = element);
+        return availableVersions;
     }
 
     public Collection<String> getDbSnapshotsList() {
-        return facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).collect(Collectors.toList());
+        Collection<String> snapshots = facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).collect(Collectors.toList());
+        // set a default value if nothing is selected
+        if(dbSnapshotName == null) snapshots.stream().findAny().ifPresent( element -> dbSnapshotName = element);
+        return snapshots;
     }
 
     public void deploy(){
@@ -82,5 +90,39 @@ public class DeployerController implements Serializable {
 
     public boolean getForceDownload() {
         return forceDownload;
+    }
+
+
+    /**
+     * Send passed bytes as a download to the user
+     * @param tarFile
+     *          The tar file to be send as a byte array
+     */
+    private void downloadTar(byte[] tarFile) {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        externalContext.setResponseHeader("Content-Type", "application/tar");
+        externalContext.setResponseHeader("Content-Length", String.valueOf(tarFile.length));
+        externalContext.setResponseHeader("Content-Disposition", "attachment;filename=\"some.tar.gz\"");
+        try {
+            externalContext.getResponseOutputStream().write(tarFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        facesContext.responseComplete();
+    }
+
+    /**
+     * download the docker tar file for the selected version
+     */
+    public void downloadVersion() {
+        downloadTar(facade.downloadWar(version, area, forceDownload));
+    }
+
+    /**
+     * download the docker tar file for the selected database snapshot
+     */
+    public void downloadDatabase() {
+        downloadTar(facade.downloadNeo4J(dbSnapshotName));
     }
 }

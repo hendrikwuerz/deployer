@@ -18,6 +18,7 @@
             <br></br>
             <div>
                 <label>Application version in #{deployerController.area}</label>
+                <h:commandButton action="#{deployerController.downloadVersion}" value="Download"></h:commandButton>
                 <h:selectOneRadio value="#{deployerController.version}" layout="pageDirection">
                     <f:selectItems value="#{deployerController.availableVersions}" var="version" itemLabel="#{version}"></f:selectItems>
                 </h:selectOneRadio>
@@ -25,6 +26,7 @@
             <br></br>
             <div>
                 <label>Database Snapshot Base</label>
+                <h:commandButton action="#{deployerController.downloadDatabase}" value="Download"></h:commandButton>
                 <h:selectOneRadio value="#{deployerController.dbSnapshotName}" layout="pageDirection">
                     <f:selectItems value="#{deployerController.dbSnapshotsList}" var="dbSnapshot" itemLabel="#{dbSnapshotName}"></f:selectItems>
                 </h:selectOneRadio>

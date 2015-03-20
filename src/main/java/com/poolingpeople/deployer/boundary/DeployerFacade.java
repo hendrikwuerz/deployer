@@ -104,14 +104,47 @@ public class DeployerFacade implements Serializable {
 
     }
 
+    /**
+     * get the compressed tar file to use in docker for the passed database snapshot name
+     * @param dbSnapshotName
+     *          The name of the database snapshot to be returned
+     * @return
+     *          the compressed tar file as a byte array
+     */
+    public byte[] downloadNeo4J(String dbSnapshotName) {
+        clusterConfig.setDbScenario(dbSnapshotName);
+        return getTarBytesForNeo4J(dbSnapshotName);
+    }
+
+    /**
+     * get the compressed tar file to use in docker for the passed version and area
+     * @param version
+     *          The version to be returned
+     * @param area
+     *          "snapshots" or "releases"
+     * @param forceDownload
+     *          whether the use of cached files is allowed or not
+     * @return
+     *          the compressed tar file as a byte array
+     */
+    public byte[] downloadWar(String version, String area, boolean forceDownload) {
+        clusterConfig
+                .setAppBaseName("rest")
+                .setAppVersion(version.toLowerCase()) // docker does not accept capitals
+                .setServerDomain(endPointProvider.getDockerHost());
+        return getTarBytesForWar(version, area, forceDownload);
+    }
+
+    /**
+     * deploys the neo4j database to docker and starts the server
+     * @param dbSnapshotName
+     *          The name of the snapshot to be deployed
+     */
     private void deployNeo4jDb(String dbSnapshotName){
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
-        neo4jDockerPackage.setClusterConfig(clusterConfig);
-        neo4jDockerPackage.prepareTarStream();
-        dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
+        dockerApi.buildImage(clusterConfig.getNeo4jId(), getTarBytesForNeo4J(dbSnapshotName));
 
         builder = new CreateContainerBodyWriter();
         builder.setImage(clusterConfig.getNeo4jId())
@@ -127,17 +160,37 @@ public class DeployerFacade implements Serializable {
         clusterConfig.setGateway(networkSettings.getGateway());
     }
 
+    /**
+     * gets the byte array for the passed version
+     *
+     * @param dbSnapshotName
+     *          The name of the selected db snapshot
+     * @return
+     *          a byte array with a compressed tar file for docker
+     */
+    private byte[] getTarBytesForNeo4J(String dbSnapshotName) {
+        neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
+        neo4jDockerPackage.setClusterConfig(clusterConfig);
+        neo4jDockerPackage.prepareTarStream();
+
+        return neo4jDockerPackage.getBytes();
+    }
+
+    /**
+     * deploys the application to docker and starts the server
+     * @param version
+     *          The version to be deployed
+     * @param area
+     *          "snapshots" or "releases"
+     * @param forceDownload
+     *          whether cached files can be used or not
+     */
     private void deployWarApplication(String version, String area, boolean forceDownload){
 
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        InputStream is = versionsApi.getWarForVersion(version, area, forceDownload);
-        applicationDockerPackage.setClusterConfig(clusterConfig);
-        applicationDockerPackage.setWarFileIS(is);
-        applicationDockerPackage.prepareTarStream();
-
-        dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
+        dockerApi.buildImage(clusterConfig.getWildflyId(), getTarBytesForWar(version, area, forceDownload));
 
         builder = new CreateContainerBodyWriter()
                 .setImage(clusterConfig.getWildflyId())
@@ -151,6 +204,27 @@ public class DeployerFacade implements Serializable {
 
         logger.finer("Container created:" + containerId);
         dockerApi.startContainer(containerId);
+    }
+
+    /**
+     * gets the byte array for the passed version
+     *
+     * @param version
+     *          The version of the wished war file
+     * @param area
+     *          "snapshots" or "releases"
+     * @param forceDownload
+     *          whether cached files can be used or not
+     * @return
+     *          a byte array with a compressed tar file for docker
+     */
+    private byte[] getTarBytesForWar(String version, String area, boolean forceDownload) {
+        InputStream is = versionsApi.getWarForVersion(version, area, forceDownload);
+        applicationDockerPackage.setClusterConfig(clusterConfig);
+        applicationDockerPackage.setWarFileIS(is);
+        applicationDockerPackage.prepareTarStream();
+
+        return applicationDockerPackage.getBytes();
     }
 
     public Collection<String> loadVersions(String area) {
