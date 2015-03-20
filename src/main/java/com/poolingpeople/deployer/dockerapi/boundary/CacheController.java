@@ -34,8 +34,12 @@ public class CacheController {
 
     public String destroy() {
         CacheInfo current = cachedFiles.getRowData();
-        boolean deleted = current.getCachedFile().delete();
+        boolean deleted = current.delete();
         System.out.println("File deleted: " + deleted);
         return "cache-list";
+    }
+
+    public void destroyAll() {
+        getCachedFiles().forEach(CacheInfo::delete);
     }
 }

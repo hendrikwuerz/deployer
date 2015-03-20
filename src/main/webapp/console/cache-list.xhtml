@@ -14,6 +14,7 @@
             <h:panelGroup id="messagePanel" layout="block">
                 <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
             </h:panelGroup>
+            <h:commandLink action="#{cacheController.destroyAll()}" value=" Delete all cached files "/>
             <h:outputText escape="false" value="No cached files to show" rendered="#{cacheController.cachedFiles.rowCount == 0}"/>
             <h:panelGroup rendered="#{cacheController.cachedFiles.rowCount > 0}">
                 <h:dataTable value="#{cacheController.cachedFiles}" var="file" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">

@@ -39,4 +39,8 @@ public class CacheInfo {
 
         return "Modified " + days + " days, " + hours + " hours, " + minutes + " minutes, " + seconds + " seconds ago";
     }
+
+    public boolean delete() {
+        return cachedFile.delete();
+    }
 }
