@@ -48,7 +48,7 @@ public class VersionsApi {
      * @return
      *          The requested war file
      */
-    synchronized public byte[] getWarForVersion(String version, String area){
+    public byte[] getWarForVersion(String version, String area){
 
         String url =
                 "http://nexus.poolingpeople.com/service/local/repositories/" +
@@ -62,7 +62,6 @@ public class VersionsApi {
                     "snapshots/content/com/poolingpeople/rest/0.0.2-SNAPSHOT/rest-0.0.2-20150121.091129-1.war";
         }
 
-        System.out.println(url);
         Client client = ClientBuilder.newClient();
         Invocation.Builder req =  client
                 .target(url)
@@ -78,7 +77,7 @@ public class VersionsApi {
         InputStream warFileIS = response.readEntity(InputStream.class);
 
         try {
-
+            logger.fine("getWarForVersion: input stream read: " + String.valueOf(warFileIS.available()));
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
             int b;
