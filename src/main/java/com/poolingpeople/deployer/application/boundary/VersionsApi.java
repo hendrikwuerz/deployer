@@ -122,15 +122,15 @@ public class VersionsApi {
 //        logger.fine("getWarForVersion: input stream read: " + String.valueOf(warFileIS.available()));
 
         // cache result
-        try {
-            File cacheFile = getCacheFile(version, area);
-            FileOutputStream stream = new FileOutputStream(cacheFile);
-            IOUtils.copy(warFileIS, stream);
-            stream.close();
-            logger.fine("Save war for caching in " + cacheFile.getAbsolutePath());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            File cacheFile = getCacheFile(version, area);
+//            FileOutputStream stream = new FileOutputStream(cacheFile);
+//            IOUtils.copy(warFileIS, stream);
+//            stream.close();
+//            logger.fine("Save war for caching in " + cacheFile.getAbsolutePath());
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 
         return getBytesFromStream(warFileIS);
 

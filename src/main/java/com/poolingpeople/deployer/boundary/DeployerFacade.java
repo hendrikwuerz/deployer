@@ -71,7 +71,7 @@ public class DeployerFacade implements Serializable {
 
     public int getAvailableCluster(){
 
-        int maxClusters = 8;
+        int maxClusters = 6;
 
         Set<Integer> result = getActiveContainersNames().stream()//.filter(name -> !name.equals("proxy"))
                 .filter(name -> isValidClusterName(name))
@@ -84,7 +84,7 @@ public class DeployerFacade implements Serializable {
             return i;
         }
 
-        throw new RuntimeException("No more place for new clusters");
+        throw new RuntimeException("No more place for new clusters. Remove some of the existing clusters");
     }
 
     private boolean isValidClusterName(String name){
