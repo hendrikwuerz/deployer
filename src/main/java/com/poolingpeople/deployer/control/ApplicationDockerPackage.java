@@ -1,21 +1,15 @@
 package com.poolingpeople.deployer.control;
 
-import com.poolingpeople.deployer.application.boundary.VersionsApi;
-import com.poolingpeople.deployer.entity.ClusterConfig;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
-import javax.inject.Inject;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
 
 public class ApplicationDockerPackage extends DockerCluster {
 
-    InputStream warFileIS;
+    byte[] warFileBytes;
     Logger logger = Logger.getLogger(this.getClass().getName());
 
     @Override
@@ -30,12 +24,10 @@ public class ApplicationDockerPackage extends DockerCluster {
     public void addWar(){
 
         try {
-            byte[] bytes = IOUtils.toByteArray(warFileIS);
             TarArchiveEntry entry = new TarArchiveEntry(clusterConfig.getFullApplicationName() + ".war");
-            entry.setSize(bytes.length);
+            entry.setSize(warFileBytes.length);
             tarArchiveOS.putArchiveEntry(entry);
-            tarArchiveOS.write(bytes);
-            warFileIS.close();
+            tarArchiveOS.write(warFileBytes);
             tarArchiveOS.closeArchiveEntry();
 
         } catch (IOException e) {
@@ -48,7 +40,7 @@ public class ApplicationDockerPackage extends DockerCluster {
                 .replace("{PP_FINAL_NAME}", clusterConfig.getFullApplicationName() + ".war");
     }
 
-    public void setWarFileIS(InputStream warFileIS) {
-        this.warFileIS = warFileIS;
+    public void setWarFileBytes(byte[] warFileBytes) {
+        this.warFileBytes = warFileBytes;
     }
 }

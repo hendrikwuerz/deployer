@@ -11,9 +11,11 @@ import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
+import org.apache.commons.compress.utils.IOUtils;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.*;
@@ -144,7 +146,12 @@ public class DeployerFacade implements Serializable {
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        dockerApi.buildImage(clusterConfig.getNeo4jId(), getTarBytesForNeo4J(dbSnapshotName));
+        if(dbSnapshotName != null)
+            neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
+
+        neo4jDockerPackage.setClusterConfig(clusterConfig);
+        neo4jDockerPackage.prepareTarStream();
+        dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
 
         builder = new CreateContainerBodyWriter();
         builder.setImage(clusterConfig.getNeo4jId())
@@ -190,7 +197,12 @@ public class DeployerFacade implements Serializable {
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        dockerApi.buildImage(clusterConfig.getWildflyId(), getTarBytesForWar(version, area, forceDownload));
+        byte[] bytes = versionsApi.getWarForVersion(version, area, forceDownload);
+        applicationDockerPackage.setClusterConfig(clusterConfig);
+        applicationDockerPackage.setWarFileBytes(bytes);
+        applicationDockerPackage.prepareTarStream();
+
+        dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
 
         builder = new CreateContainerBodyWriter()
                 .setImage(clusterConfig.getWildflyId())
@@ -219,9 +231,9 @@ public class DeployerFacade implements Serializable {
      *          a byte array with a compressed tar file for docker
      */
     private byte[] getTarBytesForWar(String version, String area, boolean forceDownload) {
-        InputStream is = versionsApi.getWarForVersion(version, area, forceDownload);
+        byte[] b = versionsApi.getWarForVersion(version, area, forceDownload);
         applicationDockerPackage.setClusterConfig(clusterConfig);
-        applicationDockerPackage.setWarFileIS(is);
+        applicationDockerPackage.setWarFileBytes(b);
         applicationDockerPackage.prepareTarStream();
 
         return applicationDockerPackage.getBytes();

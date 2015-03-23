@@ -3,12 +3,12 @@ package com.poolingpeople.deployer.boundary;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**

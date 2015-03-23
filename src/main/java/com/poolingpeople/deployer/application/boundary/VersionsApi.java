@@ -1,11 +1,14 @@
 package com.poolingpeople.deployer.application.boundary;
 
+import org.apache.commons.compress.utils.IOUtils;
+import org.apache.http.conn.EofSensorInputStream;
 
 import org.apache.commons.compress.utils.IOUtils;
 
 import javax.json.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
@@ -51,7 +54,8 @@ public class VersionsApi {
      * @return
      *          The requested war file
      */
-    public InputStream getWarForVersion(String version, String area, boolean forceDownload) {
+
+    public byte[] getWarForVersion(String version, String area, boolean forceDownload) {
 
         InputStream warFileIS;
 
@@ -61,19 +65,19 @@ public class VersionsApi {
         // only releases are cached because snapshots can be changed
         if(cacheFile.exists() && !forceDownload) { // no need to download again -> use cache
             try {
+
                 warFileIS = new FileInputStream(cacheFile);
-                System.out.println("Use cached file " + cacheFile.getAbsolutePath());
+                logger.fine("Use cached file " + cacheFile.getAbsolutePath());
+                return getBytesFromStream(warFileIS);
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                warFileIS = downloadWarForVersion(version, area);
+                return downloadWarForVersion(version, area);
             }
 
         } else { // no cache found
-            warFileIS = downloadWarForVersion(version, area);
+            return downloadWarForVersion(version, area);
         }
-
-        return warFileIS;
     }
 
     /**
@@ -86,11 +90,11 @@ public class VersionsApi {
      * @return
      *          The InputStream of the war
      */
-    private InputStream downloadWarForVersion(String version, String area) {
+    private byte[] downloadWarForVersion(String version, String area) {
 
         String url =
                 "http://nexus.poolingpeople.com/service/local/repositories/" +
-                "{area}/content/com/poolingpeople/rest/{version}/rest-{version}.war";
+                        "{area}/content/com/poolingpeople/rest/{version}/rest-{version}.war";
 
         // TODO: modify url ???
         if(area.equals("snapshots")) {
@@ -100,18 +104,22 @@ public class VersionsApi {
                     "snapshots/content/com/poolingpeople/rest/0.0.2-SNAPSHOT/rest-0.0.2-20150121.091129-1.war";
         }
 
-        System.out.println(url);
         Client client = ClientBuilder.newClient();
-        Response response = client
+        Invocation.Builder req =  client
                 .target(url)
                 .resolveTemplate("version", version)
                 .resolveTemplate("area", area)
-                .request()
-                .header("Authorization", getBasicAuthentication())
-                .get();
+                .request();
+
+        Response response =
+                req.header("Authorization", getBasicAuthentication())
+                        .get();
 
         checkStatusResponseCode(response.getStatus());
         InputStream warFileIS = response.readEntity(InputStream.class);
+
+
+//        logger.fine("getWarForVersion: input stream read: " + String.valueOf(warFileIS.available()));
 
         // cache result
         try {
@@ -124,8 +132,26 @@ public class VersionsApi {
             e.printStackTrace();
         }
 
-        return warFileIS;
+        return getBytesFromStream(warFileIS);
 
+    }
+
+    private byte[] getBytesFromStream(InputStream stream){
+
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            int b;
+            while ((b = stream.read()) != -1){
+                outputStream.write(b);
+            }
+
+            byte[] bytes = outputStream.toByteArray();
+            return bytes;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
