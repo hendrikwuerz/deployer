@@ -13,6 +13,7 @@ import com.poolingpeople.deployer.entity.ClusterConfig;
 import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 import org.apache.commons.compress.utils.IOUtils;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
@@ -54,6 +55,15 @@ public class DeployerFacade implements Serializable {
     @Inject
     DbSnapshot dbSnapshot;
 
+    Collection<String> txIds;
+
+    @PostConstruct
+    public void init(){
+
+        txIds = new ArrayList<>();
+
+    }
+
 
     Logger logger = Logger.getLogger(this.getClass().getName());
 
@@ -71,7 +81,7 @@ public class DeployerFacade implements Serializable {
 
     public int getAvailableCluster(){
 
-        int maxClusters = 6;
+        int maxClusters = 60;
 
         Set<Integer> result = getActiveContainersNames().stream()//.filter(name -> !name.equals("proxy"))
                 .filter(name -> isValidClusterName(name))
@@ -93,6 +103,8 @@ public class DeployerFacade implements Serializable {
 
     public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area, boolean forceDownload){
 
+        txIds.clear();
+
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version.toLowerCase()) // docker does not accept capitals
@@ -101,9 +113,22 @@ public class DeployerFacade implements Serializable {
                 .setDbScenario(dbSnapshotName)
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
 
-        deployNeo4jDb(dbSnapshotName);
-        deployWarApplication(version, area, forceDownload);
+        try {
 
+            deployNeo4jDb(dbSnapshotName);
+            deployWarApplication(version, area, forceDownload);
+
+        }catch (RuntimeException e){
+            rollBack();
+            throw e;
+        }
+
+    }
+
+    private void rollBack(){
+        logger.info("Rolling back deployment for " + clusterConfig.toString());
+        txIds.stream().forEach(c -> dockerApi.removeContainer(c, true));
+        txIds.clear();
     }
 
     /**
@@ -143,6 +168,8 @@ public class DeployerFacade implements Serializable {
      *          The name of the snapshot to be deployed
      */
     private void deployNeo4jDb(String dbSnapshotName){
+
+
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
@@ -151,6 +178,7 @@ public class DeployerFacade implements Serializable {
 
         neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
+
         dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
 
         builder = new CreateContainerBodyWriter();
@@ -161,6 +189,8 @@ public class DeployerFacade implements Serializable {
                 .buildHostConfig();
 
         containerId = dockerApi.createContainer(builder, clusterConfig.getNeo4jId());
+
+        txIds.add(containerId);
         dockerApi.startContainer(containerId);
 
         ContainerNetworkSettingsReader networkSettings = dockerApi.getContainerNetwotkSettings(containerId);
@@ -213,6 +243,7 @@ public class DeployerFacade implements Serializable {
                 .buildHostConfig();
 
         containerId = dockerApi.createContainer(builder, clusterConfig.getWildflyId());
+        txIds.add(containerId);
 
         logger.finer("Container created:" + containerId);
         dockerApi.startContainer(containerId);
