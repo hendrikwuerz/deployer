@@ -91,18 +91,18 @@ public class DeployerFacade implements Serializable {
         return name.split(ClusterConfig.clusterSeparator).length == 5;
     }
 
-    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area){
+    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area, boolean forceDownload){
 
         clusterConfig
                 .setAppBaseName("rest")
-                .setAppVersion(version)
+                .setAppVersion(version.toLowerCase()) // docker does not accept capitals
                 .setServerDomain(endPointProvider.getDockerHost())
                 .setConcretDomain(subdomain)
                 .setDbScenario(dbSnapshotName)
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
 
         deployNeo4jDb(dbSnapshotName);
-        deployWarApplication(version, area);
+        deployWarApplication(version, area, forceDownload);
 
     }
 
@@ -131,13 +131,12 @@ public class DeployerFacade implements Serializable {
         clusterConfig.setGateway(networkSettings.getGateway());
     }
 
-    private void deployWarApplication(String version, String area){
+    private void deployWarApplication(String version, String area, boolean forceDownload){
 
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        byte[] bytes = versionsApi.getWarForVersion(version, area);
-
+        byte[] bytes = versionsApi.getWarForVersion(version, area, forceDownload);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileBytes(bytes);
         applicationDockerPackage.prepareTarStream();

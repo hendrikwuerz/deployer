@@ -15,18 +15,26 @@
                 <label>subdomain</label>
                 <h:inputText value="#{deployerController.subdomain}"></h:inputText>
             </div>
+            <br></br>
             <div>
                 <label>Application version in #{deployerController.area}</label>
                 <h:selectOneRadio value="#{deployerController.version}" layout="pageDirection">
                     <f:selectItems value="#{deployerController.availableVersions}" var="version" itemLabel="#{version}"></f:selectItems>
                 </h:selectOneRadio>
             </div>
+            <br></br>
             <div>
                 <label>Database Snapshot Base</label>
                 <h:selectOneRadio value="#{deployerController.dbSnapshotName}" layout="pageDirection">
                     <f:selectItems value="#{deployerController.dbSnapshotsList}" var="dbSnapshot" itemLabel="#{dbSnapshotName}"></f:selectItems>
                 </h:selectOneRadio>
             </div>
+            <br></br>
+            <div>
+                <h:selectBooleanCheckbox value="#{deployerController.forceDownload}" id="forceDownload"></h:selectBooleanCheckbox>
+                <label for="forceDownload">Force download even if cached file is found</label>
+            </div>
+            <br></br>
             <div>
                 <h:commandButton action="#{deployerController.deploy}" value="Deploy"></h:commandButton>
             </div>
