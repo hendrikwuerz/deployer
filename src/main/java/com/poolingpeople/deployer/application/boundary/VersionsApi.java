@@ -127,9 +127,9 @@ public class VersionsApi {
             FileOutputStream stream = new FileOutputStream(cacheFile);
             IOUtils.copy(warFileIS, stream);
             stream.close();
-            System.out.println("Save war for caching in " + cacheFile.getAbsolutePath());
+            logger.fine("Save war for caching in " + cacheFile.getAbsolutePath());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return getBytesFromStream(warFileIS);
