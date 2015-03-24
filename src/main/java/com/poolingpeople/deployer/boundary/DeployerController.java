@@ -51,10 +51,7 @@ public class DeployerController implements Serializable {
     }
 
     public Collection<String> getDbSnapshotsList() {
-        Collection<String> snapshots = facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).collect(Collectors.toList());
-        // set a default value if nothing is selected
-        if(dbSnapshotName == null) snapshots.stream().findAny().ifPresent( element -> dbSnapshotName = element);
-        return snapshots;
+        return facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).collect(Collectors.toList());
     }
 
     public void deploy(){
