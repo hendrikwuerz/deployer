@@ -173,13 +173,7 @@ public class DeployerFacade implements Serializable {
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        if(dbSnapshotName != null)
-            neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
-
-        neo4jDockerPackage.setClusterConfig(clusterConfig);
-        neo4jDockerPackage.prepareTarStream();
-
-        dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
+        dockerApi.buildImage(clusterConfig.getNeo4jId(), getTarBytesForNeo4J(dbSnapshotName));
 
         builder = new CreateContainerBodyWriter();
         builder.setImage(clusterConfig.getNeo4jId())
@@ -206,7 +200,8 @@ public class DeployerFacade implements Serializable {
      *          a byte array with a compressed tar file for docker
      */
     private byte[] getTarBytesForNeo4J(String dbSnapshotName) {
-        neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
+        if(dbSnapshotName != null)
+            neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
         neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
 
@@ -227,12 +222,7 @@ public class DeployerFacade implements Serializable {
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        byte[] bytes = versionsApi.getWarForVersion(version, area, forceDownload);
-        applicationDockerPackage.setClusterConfig(clusterConfig);
-        applicationDockerPackage.setWarFileBytes(bytes);
-        applicationDockerPackage.prepareTarStream();
-
-        dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
+        dockerApi.buildImage(clusterConfig.getWildflyId(), getTarBytesForWar(version, area, forceDownload));
 
         builder = new CreateContainerBodyWriter()
                 .setImage(clusterConfig.getWildflyId())
