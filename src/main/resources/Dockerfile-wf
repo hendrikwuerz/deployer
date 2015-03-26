@@ -1,5 +1,6 @@
 FROM poolingpeople/wildfly
 ENV neo4j {NEO_INSTANCE}
+#ENV pp_app_environment {test (no_backups)|live (backups)}
 
 ADD standalone.conf /opt/jboss/wildfly/bin/
 ADD standalone.xml /opt/jboss/wildfly/standalone/configuration/
