@@ -11,13 +11,10 @@ import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
-import org.apache.commons.compress.utils.IOUtils;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
@@ -140,7 +137,7 @@ public class DeployerFacade implements Serializable {
      */
     public byte[] downloadNeo4J(String dbSnapshotName) {
         clusterConfig.setDbScenario(dbSnapshotName);
-        return getTarBytesForNeo4J(dbSnapshotName);
+        return getTarBytesForNeo4j(dbSnapshotName);
     }
 
     /**
@@ -205,7 +202,7 @@ public class DeployerFacade implements Serializable {
      * @return
      *          a byte array with a compressed tar file for docker
      */
-    private byte[] getTarBytesForNeo4J(String dbSnapshotName) {
+    private byte[] getTarBytesForNeo4j(String dbSnapshotName) {
         neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
         neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
