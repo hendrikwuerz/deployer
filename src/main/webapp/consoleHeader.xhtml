@@ -13,9 +13,9 @@
 <h:body>
     <div>
         <h:form>
-            <h:inputText value="#{dockerEndPointProvider.ip}"></h:inputText>:
-            <h:inputText size="4" value="#{dockerEndPointProvider.port}"></h:inputText>
-            <h:commandButton value="set"></h:commandButton>
+            <h:inputText value="#{dockerEndPoint.host}"></h:inputText>:
+            <h:inputText size="4" value="#{dockerEndPoint.port}"></h:inputText>
+            <h:commandButton value="set" action="#{consoleController.updateEndpoint(dockerEndPoint.host, dockerEndPoint.port)}"></h:commandButton>
         </h:form>
     </div>
     <div>

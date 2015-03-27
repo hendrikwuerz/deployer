@@ -75,12 +75,12 @@ public class DockerApiTestIT {
 
     }
 
-    @Test
-    public void testCopyFiles() throws IOException {
-        cut.endPoint = "http://prod.poolingpeople.com:5555";
-        InputStream inputStream = cut.copyFiles("3224415425", "/var/lib/neo4j/data/graph.db/");
-        FileOutputStream outputStream = new FileOutputStream("/home/alacambra/deleteme.tar");
-        IOUtils.copy(inputStream, outputStream);
-
-    }
+//    @Test
+//    public void testCopyFiles() throws IOException {
+//        cut.endPoint = "http://prod.poolingpeople.com:5555";
+//        InputStream inputStream = cut.copyFiles("3224415425", "/var/lib/neo4j/data/graph.db/");
+//        FileOutputStream outputStream = new FileOutputStream("/home/alacambra/deleteme.tar");
+//        IOUtils.copy(inputStream, outputStream);
+//
+//    }
 }

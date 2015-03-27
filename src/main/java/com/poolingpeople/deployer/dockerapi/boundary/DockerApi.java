@@ -1,10 +1,10 @@
 package com.poolingpeople.deployer.dockerapi.boundary;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -25,14 +25,16 @@ import static javax.ws.rs.client.Entity.entity;
 public class DockerApi implements Serializable{
 
     @Inject
-    DockerEndPointProvider endPointProvider;
+    DockerEndPoint endPoint;
 
-    String endPoint = null;
+//    public void setEndPoint(@Observes DockerEndPoint endPoint) {
+//        this.endPoint = endPoint;
+//    }
 
     Logger logger = Logger.getLogger(this.getClass().getName());
 
-    public DockerApi(DockerEndPointProvider endPointProvider) {
-        this.endPointProvider = endPointProvider;
+    public DockerApi(DockerEndPoint endPoint) {
+        this.endPoint = endPoint;
         init();
     }
 
@@ -41,7 +43,7 @@ public class DockerApi implements Serializable{
 
     @PostConstruct
     public void init(){
-        endPoint = "http://" + endPointProvider.getDockerHost() + ":" + endPointProvider.getPort();
+
     }
 
     public String getDockerInfo(){
@@ -49,7 +51,7 @@ public class DockerApi implements Serializable{
     }
 
     public String buildImage(String imageName, byte[] tarBytes){
-        String url = endPoint + "/build?t={imageName}";
+        String url = endPoint.getURI() + "/build?t={imageName}";
 
         Client client = ClientBuilder.newClient();
         Response response = client
@@ -72,7 +74,7 @@ public class DockerApi implements Serializable{
 
     public void deleteImage(String imageName){
 
-        String url = endPoint + "/images/{imageName}";
+        String url = endPoint.getURI() + "/images/{imageName}";
         Client client = ClientBuilder.newClient();
 
         Response response = client
@@ -88,7 +90,7 @@ public class DockerApi implements Serializable{
 
     public String listImage(){
 
-        String url = endPoint + "/images/json?all=0";
+        String url = endPoint.getURI() + "/images/json?all=0";
         Client client = ClientBuilder.newClient();
 
         Response response = client
@@ -104,7 +106,7 @@ public class DockerApi implements Serializable{
     }
 
     public String createContainer(CreateContainerBodyWriter bodyBuilder, String name){
-        String url = endPoint + "/containers/create?name={name}";
+        String url = endPoint.getURI() + "/containers/create?name={name}";
         Client client = ClientBuilder.newClient();
 
         String body = bodyBuilder.getObjectBuilder().build().toString();
@@ -130,7 +132,7 @@ public class DockerApi implements Serializable{
 
     public ContainerNetworkSettingsReader getContainerNetwotkSettings(String containerId){
 
-        String url = endPoint + "/containers/{containerId}/json";
+        String url = endPoint.getURI() + "/containers/{containerId}/json";
         Client client = ClientBuilder.newClient();
 
         Response response = client
@@ -146,7 +148,7 @@ public class DockerApi implements Serializable{
     }
 
     public void startContainer(String containerId){
-        String url = endPoint + "/containers/{containerId}/start";
+        String url = endPoint.getURI() + "/containers/{containerId}/start";
         Client client = ClientBuilder.newClient();
 
         logger.fine("Starting container " + containerId);
@@ -163,7 +165,7 @@ public class DockerApi implements Serializable{
     }
 
     public void stopContainer(String containerId){
-        String url = endPoint + "/containers/{containerId}/stop";
+        String url = endPoint.getURI() + "/containers/{containerId}/stop";
         Client client = ClientBuilder.newClient();
 
         logger.fine("Stoping container " + containerId);
@@ -180,7 +182,7 @@ public class DockerApi implements Serializable{
     }
 
     public void killContainer(String containerId){
-        String url = endPoint + "/containers/{containerId}/kill";
+        String url = endPoint.getURI() + "/containers/{containerId}/kill";
         Client client = ClientBuilder.newClient();
 
         Response response = client
@@ -196,7 +198,7 @@ public class DockerApi implements Serializable{
 
     public String getContainersLogs(String containerId, int tail){
 
-        String url = endPoint + "/containers/{containerId}/logs?stderr=1&stdout=1&timestamps=1&follow=0&tail={tail}";
+        String url = endPoint.getURI() + "/containers/{containerId}/logs?stderr=1&stdout=1&timestamps=1&follow=0&tail={tail}";
         Client client = ClientBuilder.newClient();
 
         Response response = client
@@ -214,7 +216,7 @@ public class DockerApi implements Serializable{
     }
 
     public void removeContainer(String containerId, boolean force){
-        String url = endPoint + "/containers/{containerId}?force={force}";
+        String url = endPoint.getURI() + "/containers/{containerId}?force={force}";
         Client client = ClientBuilder.newClient();
 
         Response response = client
@@ -230,7 +232,7 @@ public class DockerApi implements Serializable{
     }
 
     public Collection<ContainerInfo> listContainers(){
-        String url = endPoint + "/containers/json?all=1";
+        String url = endPoint.getURI() + "/containers/json?all=1";
         Client client = ClientBuilder.newClient();
 
         Response response = client
@@ -250,7 +252,7 @@ public class DockerApi implements Serializable{
     }
 
     public InputStream copyFiles(String containerId, String filePath){
-        String url = endPoint + "/containers/{containerId}/copy";
+        String url = endPoint.getURI() + "/containers/{containerId}/copy";
         Client client = ClientBuilder.newClient();
 
         String json = Json.createObjectBuilder().add("Resource", filePath).build().toString();
