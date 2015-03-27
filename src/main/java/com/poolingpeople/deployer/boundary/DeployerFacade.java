@@ -81,7 +81,7 @@ public class DeployerFacade implements Serializable {
 
     public int getAvailableCluster(){
 
-        int maxClusters = 60;
+        int maxClusters = 6;
 
         Set<Integer> result = getActiveContainersNames().stream()//.filter(name -> !name.equals("proxy"))
                 .filter(name -> isValidClusterName(name))
