@@ -92,23 +92,19 @@ public class VersionsApi {
      */
     private byte[] downloadWarForVersion(String version, String area) {
 
-        String url =
-                "http://nexus.poolingpeople.com/service/local/repositories/" +
-                        "{area}/content/com/poolingpeople/rest/{version}/rest-{version}.war";
-
-        // TODO: modify url ???
+        String url;
         if(area.equals("snapshots")) {
+            url = "http://nexus.poolingpeople.com/service/local/artifact/maven/content?" +
+                    "r=snapshots&g=com.poolingpeople&a=rest&v={version}&e=war";
+        } else {
             url = "http://nexus.poolingpeople.com/service/local/repositories/" +
-                    "snapshots/content/com/poolingpeople/rest/0.0.0-SNAPSHOT/rest-0.0.0-20141202.110626-1.war";
-            url = "http://nexus.poolingpeople.com/service/local/repositories/" +
-                    "snapshots/content/com/poolingpeople/rest/0.0.2-SNAPSHOT/rest-0.0.2-20150121.091129-1.war";
+                    "releases/content/com/poolingpeople/rest/{version}/rest-{version}.war";
         }
 
         Client client = ClientBuilder.newClient();
         Invocation.Builder req =  client
                 .target(url)
                 .resolveTemplate("version", version)
-                .resolveTemplate("area", area)
                 .request();
 
         Response response =
