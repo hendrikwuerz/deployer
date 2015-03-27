@@ -34,102 +34,102 @@ public class VersionsApiTest {
 
     VersionsApi cut;
 
-    @Before
-    public void setUp(){
-        cut = new VersionsApi();
-    }
-
-    @Test
-    public void testParseVersions() throws Exception {
-
-        InputStream stream = this.getClass().getClassLoader().getResourceAsStream("nexus-snapshots-response.json");
-        Collection<String> versions = cut.parseVersions(stream);
-        System.out.println(versions);
-        assertThat(versions, containsInAnyOrder("0.0.2-SNAPSHOT", "0.0.1-SNAPSHOT", "0.0.0-SNAPSHOT"));
-
-        stream = this.getClass().getClassLoader().getResourceAsStream("nexus-releases-response.json");
-        versions = cut.parseVersions(stream);
-        System.out.println(versions);
-        assertThat(versions, containsInAnyOrder("0.0.1"));
-    }
-
-    @Test
-    public void downloadFile() throws IOException, CompressorException, ArchiveException {
-
-        String url = "http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/0.0.1/rest-0.0.1.war";
-
-        Client client = ClientBuilder.newClient();
-        Response response = client
-                .target(url)
-                .request()
-                .header("Authorization", getBasicAuthentication())
-                .get();
-
-        InputStream warFileIS = response.readEntity(InputStream.class);
-        ByteArrayOutputStream tarByteStream = new ByteArrayOutputStream();
-        TarArchiveOutputStream tarArchiveOS = new TarArchiveOutputStream(tarByteStream);
-
-        byte[] bytes = IOUtils.toByteArray(warFileIS);
-        TarArchiveEntry entry = new TarArchiveEntry("rest-0.0.1.war");
-        entry.setSize(bytes.length);
-        tarArchiveOS.putArchiveEntry(entry);
-        tarArchiveOS.write(bytes);
-
-        warFileIS.close();
-        response.close();
-
-        byte[] tarBytes = tarByteStream.toByteArray();
-
-        ByteArrayOutputStream gzipByteStream = new ByteArrayOutputStream();
-
-        GzipCompressorOutputStream gzippedOut = new GzipCompressorOutputStream(gzipByteStream);
-        gzippedOut.write(tarBytes);
-
-        tarArchiveOS.closeArchiveEntry();
-        gzippedOut.close();
-
-        File f = new File("/home/alacambra/test.tar.gz");
-        FileOutputStream fos = new FileOutputStream(f);
-        fos.write(gzipByteStream.toByteArray());
-        fos.close();
-
-
-//        client = ClientBuilder.newClient();
-//        response = client.target("")
+//    @Before
+//    public void setUp(){
+//        cut = new VersionsApi();
+//    }
+//
+//    @Test
+//    public void testParseVersions() throws Exception {
+//
+//        InputStream stream = this.getClass().getClassLoader().getResourceAsStream("nexus-snapshots-response.json");
+//        Collection<String> versions = cut.parseVersions(stream);
+//        System.out.println(versions);
+//        assertThat(versions, containsInAnyOrder("0.0.2-SNAPSHOT", "0.0.1-SNAPSHOT", "0.0.0-SNAPSHOT"));
+//
+//        stream = this.getClass().getClassLoader().getResourceAsStream("nexus-releases-response.json");
+//        versions = cut.parseVersions(stream);
+//        System.out.println(versions);
+//        assertThat(versions, containsInAnyOrder("0.0.1"));
+//    }
+//
+//    @Test
+//    public void downloadFile() throws IOException, CompressorException, ArchiveException {
+//
+//        String url = "http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/0.0.1/rest-0.0.1.war";
+//
+//        Client client = ClientBuilder.newClient();
+//        Response response = client
+//                .target(url)
 //                .request()
-//                .header("Content-Type", "application/java-archive")
-//                .post(Entity.entity(gzippedOut, "application/tar"));
-
-
-    }
-
-    private String getBasicAuthentication() {
-        String user = "deployer";
-        String password = "test1234";
-        String token = user + ":" + password;
-        try {
-            return "BASIC " + DatatypeConverter.printBase64Binary(token.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            throw new IllegalStateException("Cannot encode with UTF-8", ex);
-        }
-    }
-
-    private Byte[] inputStreamToByteArray(InputStream stream){
-//        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+//                .header("Authorization", getBasicAuthentication())
+//                .get();
 //
-//        int nRead;
-//        byte[] data = new byte[16384];
+//        InputStream warFileIS = response.readEntity(InputStream.class);
+//        ByteArrayOutputStream tarByteStream = new ByteArrayOutputStream();
+//        TarArchiveOutputStream tarArchiveOS = new TarArchiveOutputStream(tarByteStream);
 //
-//        while ((nRead = stream.read(data, 0, data.length)) != -1) {
-//            buffer.write(data, 0, nRead);
+//        byte[] bytes = IOUtils.toByteArray(warFileIS);
+//        TarArchiveEntry entry = new TarArchiveEntry("rest-0.0.1.war");
+//        entry.setSize(bytes.length);
+//        tarArchiveOS.putArchiveEntry(entry);
+//        tarArchiveOS.write(bytes);
+//
+//        warFileIS.close();
+//        response.close();
+//
+//        byte[] tarBytes = tarByteStream.toByteArray();
+//
+//        ByteArrayOutputStream gzipByteStream = new ByteArrayOutputStream();
+//
+//        GzipCompressorOutputStream gzippedOut = new GzipCompressorOutputStream(gzipByteStream);
+//        gzippedOut.write(tarBytes);
+//
+//        tarArchiveOS.closeArchiveEntry();
+//        gzippedOut.close();
+//
+//        File f = new File("/home/alacambra/test.tar.gz");
+//        FileOutputStream fos = new FileOutputStream(f);
+//        fos.write(gzipByteStream.toByteArray());
+//        fos.close();
+//
+//
+////        client = ClientBuilder.newClient();
+////        response = client.target("")
+////                .request()
+////                .header("Content-Type", "application/java-archive")
+////                .post(Entity.entity(gzippedOut, "application/tar"));
+//
+//
+//    }
+//
+//    private String getBasicAuthentication() {
+//        String user = "deployer";
+//        String password = "test1234";
+//        String token = user + ":" + password;
+//        try {
+//            return "BASIC " + DatatypeConverter.printBase64Binary(token.getBytes("UTF-8"));
+//        } catch (UnsupportedEncodingException ex) {
+//            throw new IllegalStateException("Cannot encode with UTF-8", ex);
 //        }
+//    }
 //
-//        buffer.flush();
+//    private Byte[] inputStreamToByteArray(InputStream stream){
+////        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+////
+////        int nRead;
+////        byte[] data = new byte[16384];
+////
+////        while ((nRead = stream.read(data, 0, data.length)) != -1) {
+////            buffer.write(data, 0, nRead);
+////        }
+////
+////        buffer.flush();
+////
+////        return buffer.toByteArray();
 //
-//        return buffer.toByteArray();
-
-        return null;
-    }
+//        return null;
+//    }
 }
 
 
