@@ -8,7 +8,7 @@ import com.poolingpeople.deployer.control.ProxyDockerPackage;
 import com.poolingpeople.deployer.dockerapi.boundary.ContainerNetworkSettingsReader;
 import com.poolingpeople.deployer.dockerapi.boundary.CreateContainerBodyWriter;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
-import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPoint;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 
@@ -47,7 +47,7 @@ public class DeployerFacade implements Serializable {
     ClusterConfigProvider clusterConfigProvider;
 
     @Inject
-    DockerEndPointProvider endPointProvider;
+    DockerEndPoint endPointProvider;
 
     @Inject
     DbSnapshot dbSnapshot;
@@ -56,11 +56,8 @@ public class DeployerFacade implements Serializable {
 
     @PostConstruct
     public void init(){
-
         txIds = new ArrayList<>();
-
     }
-
 
     Logger logger = Logger.getLogger(this.getClass().getName());
 
