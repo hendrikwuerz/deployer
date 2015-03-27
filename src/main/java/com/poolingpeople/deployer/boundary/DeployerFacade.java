@@ -105,6 +105,11 @@ public class DeployerFacade implements Serializable {
 
         txIds.clear();
 
+        if(!isValidSubdomain(subdomain)) {
+            rollBack();
+            throw new RuntimeException("Subdomain already used");
+        }
+
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version.toLowerCase()) // docker does not accept capitals
@@ -123,6 +128,16 @@ public class DeployerFacade implements Serializable {
             throw e;
         }
 
+    }
+
+    public boolean isValidSubdomain(String subdomain) {
+        // check for non set name
+        if(subdomain == null || subdomain.equals("")) {
+            return false;
+        }
+        // check for existing subdomain
+        long used = dockerApi.listContainers().stream().peek(System.out::println).filter( container -> container.getSubdomain().equals(subdomain) ).count();
+        return used == 0;
     }
 
     private void rollBack(){

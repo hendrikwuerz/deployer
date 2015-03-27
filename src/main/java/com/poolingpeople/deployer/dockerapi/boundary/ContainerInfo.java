@@ -118,12 +118,19 @@ public class ContainerInfo {
         }
     }
 
+    public String getSubdomain() {
+        try {
+            return getImage().split(ClusterConfig.clusterSeparator)[3];
+        } catch (ArrayIndexOutOfBoundsException e) { // proxy has no 'valid' image name -> catch exception
+            return "";
+        }
+    }
+
     public String getDomainLink() {
         try {
             String[] parts = getImage().split(ClusterConfig.clusterSeparator);
-            String subdomain = parts[3];
             String host = parts[4].split(":")[0];
-            return subdomain + "." + host;
+            return getSubdomain() + "." + host;
         } catch (ArrayIndexOutOfBoundsException e) {
             return "";
         }
