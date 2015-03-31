@@ -1,4 +1,8 @@
-package com.poolingpeople.deployer.dockerapi.boundary;
+package com.poolingpeople.deployer.boundary;
+
+import com.poolingpeople.deployer.dockerapi.boundary.ClusterInfo;
+import com.poolingpeople.deployer.dockerapi.boundary.ContainerInfo;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.model.CollectionDataModel;
