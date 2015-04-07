@@ -9,6 +9,7 @@ import javax.json.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
@@ -33,14 +34,23 @@ public class VersionsApi {
      */
     public Collection<String> loadVersions(String area){
 
-        String endpoint = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/rest/";
+        // older versions up to 0.0.5
+        String endpointRest = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/rest/";
 
+        // newer versions beginning with 0.0.6-SNAPSHOT
+        String endpointWebtier = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/webtier/";
+
+        Collection<String> versions = fetchVersions(endpointRest);
+        versions.addAll(fetchVersions(endpointWebtier));
+        return versions;
+    }
+
+    private Collection<String> fetchVersions(String endpoint) {
         Response response = fetchVersionsFromNexus(endpoint);
         InputStream stream = response.readEntity(InputStream.class);
         Collection<String> versions = parseVersions(stream);
         response.close();
         return versions;
-
     }
 
     /**
