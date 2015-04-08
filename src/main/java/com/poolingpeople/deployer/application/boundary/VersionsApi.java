@@ -106,12 +106,9 @@ public class VersionsApi {
                 "http://nexus.poolingpeople.com/service/local/repositories/" +
                         "{area}/content/com/poolingpeople/rest/{version}/rest-{version}.war";
 
-        // TODO: modify url ???
         if(area.equals("snapshots")) {
-            url = "http://nexus.poolingpeople.com/service/local/repositories/" +
-                    "snapshots/content/com/poolingpeople/rest/0.0.0-SNAPSHOT/rest-0.0.0-20141202.110626-1.war";
-            url = "http://nexus.poolingpeople.com/service/local/repositories/" +
-                    "snapshots/content/com/poolingpeople/rest/0.0.2-SNAPSHOT/rest-0.0.2-20150121.091129-1.war";
+            url = "http://nexus.poolingpeople.com/service/local/artifact/maven/content" +
+                    "?r=snapshots&g=com.poolingpeople&a=rest&v={version}&e=war";
         }
 
         Client client = ClientBuilder.newClient();
@@ -127,20 +124,6 @@ public class VersionsApi {
 
         checkStatusResponseCode(response.getStatus());
         InputStream warFileIS = response.readEntity(InputStream.class);
-
-
-//        logger.fine("getWarForVersion: input stream read: " + String.valueOf(warFileIS.available()));
-
-        // cache result
-//        try {
-//            File cacheFile = getCacheFile(version, area);
-//            FileOutputStream stream = new FileOutputStream(cacheFile);
-//            IOUtils.copy(warFileIS, stream);
-//            stream.close();
-//            logger.fine("Save war for caching in " + cacheFile.getAbsolutePath());
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
 
         return getBytesFromStream(warFileIS);
 
