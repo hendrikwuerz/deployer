@@ -23,9 +23,15 @@ public class ContainerController {
 
     DataModel<ContainerInfo> containers;
 
+    Collection<ContainerInfo> containerInfos;
+
     public DataModel<ContainerInfo> getContainers(){
-        Collection<ContainerInfo> containerInfos = api.listContainers();
-        containers = new CollectionDataModel<>(containerInfos);
+
+        if (containerInfos == null){
+            containerInfos = api.listContainers();
+            containers = new CollectionDataModel<>(containerInfos);
+        }
+
         return containers;
     }
 

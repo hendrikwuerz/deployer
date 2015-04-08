@@ -1,4 +1,8 @@
-package com.poolingpeople.deployer.dockerapi.boundary;
+package com.poolingpeople.deployer.boundary;
+
+import com.poolingpeople.deployer.dockerapi.boundary.ClusterInfo;
+import com.poolingpeople.deployer.dockerapi.boundary.ContainerInfo;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.model.CollectionDataModel;
@@ -8,6 +12,7 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
  * Created by hendrik on 10.03.15.
@@ -22,7 +27,13 @@ public class ClusterController {
 
     DataModel<ClusterInfo> clusters;
 
+    Logger logger = Logger.getLogger(getClass().getName());
+
     public DataModel<ClusterInfo> getClusters() {
+
+        if(clusters != null)
+            return clusters;
+
         Collection<ClusterInfo> clusterInfos = new ArrayList<>(); // all clusters
         Collection<ContainerInfo> containerInfos = api.listContainers(); // all containers
         containerInfos.stream().forEach(container -> {
@@ -38,7 +49,7 @@ public class ClusterController {
             cluster.addContainer(container);
         });
         clusters = new CollectionDataModel<>(clusterInfos);
-        System.out.println(clusterInfos.size());
+        logger.fine(String.valueOf(clusterInfos.size()));
         return clusters;
     }
 
@@ -49,7 +60,7 @@ public class ClusterController {
     }
 
     public String start() {
-        System.out.println(clusters.getRowIndex());
+        logger.fine(String.valueOf(clusters.getRowIndex()));
         ClusterInfo current = clusters.getRowData();
         // neo4j has to be started before wildfly
         try {
