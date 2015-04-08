@@ -36,10 +36,7 @@ public class VersionsApi {
         String endpointWebtier = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/webtier/";
 
         Collection<String> versions = fetchVersions(endpointRest);
-        // temporarily only available for snapshots
-        if ("snapshots".equals(area)) {
-            versions.addAll(fetchVersions(endpointWebtier));
-        }
+        versions.addAll(fetchVersions(endpointWebtier));
 
         return versions;
     }
