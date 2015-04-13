@@ -181,8 +181,13 @@ public class DeployerFacade implements Serializable {
 
         CreateContainerBodyWriter builder = null;
         String containerId = null;
+        if(dbSnapshotName != null)
+            neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
 
-        dockerApi.buildImage(clusterConfig.getNeo4jId(), getTarBytesForNeo4j(dbSnapshotName));
+        neo4jDockerPackage.setClusterConfig(clusterConfig);
+        neo4jDockerPackage.prepareTarStream();
+
+        dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
 
         builder = new CreateContainerBodyWriter();
         builder.setImage(clusterConfig.getNeo4jId())
@@ -230,7 +235,12 @@ public class DeployerFacade implements Serializable {
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        dockerApi.buildImage(clusterConfig.getWildflyId(), getTarBytesForWar(version, area, forceDownload));
+        byte[] bytes = versionsApi.getWarForVersion(version, area, forceDownload);
+        applicationDockerPackage.setClusterConfig(clusterConfig);
+        applicationDockerPackage.setWarFileBytes(bytes);
+        applicationDockerPackage.prepareTarStream();
+
+        dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
 
         builder = new CreateContainerBodyWriter()
                 .setImage(clusterConfig.getWildflyId())
