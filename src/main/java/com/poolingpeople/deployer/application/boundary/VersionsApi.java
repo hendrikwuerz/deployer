@@ -122,8 +122,23 @@ public class VersionsApi {
         checkStatusResponseCode(response.getStatus());
         InputStream warFileIS = response.readEntity(InputStream.class);
 
-        return getBytesFromStream(warFileIS);
 
+//        logger.fine("getWarForVersion: input stream read: " + String.valueOf(warFileIS.available()));
+
+        byte[] data = getBytesFromStream(warFileIS);
+
+        // cache result
+        try {
+            File cacheFile = getCacheFile(version, area);
+            FileOutputStream stream = new FileOutputStream(cacheFile);
+            stream.write(data);
+            stream.close();
+            logger.fine("Save war for caching in " + cacheFile.getAbsolutePath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return data;
     }
 
     private Response requestWar(String version, String area, String sourceModule, String url) {
@@ -167,6 +182,11 @@ public class VersionsApi {
      *          The file where the data is stored
      */
     private File getCacheFile(String version, String area) {
+        // check folder to exists
+        File folder = new File("cache");
+        if(!folder.exists()) {
+            folder.mkdirs();
+        }
         return new File("cache/cache-" + area + "-version-" + version + ".war");
     }
 
