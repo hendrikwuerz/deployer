@@ -1,11 +1,9 @@
 package com.poolingpeople.deployer.application.boundary;
 
-import org.apache.commons.compress.utils.IOUtils;
-import org.apache.http.conn.EofSensorInputStream;
-
-import org.apache.commons.compress.utils.IOUtils;
-
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
@@ -16,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -33,14 +30,23 @@ public class VersionsApi {
      */
     public Collection<String> loadVersions(String area){
 
-        String endpoint = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/rest/";
+        // older versions up to 0.0.5
+        String endpointRest = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/rest/";
+        // newer versions beginning with 0.0.6-SNAPSHOT
+        String endpointWebtier = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/webtier/";
 
+        Collection<String> versions = fetchVersions(endpointRest);
+        versions.addAll(fetchVersions(endpointWebtier));
+
+        return versions;
+    }
+
+    private Collection<String> fetchVersions(String endpoint) {
         Response response = fetchVersionsFromNexus(endpoint);
         InputStream stream = response.readEntity(InputStream.class);
         Collection<String> versions = parseVersions(stream);
         response.close();
         return versions;
-
     }
 
     /**
@@ -92,24 +98,26 @@ public class VersionsApi {
      */
     private byte[] downloadWarForVersion(String version, String area) {
 
-        String url;
+        String sourceModule = "webtier";
+        String url =
+                "http://nexus.poolingpeople.com/service/local/repositories/" +
+                        "{area}/content/com/poolingpeople/{sourceModule}/{version}/{sourceModule}-{version}.war";
+
         if(area.equals("snapshots")) {
-            url = "http://nexus.poolingpeople.com/service/local/artifact/maven/content?" +
-                    "r=snapshots&g=com.poolingpeople&a=rest&v={version}&e=war";
-        } else {
-            url = "http://nexus.poolingpeople.com/service/local/repositories/" +
-                    "releases/content/com/poolingpeople/rest/{version}/rest-{version}.war";
+            url = "http://nexus.poolingpeople.com/service/local/artifact/maven/content" +
+                    "?r=snapshots&g=com.poolingpeople&a={sourceModule}&v={version}&e=war";
         }
 
-        Client client = ClientBuilder.newClient();
-        Invocation.Builder req =  client
-                .target(url)
-                .resolveTemplate("version", version)
-                .request();
+        Response response = requestWar(version, area, sourceModule, url);
 
-        Response response =
-                req.header("Authorization", getBasicAuthentication())
-                        .get();
+        /**
+         * we try to fetch war from webtier module first, if it is not found there we try to get it from rest module
+         * (only for older versions)
+         */
+        if (Response.Status.fromStatusCode(response.getStatus()) == Response.Status.NOT_FOUND) {
+            sourceModule = "rest";
+            response = requestWar(version, area, sourceModule, url);
+        }
 
         checkStatusResponseCode(response.getStatus());
         InputStream warFileIS = response.readEntity(InputStream.class);
@@ -131,7 +139,19 @@ public class VersionsApi {
         }
 
         return data;
+    }
 
+    private Response requestWar(String version, String area, String sourceModule, String url) {
+        Client client = ClientBuilder.newClient();
+        Invocation.Builder req =  client
+                .target(url)
+                .resolveTemplate("sourceModule", sourceModule)
+                .resolveTemplate("version", version)
+                .resolveTemplate("area", area)
+                .request();
+
+        return req.header("Authorization", getBasicAuthentication())
+                .get();
     }
 
     private byte[] getBytesFromStream(InputStream stream){

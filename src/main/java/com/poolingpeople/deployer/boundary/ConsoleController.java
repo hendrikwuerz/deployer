@@ -2,11 +2,14 @@ package com.poolingpeople.deployer.boundary;
 
 import com.poolingpeople.deployer.dockerapi.boundary.ContainerInfo;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPoint;
 
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.event.Event;
 import javax.faces.model.DataModel;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.validation.constraints.NotNull;
 import java.util.stream.Collectors;
 
 /**
@@ -21,7 +24,13 @@ public class ConsoleController{
     DockerApi api;
 
     @Inject
+    DockerEndPoint endPoint;
+
+    @Inject
     ConsoleFacade facade;
+
+    @Inject
+    Event<DockerEndPoint> dockerEndPointChangeEvent;
 
     DataModel<ContainerInfo> containers;
 
@@ -64,6 +73,13 @@ public class ConsoleController{
 
     public void reloadProxy(){
         facade.createProxy();
+    }
+
+    public void updateEndpoint(@NotNull String host, @NotNull String port){
+//        dockerEndPointChangeEvent.fire(new DockerEndPoint(host, Integer.parseInt(port), "http"));
+        endPoint.setHost(host);
+        endPoint.setPort(Integer.parseInt(port));
+        endPoint.setProtocol("http");
     }
 
 //    public String destroy() {

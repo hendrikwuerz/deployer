@@ -1,7 +1,7 @@
 package com.poolingpeople.deployer.boundary;
 
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
-import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPointProvider;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPoint;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,7 +11,7 @@ public class DbSnapshotMakerManagerTestIT {
 
     @Before
     public void init(){
-        cut = new DbSnapshotManagerFacade(new DockerApi(new DockerEndPointProvider("prod.poolingpeople.com", "5555")));
+        cut = new DbSnapshotManagerFacade(new DockerApi(new DockerEndPoint("prod.poolingpeople.com", 5555, "http")));
     }
 
     @Test

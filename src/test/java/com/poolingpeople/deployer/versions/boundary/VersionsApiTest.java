@@ -15,6 +15,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.Is;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.client.Client;
@@ -54,6 +55,7 @@ public class VersionsApiTest {
     }
 
     @Test
+    @Ignore
     public void downloadFile() throws IOException, CompressorException, ArchiveException {
 
         String url = "http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/0.0.1/rest-0.0.1.war";
