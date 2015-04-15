@@ -52,6 +52,9 @@ public class DeployerFacade implements Serializable {
     @Inject
     DbSnapshot dbSnapshot;
 
+    @Inject
+    ConsoleFacade consoleFacade;
+
     Collection<String> txIds;
 
     @PostConstruct
@@ -116,6 +119,9 @@ public class DeployerFacade implements Serializable {
 
             deployNeo4jDb(dbSnapshotName);
             deployWarApplication(version, area, forceDownload);
+
+            // reload proxy after deployment
+            consoleFacade.createProxy();
 
         }catch (RuntimeException e){
             rollBack();
