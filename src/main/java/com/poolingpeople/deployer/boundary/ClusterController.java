@@ -36,7 +36,7 @@ public class ClusterController {
 
         Collection<ClusterInfo> clusterInfos = new ArrayList<>(); // all clusters
         Collection<ContainerInfo> containerInfos = api.listContainers(); // all containers
-        containerInfos.stream().forEach(container -> {
+        containerInfos.stream().sorted( (c1, c2) -> Integer.compare(c2.getCluster(), c1.getCluster()) ).forEach(container -> {
             Optional<ClusterInfo> searchResult = clusterInfos.stream().filter(cluster -> cluster.getClusterNumber() == container.getCluster()).findFirst();
             ClusterInfo cluster; // cluster for the current container
             if (searchResult.isPresent()) { // found clusterNumber for this container

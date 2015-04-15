@@ -62,6 +62,7 @@ public class ClusterInfo {
         containers.forEach(container ->
             container.getPorts().stream()
                     .filter( port -> port.ip != null && port.publicPort != null)
+                    .sorted((p1, p2) -> Integer.compare(p2.publicPort, p1.publicPort))
                     .forEach( port -> sb
                             .append("<a href='")
                             .append(port.getLink())
