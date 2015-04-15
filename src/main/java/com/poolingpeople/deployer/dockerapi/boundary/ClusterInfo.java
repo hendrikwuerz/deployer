@@ -48,7 +48,7 @@ public class ClusterInfo {
         return containers.stream()
                 .filter( container -> container.getServer().equals(name) )
                 .findAny()
-                .get();
+                .orElse(null);
     }
 
     public String getImages() {
@@ -84,6 +84,14 @@ public class ClusterInfo {
             return "Up";
         }
         return "Down";
+    }
+
+    public boolean isCorrect() {
+        if(clusterNumber != -1) return getNeo4j() != null && getWildfly() != null; // "normal" cluster
+
+        // not a "normal" cluster --> default cluster for container with no cluster number
+        // only the proxy is allowed here
+        return getContainers().size() == 1 && getContainers().stream().findAny().get().getImage().startsWith("proxy");
     }
 
     @Override

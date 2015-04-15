@@ -14,6 +14,7 @@
             <h:panelGroup id="messagePanel" layout="block">
                 <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
             </h:panelGroup>
+            <h:commandLink action="#{clusterController.destroyInvalidClusters()}" value="DestroyInvalidClusters"/>
             <h:outputText escape="false" value="No containers to show" rendered="#{clusterController.clusters.rowCount == 0}"/>
             <h:panelGroup rendered="#{clusterController.clusters.rowCount > 0}">
                 <h:dataTable value="#{clusterController.clusters}" var="cluster" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">
@@ -21,7 +22,7 @@
                         <f:facet name="header">
                             <h:outputText value="clusterNumber"/>
                         </f:facet>
-                        <h:outputText value="#{cluster.clusterNumber}"/>
+                        <h:outputText value="#{cluster.clusterNumber}" style="#{cluster.isCorrect() ? '' : 'color:red'}"/>
                     </h:column>
                     <h:column>
                         <f:facet name="header">
