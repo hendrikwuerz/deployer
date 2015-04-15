@@ -31,9 +31,6 @@ public class ClusterController {
 
     public DataModel<ClusterInfo> getClusters() {
 
-        if(clusters != null)
-            return clusters;
-
         Collection<ClusterInfo> clusterInfos = new ArrayList<>(); // all clusters
         Collection<ContainerInfo> containerInfos = api.listContainers(); // all containers
         containerInfos.stream().sorted( (c1, c2) -> Integer.compare(c2.getCluster(), c1.getCluster()) ).forEach(container -> {
