@@ -8,6 +8,7 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
+import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
 
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
@@ -39,47 +40,8 @@ public class DockerEndPoint  implements Serializable{
     public DockerEndPoint() {
     }
 
-    String accessKey;
-    String secretKey;
-
-    // TODO: Same methode like in scenario.boundary.DbSnapshot
-    private void loadAWSCredentials(){
-
-        accessKey = System.getenv("aws-access-key");
-        secretKey = System.getenv("aws-secret-key");
-
-        if( accessKey != null && accessKey != null ) return;
-
-        InputStream akStream = getClass().getClassLoader().getResourceAsStream("aws-access-key");
-        InputStream skStream = getClass().getClassLoader().getResourceAsStream("aws-secret-key");
-
-        if( akStream == null || skStream == null ){
-            throw new RuntimeException("aws keys not found");
-        }
-
-        accessKey = streamToString(akStream);
-        secretKey = streamToString(skStream);
-
-    }
-
-    // TODO: Same methode like in scenario.boundary.DbSnapshot
-    private String streamToString(InputStream in) {
-        try {
-            StringBuilder out = new StringBuilder();
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            for (String line = br.readLine(); line != null; line = br.readLine()) {
-                out.append(line);
-            }
-            br.close();
-            return out.toString();
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
-    }
-
     public List<String> getAvailableHosts(){
-        loadAWSCredentials();
-        AmazonEC2 ec2 = new AmazonEC2Client(new BasicAWSCredentials(accessKey, secretKey));
+        AmazonEC2 ec2 = new AmazonEC2Client(new AWSCredentials());
         ec2.setRegion(Region.getRegion(Regions.EU_WEST_1));
         DescribeInstancesResult result = ec2.describeInstances();
         List<Instance> instances = result.getReservations().stream().map(res -> (Instance) res.getInstances().get(0)).collect(Collectors.toList());
