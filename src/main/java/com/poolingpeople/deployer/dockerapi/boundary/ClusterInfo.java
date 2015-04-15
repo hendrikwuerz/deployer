@@ -87,7 +87,8 @@ public class ClusterInfo {
     }
 
     public boolean isCorrect() {
-        if(clusterNumber != -1) return getNeo4j() != null && getWildfly() != null; // "normal" cluster
+        // "normal" cluster only one Neo4j and one Wildfly is allowed
+        if(clusterNumber != -1) return getNeo4j() != null && getWildfly() != null && getContainers().size() == 2;
 
         // not a "normal" cluster --> default cluster for container with no cluster number
         // only the proxy is allowed here
