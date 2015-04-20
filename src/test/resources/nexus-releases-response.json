@@ -1,7 +1,7 @@
 {
     "data":[
         {
-            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/0.0.1/",
+            "resourceURI":"http://nexus.intern.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/0.0.1/",
             "relativePath":"/com/poolingpeople/rest/0.0.1/",
             "text":"0.0.1",
             "leaf":false,
@@ -9,7 +9,7 @@
             "sizeOnDisk":-1
         },
         {
-            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/maven-metadata.xml.sha1",
+            "resourceURI":"http://nexus.intern.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/maven-metadata.xml.sha1",
             "relativePath":"/com/poolingpeople/rest/maven-metadata.xml.sha1",
             "text":"maven-metadata.xml.sha1",
             "leaf":true,
@@ -17,7 +17,7 @@
             "sizeOnDisk":40
         },
         {
-            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/maven-metadata.xml",
+            "resourceURI":"http://nexus.intern.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/maven-metadata.xml",
             "relativePath":"/com/poolingpeople/rest/maven-metadata.xml",
             "text":"maven-metadata.xml",
             "leaf":true,
@@ -25,7 +25,7 @@
             "sizeOnDisk":301
         },
         {
-            "resourceURI":"http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/maven-metadata.xml.md5",
+            "resourceURI":"http://nexus.intern.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/maven-metadata.xml.md5",
             "relativePath":"/com/poolingpeople/rest/maven-metadata.xml.md5",
             "text":"maven-metadata.xml.md5",
             "leaf":true,

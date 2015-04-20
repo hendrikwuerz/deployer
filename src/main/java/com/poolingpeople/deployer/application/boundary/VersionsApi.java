@@ -31,9 +31,9 @@ public class VersionsApi {
     public Collection<String> loadVersions(String area){
 
         // older versions up to 0.0.5
-        String endpointRest = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/rest/";
+        String endpointRest = "http://nexus.intern.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/rest/";
         // newer versions beginning with 0.0.6-SNAPSHOT
-        String endpointWebtier = "http://nexus.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/webtier/";
+        String endpointWebtier = "http://nexus.intern.poolingpeople.com/service/local/repositories/" + area + "/content/com/poolingpeople/webtier/";
 
         Collection<String> versions = fetchVersions(endpointRest);
         versions.addAll(fetchVersions(endpointWebtier));
@@ -100,11 +100,11 @@ public class VersionsApi {
 
         String sourceModule = "webtier";
         String url =
-                "http://nexus.poolingpeople.com/service/local/repositories/" +
+                "http://nexus.intern.poolingpeople.com/service/local/repositories/" +
                         "{area}/content/com/poolingpeople/{sourceModule}/{version}/{sourceModule}-{version}.war";
 
         if(area.equals("snapshots")) {
-            url = "http://nexus.poolingpeople.com/service/local/artifact/maven/content" +
+            url = "http://nexus.intern.poolingpeople.com/service/local/artifact/maven/content" +
                     "?r=snapshots&g=com.poolingpeople&a={sourceModule}&v={version}&e=war";
         }
 
