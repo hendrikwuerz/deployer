@@ -58,7 +58,7 @@ public class VersionsApiTest {
     @Ignore
     public void downloadFile() throws IOException, CompressorException, ArchiveException {
 
-        String url = "http://nexus.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/0.0.1/rest-0.0.1.war";
+        String url = "http://nexus.intern.poolingpeople.com/service/local/repositories/releases/content/com/poolingpeople/rest/0.0.1/rest-0.0.1.war";
 
         Client client = ClientBuilder.newClient();
         Response response = client
