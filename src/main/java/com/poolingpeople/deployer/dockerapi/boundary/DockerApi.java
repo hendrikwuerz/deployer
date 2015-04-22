@@ -231,8 +231,26 @@ public class DockerApi implements Serializable{
 
     }
 
-    public Collection<ContainerInfo> listContainers(){
-        String url = endPoint.getURI() + "/containers/json?all=1";
+    /**
+     * list containers for current endPoint
+     * @return
+     *          A collection with all containers
+     */
+    public Collection<ContainerInfo> listContainers() {
+        return listContainers(endPoint.getURI());
+    }
+
+
+    /**
+     * list containers for passed endPoint URI
+     * @param url
+     *          The url of the host to get the containers for
+     *          Example: http://localhost:5555
+     * @return
+     *          A collection with all containers
+     */
+    public Collection<ContainerInfo> listContainers(String url) {
+        url = url + "/containers/json?all=1";
         Client client = ClientBuilder.newClient();
 
         Response response = client

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<ui:composition template="/consoleHeader.xhtml">
+    <ui:define name="title">
+        <h:outputText value="Backup settings"></h:outputText>
+    </ui:define>
+    <ui:define name="body">
+        <h:form>
+            <div>
+                <h:dataTable value="#{backupController.containers}" var="backupInfo" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="id"/>
+                        </f:facet>
+                        <h:outputText value="#{backupInfo.container.shortId}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="names"/>
+                        </f:facet>
+                        <h:outputText value="#{backupInfo.container.names}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="status"/>
+                        </f:facet>
+                        <h:outputText value="#{backupInfo.container.status}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="backup"/>
+                        </f:facet>
+                        <h:outputText value="#{backupInfo.backup}" style="#{backupInfo.backup ? 'color:green' : ''}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="&nbsp;"/>
+                        </f:facet>
+                        <h:commandLink action="#{backupController.enableBackup}" value="Enable backup"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="&nbsp;"/>
+                        </f:facet>
+                        <h:commandLink action="#{backupController.disableBackup}" value="Disable backup"/>
+                    </h:column>
+                </h:dataTable>
+            </div>
+
+            <h:commandLink action="#{backupController.doBackup}">Do backup</h:commandLink>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>
+
