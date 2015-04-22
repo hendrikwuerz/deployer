@@ -1,7 +1,7 @@
 #!/bin/sh
 
 USER=$1
-PUBLIC_IP=52.17.169.64
+PUBLIC_IP=52.17.208.157
 
 cd ..
 mvn clean package

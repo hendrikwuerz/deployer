@@ -41,6 +41,8 @@ public class ProxyDockerPackage extends DockerCluster {
 
         addFile("Dockerfile-nginx", "Dockerfile");
         addFile("nginx.conf", "nginx.conf");
+        addFile("default.conf", "default.conf");
+        addFile("404.html", "404.html");
         return this;
     }
 
