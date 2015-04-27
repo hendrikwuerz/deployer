@@ -12,6 +12,11 @@
     </ui:define>
     <ui:define name="body">
         <h:form>
+
+            <h:commandLink action="#{backupController.loadContainers}">Reload available containers</h:commandLink>
+            -
+            <h:commandLink action="#{backupController.doBackup}">Do backup</h:commandLink>
+
             <div>
                 <h:dataTable value="#{backupController.containers}" var="backupInfo" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">
                     <h:column>
@@ -52,8 +57,6 @@
                     </h:column>
                 </h:dataTable>
             </div>
-
-            <h:commandLink action="#{backupController.doBackup}">Do backup</h:commandLink>
         </h:form>
     </ui:define>
 </ui:composition>

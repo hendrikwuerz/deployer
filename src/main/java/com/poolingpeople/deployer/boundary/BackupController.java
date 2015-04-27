@@ -5,7 +5,9 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.poolingpeople.deployer.dockerapi.boundary.BackupInfo;
+import com.poolingpeople.deployer.dockerapi.boundary.ContainerInfo;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
+import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPoint;
 import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
 import org.apache.commons.compress.utils.IOUtils;
 
@@ -46,7 +48,7 @@ public class BackupController {
 
     // TODO: wrap them for different server
     DataModel<BackupInfo> model;
-    Collection<BackupInfo> list = new ArrayList<>();
+    ArrayList<BackupInfo> list = new ArrayList<>();
     Collection<String> containersToBeEnabled;
 
     Logger logger = Logger.getLogger(getClass().getName());
@@ -68,7 +70,7 @@ public class BackupController {
         timerService.createCalendarTimer(scheduleExpression, new TimerConfig("passed message " + new Date(), false));
 
         // Try to load old settings
-        getContainers();
+        loadContainers();
         try {
             FileInputStream fis = new FileInputStream(getStoreFile());
             ObjectInputStream ois = new ObjectInputStream(fis);
@@ -87,8 +89,6 @@ public class BackupController {
 
     @PreDestroy
     private void shutdown() {
-        System.out.println("DESTROY");
-
         // Save container backup list
         try {
 
@@ -103,7 +103,7 @@ public class BackupController {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(enabledContainers);
             objectOutputStream.close();
-            System.out.println("SAVED SETTINGS");
+            logger.fine("SAVED SETTINGS");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -127,27 +127,43 @@ public class BackupController {
     }
 
     /**
+     * adds all available database containers to 'list'
+     */
+    public void loadContainers() {
+        parseContainersFor("localhost");
+        DockerEndPoint.availableHosts().stream().forEach( host -> {
+            System.out.println(host);
+            parseContainersFor(host);
+        });
+    }
+
+    /**
      * get all containers with neo4j databases.
      * all containers returned can be enabled for backup
      * @return
      *          all containers with neo4j databases
      */
     public DataModel<BackupInfo> getContainers() {
-        list = dockerApi.listContainers("http://localhost:5555").stream()
-                .filter(c -> c.getNames().stream().anyMatch(n -> n.toLowerCase().contains("neo"))) // only get databases
-                .map(container -> {
-                    BackupInfo bi = new BackupInfo(container);
-                    // check if this container is already known
-                    Optional<BackupInfo> elem = list.stream().filter(knownContainer -> knownContainer.getContainer().getId().equals(container.getId())).findAny();
-                    if (elem.isPresent()) { // copy data from already known container
-                        bi.setBackup(elem.get().isBackup());
-                    }
-                    return bi;
-                })
-                .collect(Collectors.toCollection(ArrayList::new));
+        System.out.println("GET CONTAINers");
 
         model = new CollectionDataModel<>(list);
         return model;
+    }
+
+    private void parseContainersFor(String host) {
+        Collection<ContainerInfo> containerInfos = dockerApi.listContainers("http://" + host + ":5555");
+        if(containerInfos == null) return; // host not available
+        containerInfos.stream()
+                .filter(c -> c.getNames().stream().anyMatch(n -> n.toLowerCase().contains("neo"))) // only get databases
+                .forEach(container -> {
+                    // check if this container is already known
+                    Optional<BackupInfo> elem = list.stream().filter(knownContainer -> knownContainer.getContainer().getId().equals(container.getId())).findAny();
+                    if (elem.isPresent()) { // container is already known -> just copy current container for security
+                        elem.get().setContainer(container);
+                    } else { // container is not known -> add to array list
+                        list.add(new BackupInfo(container));
+                    }
+                });
     }
 
     /**
