@@ -232,7 +232,7 @@ public class BackupController {
             s3client.putObject(
                     new PutObjectRequest(
                             "poolingpeople",
-                            "neo4j-db" + containerInfo.getDomainLink() + ".tar",
+                            "neo4j-db/" + containerInfo.getDomainLink() + ".tar",
                             new ByteArrayInputStream(data),
                             objectMetadata
                     ));
