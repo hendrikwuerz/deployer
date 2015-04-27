@@ -285,6 +285,9 @@ public class DockerApi implements Serializable{
     }
 
     public InputStream copyFiles(String containerId, String filePath){
+        return copyFiles(endPoint, containerId, filePath);
+    }
+    public InputStream copyFiles(DockerEndPoint endPoint, String containerId, String filePath){
         String url = endPoint.getURI() + "/containers/{containerId}/copy";
         Client client = ClientBuilder.newClient();
 

@@ -46,7 +46,6 @@ public class BackupController {
     @Resource
     private TimerService timerService;
 
-    // TODO: wrap them for different server
     DataModel<BackupInfo> model;
     ArrayList<BackupInfo> list = new ArrayList<>();
     ArrayList<BackupInfo> lastList; // needed for recreation of 'list'
@@ -65,7 +64,7 @@ public class BackupController {
         // Register timer auto-backup
         logger.log(Level.INFO, "ProgrammaticalTimerEJB initialized");
         //ScheduleExpression scheduleExpression = new ScheduleExpression().second("*/10").minute("*").hour("*");
-        ScheduleExpression scheduleExpression = new ScheduleExpression().hour("16");
+        ScheduleExpression scheduleExpression = new ScheduleExpression().hour("10");
         timerService.createCalendarTimer(scheduleExpression, new TimerConfig("passed message " + new Date(), false));
 
         // Try to load old settings
@@ -102,7 +101,7 @@ public class BackupController {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(enabledContainers);
             objectOutputStream.close();
-            logger.fine("SAVED SETTINGS");
+            logger.fine("Saved database backup settings");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -122,7 +121,7 @@ public class BackupController {
     @Timeout
     public void handleTimer(final Timer timer) {
         logger.info("timer received - contained message is: " + timer.getInfo());
-        //doBackup();
+        doBackup();
     }
 
     /**
@@ -163,9 +162,9 @@ public class BackupController {
                     // check if this container is already known
                     Optional<BackupInfo> elem = lastList.stream().filter(knownContainer -> knownContainer.getContainer().getId().equals(container.getId())).findAny();
                     if (elem.isPresent()) { // container is already known -> copy backup settings
-                        list.add(new BackupInfo(container, elem.get().isBackup()));
+                        list.add(new BackupInfo(container, host, elem.get().isBackup()));
                     } else { // container is not known -> add to array list
-                        list.add(new BackupInfo(container));
+                        list.add(new BackupInfo(container, host));
                     }
                 });
     }
@@ -196,11 +195,17 @@ public class BackupController {
         logger.fine("Starting a backup");
 
         // Backup all selected databases
-        list.stream().filter(BackupInfo::isBackup).map(BackupInfo::getContainer).forEach(containerInfo -> {
+        list.stream().filter(BackupInfo::isBackup).forEach(backupInfo -> {
+
+            ContainerInfo containerInfo = backupInfo.getContainer();
 
             byte[] data;
             try {
-                InputStream dbInputStream = dockerApi.copyFiles(containerInfo.getId(), "/var/lib/neo4j/data/graph.db/");
+
+                DockerEndPoint dockerEndPoint = new DockerEndPoint();
+                dockerEndPoint.setHost(backupInfo.getHost());
+
+                InputStream dbInputStream = dockerApi.copyFiles(dockerEndPoint, containerInfo.getId(), "/var/lib/neo4j/data/graph.db/");
                 data = IOUtils.toByteArray(dbInputStream);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -227,7 +232,7 @@ public class BackupController {
             s3client.putObject(
                     new PutObjectRequest(
                             "poolingpeople",
-                            "neo4j-db-dev/" + containerInfo.getDomainLink() + ".tar", // TODO: Change to "neo4j-db/"
+                            "neo4j-db" + containerInfo.getDomainLink() + ".tar",
                             new ByteArrayInputStream(data),
                             objectMetadata
                     ));

@@ -8,14 +8,16 @@ import java.io.Serializable;
 public class BackupInfo {
 
     ContainerInfo container;
+    String host;
     boolean backup;
 
-    public BackupInfo(ContainerInfo container) {
-        this(container, false);
+    public BackupInfo(ContainerInfo container, String host) {
+        this(container, host, false);
     }
 
-    public BackupInfo(ContainerInfo container, boolean backup) {
+    public BackupInfo(ContainerInfo container, String host, boolean backup) {
         this.container = container;
+        this.host = host;
         this.backup = backup;
     }
 
@@ -25,6 +27,14 @@ public class BackupInfo {
 
     public void setContainer(ContainerInfo container) {
         this.container = container;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
     public boolean isBackup() {
