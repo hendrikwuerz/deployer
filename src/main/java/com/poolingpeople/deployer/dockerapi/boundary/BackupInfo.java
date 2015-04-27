@@ -11,8 +11,12 @@ public class BackupInfo {
     boolean backup;
 
     public BackupInfo(ContainerInfo container) {
+        this(container, false);
+    }
+
+    public BackupInfo(ContainerInfo container, boolean backup) {
         this.container = container;
-        this.backup = false;
+        this.backup = backup;
     }
 
     public ContainerInfo getContainer() {

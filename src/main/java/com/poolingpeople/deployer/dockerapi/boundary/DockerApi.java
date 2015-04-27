@@ -272,7 +272,7 @@ public class DockerApi implements Serializable{
             InputStream r = response.readEntity(InputStream.class);
             ContainersInfoReader reader = new ContainersInfoReader();
             Collection<ContainerInfo> containers = reader.getContainers(r);
-            System.out.println("FINISHED REQUEST with " + response.getStatus());
+            //logger.fine("FINISHED REQUEST with " + response.getStatus());
 
             return containers;
         } catch (InterruptedException | ExecutionException e) {

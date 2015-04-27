@@ -50,7 +50,7 @@ public class DockerEndPoint  implements Serializable{
                 .filter(instance -> instance.getTags().stream().filter(tag -> tag.getKey().equals("deployer") && tag.getValue().equals("true"))
                         .count() > 0) // check if there is a tag with deployer==true
                 .map(DockerEndPoint::getNameForInstance)
-                .peek(h -> System.out.println("AVAILABVLE HOSTS: " + h))
+                //.peek(h -> System.out.println("AVAILABVLE HOSTS: " + h))
                 .collect(Collectors.toList());
     }
 

@@ -49,7 +49,7 @@ public class BackupController {
     // TODO: wrap them for different server
     DataModel<BackupInfo> model;
     ArrayList<BackupInfo> list = new ArrayList<>();
-    Collection<String> containersToBeEnabled;
+    ArrayList<BackupInfo> lastList; // needed for recreation of 'list'
 
     Logger logger = Logger.getLogger(getClass().getName());
 
@@ -61,7 +61,6 @@ public class BackupController {
     @PostConstruct
     @SuppressWarnings("unchecked")
     private void startup() {
-        System.out.println("STARTED");
 
         // Register timer auto-backup
         logger.log(Level.INFO, "ProgrammaticalTimerEJB initialized");
@@ -92,7 +91,7 @@ public class BackupController {
         // Save container backup list
         try {
 
-            list.stream().forEach(elem -> System.out.println(elem.getContainer().getId() + " -> " + elem.isBackup()));
+            //list.stream().forEach(elem -> logger.fine(elem.getContainer().getId() + " -> " + elem.isBackup()));
 
             Collection<String> enabledContainers = list.stream()
                     .filter(BackupInfo::isBackup)
@@ -128,13 +127,13 @@ public class BackupController {
 
     /**
      * adds all available database containers to 'list'
+     * backup settings will be copied
      */
     public void loadContainers() {
+        lastList = list;
+        list = new ArrayList<>();
         parseContainersFor("localhost");
-        DockerEndPoint.availableHosts().stream().forEach( host -> {
-            System.out.println(host);
-            parseContainersFor(host);
-        });
+        DockerEndPoint.availableHosts().stream().forEach(this::parseContainersFor);
     }
 
     /**
@@ -144,12 +143,17 @@ public class BackupController {
      *          all containers with neo4j databases
      */
     public DataModel<BackupInfo> getContainers() {
-        System.out.println("GET CONTAINers");
-
         model = new CollectionDataModel<>(list);
         return model;
     }
 
+    /**
+     * adds the database containers of the passed host to 'list'
+     * if the ID of a container is found in 'lastList' the backup settings will be copied
+     *
+     * @param host
+     *          The host from where the containers should be fetched (example: "localhost")
+     */
     private void parseContainersFor(String host) {
         Collection<ContainerInfo> containerInfos = dockerApi.listContainers("http://" + host + ":5555");
         if(containerInfos == null) return; // host not available
@@ -157,9 +161,9 @@ public class BackupController {
                 .filter(c -> c.getNames().stream().anyMatch(n -> n.toLowerCase().contains("neo"))) // only get databases
                 .forEach(container -> {
                     // check if this container is already known
-                    Optional<BackupInfo> elem = list.stream().filter(knownContainer -> knownContainer.getContainer().getId().equals(container.getId())).findAny();
-                    if (elem.isPresent()) { // container is already known -> just copy current container for security
-                        elem.get().setContainer(container);
+                    Optional<BackupInfo> elem = lastList.stream().filter(knownContainer -> knownContainer.getContainer().getId().equals(container.getId())).findAny();
+                    if (elem.isPresent()) { // container is already known -> copy backup settings
+                        list.add(new BackupInfo(container, elem.get().isBackup()));
                     } else { // container is not known -> add to array list
                         list.add(new BackupInfo(container));
                     }
