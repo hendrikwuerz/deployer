@@ -55,8 +55,9 @@ public class DeployerController implements Serializable {
         return facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).collect(Collectors.toList());
     }
 
-    public void deploy(){
+    public String deploy(){
         facade.deploy(version, subdomain, dbSnapshotName, area, forceDownload, overwrite);
+        return "/faces/console/clusters-list";
     }
 
     public String getDbSnapshotName() {
