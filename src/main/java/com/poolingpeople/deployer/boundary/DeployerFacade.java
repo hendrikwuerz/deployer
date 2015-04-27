@@ -44,6 +44,9 @@ public class DeployerFacade implements Serializable {
     ClusterConfig clusterConfig;
 
     @Inject
+    ClusterController clusterController;
+
+    @Inject
     ClusterConfigProvider clusterConfigProvider;
 
     @Inject
@@ -98,13 +101,21 @@ public class DeployerFacade implements Serializable {
         return name.split(ClusterConfig.clusterSeparator).length == 5;
     }
 
-    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area, boolean forceDownload){
+    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area, boolean forceDownload, boolean overwriteExistingSubdomain){
 
         txIds.clear();
 
         if(!isValidSubdomain(subdomain)) {
             rollBack();
-            throw new RuntimeException("Subdomain already used");
+            throw new RuntimeException("Subdomain not valid");
+        }
+
+        if(isSubdomainAlreadyUsed(subdomain)) {
+            if(overwriteExistingSubdomain) {
+                clusterController.destroy(subdomain);
+            } else {
+                throw new RuntimeException("Subdomain already used");
+            }
         }
 
         clusterConfig
@@ -131,13 +142,15 @@ public class DeployerFacade implements Serializable {
     }
 
     public boolean isValidSubdomain(String subdomain) {
-        // check for non set name
-        if(subdomain == null || subdomain.equals("")) {
-            return false;
-        }
-        // check for existing subdomain
-        long used = dockerApi.listContainers().stream().peek(System.out::println).filter( container -> container.getSubdomain().equals(subdomain) ).count();
-        return used == 0;
+        return subdomain != null && !subdomain.equals("");
+    }
+
+    public boolean isSubdomainAlreadyUsed(String subdomain) {
+        long used = dockerApi.listContainers().stream()
+                //.peek(System.out::println)
+                .filter( container -> container.getSubdomain().equals(subdomain) )
+                .count();
+        return used != 0;
     }
 
     private void rollBack(){

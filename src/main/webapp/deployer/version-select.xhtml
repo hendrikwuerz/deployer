@@ -36,6 +36,10 @@
                 <h:selectBooleanCheckbox value="#{deployerController.forceDownload}" id="forceDownload"></h:selectBooleanCheckbox>
                 <label for="forceDownload">Force download even if cached file is found</label>
             </div>
+            <div>
+                <h:selectBooleanCheckbox value="#{deployerController.overwrite}" id="overwrite"></h:selectBooleanCheckbox>
+                <label for="overwrite">Overwrites existing cluster if 'subdomain' is already used</label>
+            </div>
             <br></br>
             <div>
                 <h:commandButton action="#{deployerController.deploy}" value="Deploy"></h:commandButton>

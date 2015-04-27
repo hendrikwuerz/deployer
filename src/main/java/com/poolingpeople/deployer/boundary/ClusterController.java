@@ -26,12 +26,13 @@ public class ClusterController {
     DockerApi api;
 
     DataModel<ClusterInfo> clusters;
+    Collection<ClusterInfo> clusterInfos;
 
     Logger logger = Logger.getLogger(getClass().getName());
 
     public DataModel<ClusterInfo> getClusters() {
 
-        Collection<ClusterInfo> clusterInfos = new ArrayList<>(); // all clusters
+        clusterInfos = new ArrayList<>(); // all clusters
         Collection<ContainerInfo> containerInfos = api.listContainers(); // all containers
         containerInfos.stream().sorted( (c1, c2) -> Integer.compare(c2.getCluster(), c1.getCluster()) ).forEach(container -> {
             Optional<ClusterInfo> searchResult = clusterInfos.stream().filter(cluster -> cluster.getClusterNumber() == container.getCluster()).findFirst();
@@ -63,6 +64,15 @@ public class ClusterController {
     public String destroy(ClusterInfo current) {
         current.getContainers().forEach( container -> api.removeContainer(container.getId(), true) );
         return "clusters-list";
+    }
+
+    public void destroy(String subdomain) {
+        getClusters();
+        clusterInfos.stream().filter(clusterInfo -> {
+            Optional<ContainerInfo> container = clusterInfo.getContainers().stream().findAny();
+            if(container.isPresent()) return container.get().getSubdomain().equals(subdomain);
+            else return false;
+        }).forEach(this::destroy);
     }
 
     public String start() {

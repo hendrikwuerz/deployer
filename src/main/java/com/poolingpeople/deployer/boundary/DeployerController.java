@@ -26,6 +26,7 @@ public class DeployerController implements Serializable {
     private String dbSnapshotName;
     private String area;
     private boolean forceDownload; // force download even if cache file was found
+    private boolean overwrite; // overwrites existing cluster if 'subdomain' is already used
 
     public void setSubdomain(String subdomain) {
         this.subdomain = subdomain;
@@ -55,7 +56,7 @@ public class DeployerController implements Serializable {
     }
 
     public void deploy(){
-        facade.deploy(version, subdomain, dbSnapshotName, area, forceDownload);
+        facade.deploy(version, subdomain, dbSnapshotName, area, forceDownload, overwrite);
     }
 
     public String getDbSnapshotName() {
@@ -89,6 +90,13 @@ public class DeployerController implements Serializable {
         return forceDownload;
     }
 
+    public void setOverwrite(boolean overwrite) {
+        this.overwrite = overwrite;
+    }
+
+    public boolean getOverwrite() {
+        return overwrite;
+    }
 
     /**
      * Send passed bytes as a download to the user
