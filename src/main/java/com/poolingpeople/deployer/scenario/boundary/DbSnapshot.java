@@ -125,7 +125,7 @@ public class DbSnapshot {
         if(objects == null) return new ArrayList<>();
 
         return objects.stream().map(o -> o.getKey())
-                .filter(o -> o.contains("neo4j-db") && o.split("/").length > 1)
+                .filter(o -> { String[] path = o.split("/"); return path.length > 1 && path[0].equals("neo4j-db"); })
                 .collect(Collectors.toList());
 
     }

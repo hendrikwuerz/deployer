@@ -1,6 +1,5 @@
 package com.poolingpeople.deployer.dockerapi.boundary;
 
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2;
@@ -12,9 +11,6 @@ import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
 
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +36,11 @@ public class DockerEndPoint  implements Serializable{
     public DockerEndPoint() {
     }
 
-    public List<String> getAvailableHosts(){
+    public List<String> getAvailableHosts() {
+        return DockerEndPoint.availableHosts();
+    }
+
+    public static List<String> availableHosts(){
         AmazonEC2 ec2 = new AmazonEC2Client(new AWSCredentials());
         ec2.setRegion(Region.getRegion(Regions.EU_WEST_1));
         DescribeInstancesResult result = ec2.describeInstances();
@@ -49,11 +49,12 @@ public class DockerEndPoint  implements Serializable{
         return instances.stream()
                 .filter(instance -> instance.getTags().stream().filter(tag -> tag.getKey().equals("deployer") && tag.getValue().equals("true"))
                         .count() > 0) // check if there is a tag with deployer==true
-                .map(this::getNameForInstance)
+                .map(DockerEndPoint::getNameForInstance)
+                //.peek(h -> System.out.println("AVAILABVLE HOSTS: " + h))
                 .collect(Collectors.toList());
     }
 
-    private String getNameForInstance(Instance instance) {
+    private static String getNameForInstance(Instance instance) {
         Optional name = instance.getTags().stream()
                 .filter(tag -> tag.getKey().equals("Name"))
                 .findAny();

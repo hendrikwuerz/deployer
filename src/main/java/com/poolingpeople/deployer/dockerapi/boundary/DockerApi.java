@@ -1,7 +1,6 @@
 package com.poolingpeople.deployer.dockerapi.boundary;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -15,6 +14,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import static javax.ws.rs.client.Entity.entity;
@@ -231,27 +234,60 @@ public class DockerApi implements Serializable{
 
     }
 
-    public Collection<ContainerInfo> listContainers(){
-        String url = endPoint.getURI() + "/containers/json?all=1";
+    /**
+     * list containers for current endPoint
+     * @return
+     *          A collection with all containers
+     */
+    public Collection<ContainerInfo> listContainers() {
+        return listContainers(endPoint.getURI());
+    }
+
+
+    /**
+     * list containers for passed endPoint URI
+     * @param url
+     *          The url of the host to get the containers for
+     *          Example: http://localhost:5555
+     * @return
+     *          A collection with all containers
+     */
+    public Collection<ContainerInfo> listContainers(String url) {
+        url = url + "/containers/json?all=1";
         Client client = ClientBuilder.newClient();
 
-        Response response = client
+
+        Future<Response> future = client
                 .target(url)
                 .request()
                 .accept(MediaType.APPLICATION_JSON)
-                .get();
+                .buildGet()
+                .submit();
 
-        checkStatusResponseCode(response.getStatus());
+        try {
+            Response response = future.get(1, TimeUnit.SECONDS);
 
-        InputStream r = response.readEntity(InputStream.class);
-        ContainersInfoReader reader = new ContainersInfoReader();
-        Collection<ContainerInfo> containers = reader.getContainers(r);
+            checkStatusResponseCode(response.getStatus());
 
-        return containers;
+            InputStream r = response.readEntity(InputStream.class);
+            ContainersInfoReader reader = new ContainersInfoReader();
+            Collection<ContainerInfo> containers = reader.getContainers(r);
+            //logger.fine("FINISHED REQUEST with " + response.getStatus());
 
+            return containers;
+        } catch (InterruptedException | ExecutionException e) {
+            logger.warning("Exception for " + url);
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            logger.warning(url + " seams to be not available");
+        }
+        return null;
     }
 
     public InputStream copyFiles(String containerId, String filePath){
+        return copyFiles(endPoint, containerId, filePath);
+    }
+    public InputStream copyFiles(DockerEndPoint endPoint, String containerId, String filePath){
         String url = endPoint.getURI() + "/containers/{containerId}/copy";
         Client client = ClientBuilder.newClient();
 
