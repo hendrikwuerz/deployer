@@ -121,7 +121,7 @@ public class DeployerFacade implements Serializable {
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version.toLowerCase()) // docker does not accept capitals
-                .setServerDomain(endPointProvider.getDockerHost())
+                .setServerDomain(endPointProvider.getHost())
                 .setConcretDomain(subdomain)
                 .setDbScenario(dbSnapshotName)
                 .setPortPrefix(String.valueOf(getAvailableCluster()));
@@ -186,7 +186,7 @@ public class DeployerFacade implements Serializable {
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version.toLowerCase()) // docker does not accept capitals
-                .setServerDomain(endPointProvider.getDockerHost());
+                .setServerDomain(endPointProvider.getHost());
         return getTarBytesForWar(version, area, forceDownload);
     }
 

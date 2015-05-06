@@ -9,6 +9,7 @@ import com.poolingpeople.deployer.dockerapi.boundary.ContainerInfo;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPoint;
 import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
+import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
 import org.apache.commons.compress.utils.IOUtils;
 
 import javax.annotation.PostConstruct;
@@ -132,7 +133,7 @@ public class BackupController {
         lastList = list;
         list = new ArrayList<>();
         parseContainersFor("localhost");
-        DockerEndPoint.availableHosts().stream().forEach(this::parseContainersFor);
+        DockerEndPoint.loadAvailableHosts().stream().map(InstanceInfo::getName).forEach(this::parseContainersFor);
     }
 
     /**
