@@ -58,22 +58,17 @@ public class DockerEndPoint  implements Serializable{
     }
 
     public String startInstance() {
-        InstanceInfo current = availableHosts.getRowData();
-        boolean started = current.start();
-        System.out.println("Instance started: " + current);
+        availableHosts.getRowData().start();
         return "change-host";
     }
 
     public String stopInstance() {
-        InstanceInfo current = availableHosts.getRowData();
-        boolean stopped = current.stop();
-        System.out.println("Instance stopped: " + current);
+        availableHosts.getRowData().stop();
         return "change-host";
     }
 
     public String selectInstance() {
-        InstanceInfo current = availableHosts.getRowData();
-        setHost(current.getName());
+        setHost(availableHosts.getRowData().getName());
         return "change-host";
     }
 

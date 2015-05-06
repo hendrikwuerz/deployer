@@ -1,9 +1,14 @@
 package com.poolingpeople.deployer.scenario.boundary;
 
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.Tag;
+import com.amazonaws.services.ec2.model.StartInstancesRequest;
+import com.amazonaws.services.ec2.model.StopInstancesRequest;
 
-import java.util.Optional;
+import java.util.Arrays;
 
 /**
  * Created by hendrik on 27.04.15.
@@ -32,16 +37,31 @@ public class InstanceInfo {
                 .getValue();
     }
 
+
+    public String getStatus() {
+        return instance.getState().getName();
+    }
+
     public boolean isStarted() {
         return instance.getState().getName().equals("running");
     }
 
-    public boolean start() {
-        return true;
+    public void start() {
+
+        AmazonEC2 ec2 = new AmazonEC2Client(new AWSCredentials());
+        ec2.setRegion(Region.getRegion(Regions.EU_WEST_1));
+
+        StartInstancesRequest startInstancesRequest = new StartInstancesRequest(Arrays.asList(instance.getInstanceId()));
+        ec2.startInstances(startInstancesRequest);
     }
 
-    public boolean stop() {
-        return true;
+    public void stop() {
+
+        AmazonEC2 ec2 = new AmazonEC2Client(new AWSCredentials());
+        ec2.setRegion(Region.getRegion(Regions.EU_WEST_1));
+
+        StopInstancesRequest stopInstancesRequest = new StopInstancesRequest(Arrays.asList(instance.getInstanceId()));
+        ec2.stopInstances(stopInstancesRequest);
     }
 
 }
