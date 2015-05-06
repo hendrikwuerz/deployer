@@ -14,17 +14,46 @@
         <h:form>
             <div>
                 <label>Host</label>
-                <h:selectOneRadio value="#{dockerEndPoint.host}" layout="pageDirection">
-                    <f:selectItem itemValue="localhost" itemLabel="localhost" />
-                    <f:selectItems value="#{dockerEndPoint.availableHosts}" var="host" itemLabel="#{host}"></f:selectItems>
-                </h:selectOneRadio>
+
+                <h:dataTable value="#{dockerEndPoint.availableHosts}" var="instance" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="Host"/>
+                        </f:facet>
+                        <h:outputText value="#{instance.name}" style="#{instance.isStarted() ? 'color:green' : 'color:red'}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="Status"/>
+                        </f:facet>
+                        <h:outputText value="#{instance.status}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="&nbsp;"/>
+                        </f:facet>
+                        <h:commandLink action="#{dockerEndPoint.startInstance}" style="#{instance.isStarted() ? 'display:none' : ''}" value=" Start "/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="&nbsp;"/>
+                        </f:facet>
+                        <h:commandLink action="#{dockerEndPoint.stopInstance}" style="#{!instance.isStarted() ? 'display:none' : ''}" value=" Stop "/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="&nbsp;"/>
+                        </f:facet>
+                        <h:commandLink action="#{dockerEndPoint.selectInstance}" style="#{!instance.isStarted() ? 'display:none' : ''}" value=" Select "/>
+                    </h:column>
+                </h:dataTable>
+                <h:commandLink action="#{dockerEndPoint.setHost('localhost')}" value=" Change to localhost "/>
             </div>
             <br></br>
             <div>
                 Port <h:inputText size="4" value="#{dockerEndPoint.port}"></h:inputText>
+                <h:commandButton value="set"></h:commandButton>
             </div>
-            <br></br>
-            <h:commandButton value="set" action="#{consoleController.updateEndpoint(dockerEndPoint.host, dockerEndPoint.port)}"></h:commandButton>
 
         </h:form>
 

@@ -75,12 +75,6 @@ public class ConsoleController{
         facade.createProxy();
     }
 
-    public void updateEndpoint(@NotNull String host, @NotNull String port){
-//        dockerEndPointChangeEvent.fire(new DockerEndPoint(host, Integer.parseInt(port), "http"));
-        endPoint.setHost(host);
-        endPoint.setPort(Integer.parseInt(port));
-        endPoint.setProtocol("http");
-    }
 
 //    public String destroy() {
 //        current = (Category) getItems().getRowData();
