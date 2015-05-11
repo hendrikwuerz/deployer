@@ -5,6 +5,7 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
@@ -71,7 +72,17 @@ public class DeployerController implements Serializable {
     public String selectArea() {
         Map<String,String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         setArea(params.get("area"));
-        return "version-select";
+
+        // try to redirect user to versionselect page (access from menu needed)
+        ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+        try {
+            ec.redirect("/faces/deployer/version-select.xhtml");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // if redirect is not working use standard way
+        return "/deployer/version-select.xhtml?faces-redirect=true";
     }
 
     public void setArea(String area) {

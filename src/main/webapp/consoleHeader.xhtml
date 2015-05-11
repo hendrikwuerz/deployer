@@ -17,13 +17,17 @@
 
     <p:layout fullPage="true">
 
-        <p:layoutUnit position="north" size="75" styleClass="north-position">
+        <p:layoutUnit position="north" size="80" styleClass="north-position">
 
             <h:form>
                 <p:menubar styleClass="main-menu">
                     <p:submenu label="Deploy" styleClass="menu-click menu-deploy">
-                        <p:menuitem value="Releases" outcome="/deployer/deployer" />
-                        <p:menuitem value="Snapshots" outcome="/deployer/deployer" />
+                        <p:menuitem value="Releases" actionListener="#{deployerController.selectArea}" ajax="false">
+                            <f:param name="area" value="releases" />
+                        </p:menuitem>
+                        <p:menuitem value="Snapshots" actionListener="#{deployerController.selectArea}" ajax="false">
+                            <f:param name="area" value="snapshots" />
+                        </p:menuitem>
                     </p:submenu>
                     <p:submenu label="View" styleClass="menu-click menu-view">
                         <p:menuitem value="Cluster" outcome="/console/clusters-list" />
@@ -61,13 +65,14 @@
     </p:layout>
 
     <script type="text/javascript">
-        $(function(){
+        $(function() {
+
             $(".menu-deploy a:first").attr('href', "/faces/deployer/deployer.xhtml");
             $(".menu-view a:first").attr('href', "/faces/console/clusters-list.xhtml");
             $(".menu-manage a:first").attr('href', "/faces/db-snapshot-manager/db-snapshot-manager.xhtml");
 
-            $(".menu-click").click(function () {
-                window.location.href = $(this).find('a').first().attr('href');
+            $(".menu-click > a").click(function () {
+                window.location.href = $(this).attr('href');
             })
         });
     </script>

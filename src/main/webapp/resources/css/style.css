@@ -22,10 +22,12 @@ Main menu
     padding: 0 5px;
 }
 
+.ui-button.change-host:not(.ui-state-hover) {
+    background: none;
+}
 .ui-button.change-host {
     margin-left: 10px;
     border: 0;
-    background: none;
     box-shadow: none;
 }
 
@@ -59,7 +61,13 @@ Sub menu
 .ui-widget-content {
     border: none;
 }
+.ui-layout-center {
+    padding: 0 5px;
+}
 
+.ui-button.small-button .ui-button-text {
+    padding: 0.1em 0.3em;
+}
 
 /*
 Page specific styles
