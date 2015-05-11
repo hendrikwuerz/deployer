@@ -74,10 +74,12 @@ Page specific styles
 */
 
 /* cluster / container list */
+.backup-enabled,
 .container-up,
 .cluster-up {
     background-color: #acffac;
 }
+.backup-disabled,
 .container-down,
 .cluster-down {
     background-color: #ff9595;
