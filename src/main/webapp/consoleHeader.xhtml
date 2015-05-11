@@ -22,10 +22,10 @@
             <h:form>
                 <p:menubar styleClass="main-menu">
                     <p:submenu label="Deploy" styleClass="menu-click menu-deploy">
-                        <p:menuitem value="Releases" actionListener="#{deployerController.selectArea}" ajax="false">
+                        <p:menuitem value="Releases" action="#{deployerController.selectArea}" ajax="false">
                             <f:param name="area" value="releases" />
                         </p:menuitem>
-                        <p:menuitem value="Snapshots" actionListener="#{deployerController.selectArea}" ajax="false">
+                        <p:menuitem value="Snapshots" action="#{deployerController.selectArea}" ajax="false">
                             <f:param name="area" value="snapshots" />
                         </p:menuitem>
                     </p:submenu>
