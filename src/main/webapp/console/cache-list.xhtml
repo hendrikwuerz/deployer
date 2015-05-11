@@ -3,48 +3,44 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="/consoleHeader.xhtml">
+
     <ui:define name="title">
-        <h:outputText value="List of cached versions"></h:outputText>
+        <h:outputText value="List of cached versions" />
     </ui:define>
+
+    <ui:define name="submenu">
+        <p:menuitem value="Delete all cached files" actionListener="#{cacheController.destroyAll()}" ajax="false" />
+    </ui:define>
+
     <ui:define name="body">
         <h:form>
             <h:panelGroup id="messagePanel" layout="block">
                 <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
             </h:panelGroup>
-            <h:commandLink action="#{cacheController.destroyAll()}" value=" Delete all cached files "/>
+
             <h:outputText escape="false" value="No cached files to show" rendered="#{cacheController.cachedFiles.rowCount == 0}"/>
-            <h:panelGroup rendered="#{cacheController.cachedFiles.rowCount > 0}">
-                <h:dataTable value="#{cacheController.cachedFiles}" var="file" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="size in bytes"/>
-                        </f:facet>
-                        <h:outputText value="#{file.getLength()}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="Filename"/>
-                        </f:facet>
-                        <h:outputText value="#{file.getName()}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="Last modified"/>
-                        </f:facet>
-                        <h:outputText value="#{file.getLastModified()}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="&nbsp;"/>
-                        </f:facet>
-                        <h:commandLink action="#{cacheController.destroy}" value=" X "/>
-                    </h:column>
-                </h:dataTable>
-            </h:panelGroup>
-            <br />
+
+            <p:dataTable var="file" value="#{cacheController.cachedFiles}"
+                         rendered="#{cacheController.cachedFiles.rowCount != 0}"
+                         tableStyle="width:auto">
+
+                <p:column headerText="Size in bytes">
+                    <h:outputText value="#{file.getLength()}" />
+                </p:column>
+                <p:column headerText="Filename">
+                    <h:outputText value="#{file.getName()}" escape="false" />
+                </p:column>
+                <p:column headerText="Last modified">
+                    <h:outputText value="#{file.getLastModified()}" escape="false" />
+                </p:column>
+                <p:column headerText="">
+                    <p:commandButton action="#{cacheController.destroy}" value="Delete me"/>
+                </p:column>
+            </p:dataTable>
         </h:form>
 
     </ui:define>
