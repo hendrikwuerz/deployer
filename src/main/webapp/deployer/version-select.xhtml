@@ -8,7 +8,7 @@
 
 <ui:composition template="/consoleHeader.xhtml">
     <ui:define name="title">
-        <h:outputText value="Deployer"></h:outputText>
+        <h:outputText value="Deploy version" />
     </ui:define>
     <ui:define name="body">
         <h:form>
@@ -43,7 +43,7 @@
             </div>
             <br />
             <div>
-                <p:commandButton action="#{deployerController.deploy}" value="Deploy" />
+                <p:commandButton action="#{deployerController.deploy}" ajax="false" value="Deploy" />
             </div>
         </h:form>
     </ui:define>

@@ -96,6 +96,10 @@ public class ContainerInfo {
         return status;
     }
 
+    public boolean isUp() {
+        return getStatus().startsWith("Up");
+    }
+
     public ContainerInfo setStatus(String status) {
         this.status = status;
         return this;

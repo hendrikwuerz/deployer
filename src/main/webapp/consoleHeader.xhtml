@@ -40,6 +40,8 @@
                         <p:menuitem value="Backup" outcome="/backup/backup" />
                     </p:submenu>
                     <p:menuitem value="Reload Proxy" actionListener="#{consoleController.reloadProxy}" ajax="false" />
+                    <p:menuitem value="Refresh Page" onclick="location.reload(true);" />
+
                     <f:facet name="options">
                         <h:outputText value="#{dockerEndPoint.host}:#{dockerEndPoint.port}" style="margin-right: 10px"/>
                         <p:button value="Change" outcome="/console/change-host" icon="ui-icon-pencil" styleClass="change-host"/>
