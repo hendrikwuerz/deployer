@@ -75,11 +75,13 @@ Page specific styles
 
 /* cluster / container list */
 .backup-enabled,
+.instance-up,
 .container-up,
 .cluster-up {
     background-color: #acffac;
 }
 .backup-disabled,
+.instance-down,
 .container-down,
 .cluster-down {
     background-color: #ff9595;

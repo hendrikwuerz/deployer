@@ -8,52 +8,37 @@
 
 <ui:composition template="/consoleHeader.xhtml">
     <ui:define name="title">
-        <h:outputText value="Change Host"></h:outputText>
+        <h:outputText value="Change Host" />
     </ui:define>
     <ui:define name="body">
 
         <h:form>
-            <div>
-                <label>Host</label>
 
-                <h:dataTable value="#{dockerEndPoint.availableHosts}" var="instance" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="Host"/>
-                        </f:facet>
-                        <h:outputText value="#{instance.name}" style="#{instance.isStarted() ? 'color:green' : 'color:red'}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="Status"/>
-                        </f:facet>
-                        <h:outputText value="#{instance.status}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="&nbsp;"/>
-                        </f:facet>
-                        <h:commandLink action="#{dockerEndPoint.startInstance}" style="#{instance.isStarted() ? 'display:none' : ''}" value=" Start "/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="&nbsp;"/>
-                        </f:facet>
-                        <h:commandLink action="#{dockerEndPoint.stopInstance}" style="#{!instance.isStarted() ? 'display:none' : ''}" value=" Stop "/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="&nbsp;"/>
-                        </f:facet>
-                        <h:commandLink action="#{dockerEndPoint.selectInstance}" style="#{!instance.isStarted() ? 'display:none' : ''}" value=" Select "/>
-                    </h:column>
-                </h:dataTable>
-                <h:commandLink action="#{dockerEndPoint.setHost('localhost')}" value=" Change to localhost "/>
-            </div>
-            <br></br>
+            <p:dataTable var="instance" value="#{dockerEndPoint.availableHosts}"
+                         rendered="#{dockerEndPoint.availableHosts.rowCount != 0}"
+                         tableStyle="width:auto"
+                         rowStyleClass="#{instance.isStarted() ? 'instance-up': 'instance-down'}">
+
+                <p:column headerText="Host">
+                    <h:outputText value="#{instance.name}" />
+                </p:column>
+                <p:column headerText="Status">
+                    <h:outputText value="#{instance.status}" escape="false" />
+                </p:column>
+                <p:column headerText="">
+                    <p:menuButton value="Options">
+                        <p:menuitem value="Start" actionListener="#{dockerEndPoint.startInstance}" ajax="false" icon="ui-icon-arrowthick-1-n" disabled="#{instance.isStarted()}" />
+                        <p:menuitem value="Stop" actionListener="#{clusterController.stop}" ajax="false" icon="ui-icon-arrowthick-1-s" disabled="#{!instance.isStarted()}" />
+                        <p:menuitem value="Select" actionListener="#{dockerEndPoint.selectInstance}" ajax="false" icon="ui-icon-star" disabled="#{!instance.isStarted()}" />
+                    </p:menuButton>
+                </p:column>
+            </p:dataTable>
+            <p:commandLink action="#{dockerEndPoint.setHost('localhost')}" value=" Change to localhost "/>
+            <br />
+            <br />
             <div>
-                Port <h:inputText size="4" value="#{dockerEndPoint.port}"></h:inputText>
-                <h:commandButton value="set"></h:commandButton>
+                Port <p:inputText size="4" value="#{dockerEndPoint.port}" />
+                <p:commandButton value="set" styleClass="small-button" style="margin-left: 5px" />
             </div>
 
         </h:form>
