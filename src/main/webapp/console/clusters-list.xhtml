@@ -52,6 +52,16 @@
             </p:dataTable>
         </h:form>
 
+        <br />
+        <br />
+
+        <p:outputPanel>
+            On this page you can see all available clusters on the selected host. <br />
+            If the row is green the cluster is started, if it is red it's stopped. <br />
+            With the option button, you can start, stop or destroy clusters. When a cluster becomes started all containers in it will be started. <br />
+            If a Cluster number (first column) is red, this cluster is invalid. You can destroy invalid clusters by clicking on "Destroy invalid clustera" in the sub-navigation. <br />
+        </p:outputPanel>
+
     </ui:define>
 </ui:composition>
 </html>

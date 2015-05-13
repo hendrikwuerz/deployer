@@ -33,16 +33,16 @@
                     <p:commandButton action="#{deployerController.downloadDatabase}" ajax="false" value="Download" styleClass="small-button" />
                 </h:panelGrid>
             </h:panelGrid>
-            <div>
-                <p:selectBooleanCheckbox value="#{deployerController.forceDownload}" id="forceDownload" />
-                <label for="forceDownload">Force download even if cached file is found</label>
-            </div>
-            <div>
-                <p:selectBooleanCheckbox value="#{deployerController.overwrite}" id="overwrite" />
-                <label for="overwrite">Overwrites existing cluster if 'subdomain' is already used</label>
-            </div>
-            <br />
-            <div>
+            <div style="margin-left: 8px">
+                <div>
+                    <p:selectBooleanCheckbox value="#{deployerController.forceDownload}" id="forceDownload" />
+                    <label for="forceDownload">Force download even if cached file is found</label>
+                </div>
+                <div>
+                    <p:selectBooleanCheckbox value="#{deployerController.overwrite}" id="overwrite" />
+                    <label for="overwrite">Overwrites existing cluster if 'subdomain' is already used</label>
+                </div>
+                <br />
                 <p:commandButton action="#{deployerController.deploy}" ajax="false" value="Deploy" />
             </div>
         </h:form>
