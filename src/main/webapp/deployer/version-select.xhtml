@@ -22,7 +22,7 @@
                     <p:selectOneMenu id="application" value="#{deployerController.version}" style="width:200px">
                         <f:selectItems value="#{deployerController.availableVersions}" var="version" itemLabel="#{version}" />
                     </p:selectOneMenu>
-                    <p:commandButton action="#{deployerController.downloadDatabase}" ajax="false" value="Download" styleClass="small-button" />
+                    <p:commandButton action="#{deployerController.downloadVersion}" ajax="false" value="Download" styleClass="small-button" />
                 </h:panelGrid>
 
                 <p:outputLabel for="database" value="Database" />
