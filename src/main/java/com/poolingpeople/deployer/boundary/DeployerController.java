@@ -5,6 +5,7 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
@@ -71,7 +72,8 @@ public class DeployerController implements Serializable {
     public String selectArea() {
         Map<String,String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         setArea(params.get("area"));
-        return "version-select";
+
+        return "/deployer/version-select.xhtml";
     }
 
     public void setArea(String area) {

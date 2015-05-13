@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
 
 <h:head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -11,44 +12,73 @@
 </h:head>
 
 <h:body>
-    <div>
 
-        <h:outputText value="#{dockerEndPoint.host}:#{dockerEndPoint.port}"></h:outputText>
-        -
-        <h:link outcome="/console/change-host" value="Change"/>
-    </div>
-    <br></br>
-    <div>
-        <h:form>
-            <h:link outcome="/deployer/deployer" value="Deploy"/>
-            -
-            <h:link outcome="/console/clusters-list" value="List clusters"/>
-            -
-            <h:link outcome="/console/containers-list" value="List containers"/>
-            -
-            <!--<h:link outcome="/console/images-list" value="List images"/>-->
-            <h:link outcome="/console/container-logs" value="Logs"/>
-            -
-            <h:link outcome="/db-snapshot-manager/db-snapshot-manager" value="db snapshot manager"/>
-            <!--<h:link outcome="/console/remove-container" value="remove container"/>-->
-            -
-            <h:link outcome="/console/cache-list" value="List cache"/>
-            -
-            <h:link outcome="/backup/backup" value="Backup manager"/>
-            -
-            <h:commandLink action="#{consoleController.reloadProxy}">Reload proxy</h:commandLink>
-        </h:form>
-    </div>
-    <div class="">
-        <h3>
-            <ui:insert name="title">Default Title</ui:insert>
-        </h3>
-    </div>
-    <div style="margin: auto" class="">
-        <p>
-            <ui:insert name="body">Default Body</ui:insert>
-        </p>
-    </div>
+    <h:outputStylesheet library="css" name="style.css" />
+
+    <p:layout fullPage="true">
+
+        <p:layoutUnit position="north" size="80" styleClass="north-position">
+
+            <h:form>
+                <p:menubar styleClass="main-menu">
+                    <p:submenu label="Deploy" styleClass="menu-click menu-deploy">
+                        <p:menuitem value="Releases" action="#{deployerController.selectArea}" ajax="false">
+                            <f:param name="area" value="releases" />
+                        </p:menuitem>
+                        <p:menuitem value="Snapshots" action="#{deployerController.selectArea}" ajax="false">
+                            <f:param name="area" value="snapshots" />
+                        </p:menuitem>
+                    </p:submenu>
+                    <p:submenu label="View" styleClass="menu-click menu-view">
+                        <p:menuitem value="Cluster" outcome="/console/clusters-list" />
+                        <p:menuitem value="Container" outcome="/console/containers-list" />
+                        <p:menuitem value="Logs" outcome="/console/container-logs" />
+                    </p:submenu>
+                    <p:submenu label="Manage" styleClass="menu-click menu-manage">
+                        <p:menuitem value="DB-Snapshots" outcome="/db-snapshot-manager/db-snapshot-manager" />
+                        <p:menuitem value="Cache" outcome="/console/cache-list" />
+                        <p:menuitem value="Backup" outcome="/backup/backup" />
+                    </p:submenu>
+                    <p:menuitem value="Reload Proxy" actionListener="#{consoleController.reloadProxy}" ajax="false" />
+                    <p:menuitem value="Refresh Page" onclick="location.reload(true);" />
+
+                    <f:facet name="options">
+                        <h:outputText value="#{dockerEndPoint.host}:#{dockerEndPoint.port}" style="margin-right: 10px"/>
+                        <p:button value="Change" outcome="/console/change-host" icon="ui-icon-pencil" styleClass="change-host"/>
+                    </f:facet>
+                </p:menubar>
+
+                <p:menubar styleClass="sub-menu">
+                    <p:menuitem>
+                        <h3 class="title">
+                            <ui:insert name="title">Default Title</ui:insert>
+                        </h3>
+                    </p:menuitem>
+                    <ui:insert name="submenu" />
+                </p:menubar>
+            </h:form>
+        </p:layoutUnit>
+
+        <p:layoutUnit position="center">
+            <p>
+                <ui:insert name="body">Default Body</ui:insert>
+            </p>
+        </p:layoutUnit>
+    </p:layout>
+
+    <script type="text/javascript">
+        $(function() {
+
+            $(".menu-deploy a:first").attr('href', "/faces/deployer/deployer.xhtml");
+            $(".menu-view a:first").attr('href', "/faces/console/clusters-list.xhtml");
+            $(".menu-manage a:first").attr('href', "/faces/db-snapshot-manager/db-snapshot-manager.xhtml");
+
+            $(".menu-click > a").click(function () {
+                window.location.href = $(this).attr('href');
+            })
+        });
+    </script>
+
 </h:body>
 
 </html>

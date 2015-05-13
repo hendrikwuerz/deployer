@@ -3,11 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="/consoleHeader.xhtml">
     <ui:define name="title">
-        <h:outputText value="List of containers"></h:outputText>
+        <h:outputText value="List of containers" />
     </ui:define>
     <ui:define name="body">
         <h:form>
@@ -15,59 +16,36 @@
                 <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
             </h:panelGroup>
             <h:outputText escape="false" value="No containers to show" rendered="#{containerController.containers.rowCount == 0}"/>
-            <h:panelGroup rendered="#{containerController.containers.rowCount > 0}">
-                <h:dataTable value="#{containerController.containers}" var="container" border="0" cellpadding="2" cellspacing="0" rules="all" style="border:solid 1px">
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="id"/>
-                        </f:facet>
-                        <h:outputText value="#{container.shortId}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="image"/>
-                        </f:facet>
-                        <h:outputText value="#{container.image}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="names"/>
-                        </f:facet>
-                        <h:outputText value="#{container.names}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="ports"/>
-                        </f:facet>
-                        <h:outputText value="#{container.ports}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="status"/>
-                        </f:facet>
-                        <h:outputText value="#{container.status}"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="&nbsp;"/>
-                        </f:facet>
-                        <h:commandLink action="#{containerController.destroy}" value=" X "/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="&nbsp;"/>
-                        </f:facet>
-                        <h:commandLink action="#{containerController.start}" value="Start"/>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">
-                            <h:outputText value="&nbsp;"/>
-                        </f:facet>
-                        <h:commandLink action="#{containerController.stop}" value="Stop"/>
-                    </h:column>
-                </h:dataTable>
-            </h:panelGroup>
-            <br />
+
+            <p:dataTable var="container" value="#{containerController.containers}"
+                         rendered="#{containerController.containers.rowCount != 0}"
+                         tableStyle="width:auto"
+                         rowStyleClass="#{container.isUp() ? 'container-up': 'container-down'}">
+
+                <p:column headerText="ID">
+                    <h:outputText value="#{container.shortId}"/>
+                </p:column>
+                <p:column headerText="Image">
+                    <h:outputText value="#{container.image}" escape="false" />
+                </p:column>
+                <p:column headerText="Names">
+                    <h:outputText value="#{container.names}" escape="false" />
+                </p:column>
+                <p:column headerText="Ports">
+                    <h:outputText value="#{container.ports}" escape="false" />
+                </p:column>
+                <p:column headerText="Status">
+                    <h:outputText value="#{container.status}" escape="false" />
+                </p:column>
+                <p:column headerText="">
+                    <p:menuButton value="Options">
+                        <p:menuitem value="Start" actionListener="#{containerController.start}" ajax="false" icon="ui-icon-arrowthick-1-n" disabled="#{container.isUp()}"/>
+                        <p:menuitem value="Stop" actionListener="#{containerController.stop}" ajax="false" icon="ui-icon-arrowthick-1-s" disabled="#{!container.isUp()}"/>
+                        <p:menuitem value="Log" action="#{consoleController.openLog(container.shortId)}" ajax="false" icon="ui-icon-search"/>
+                        <p:menuitem value="Destroy" actionListener="#{containerController.destroy}" ajax="false" icon="ui-icon-close"/>
+                    </p:menuButton>
+                </p:column>
+            </p:dataTable>
         </h:form>
 
     </ui:define>

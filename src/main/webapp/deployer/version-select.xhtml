@@ -3,46 +3,47 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="/consoleHeader.xhtml">
     <ui:define name="title">
-        <h:outputText value="Deployer"></h:outputText>
+        <h:outputText value="Deploy version" />
     </ui:define>
     <ui:define name="body">
         <h:form>
+
+            <h:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+                <p:outputLabel for="subdomain" value="Subdomain" />
+                <p:inputText id="subdomain" value="#{deployerController.subdomain}" style="width:200px" />
+
+                <p:outputLabel for="application" value="Application" />
+                <h:panelGrid columns="2">
+                    <p:selectOneMenu id="application" value="#{deployerController.version}" style="width:200px">
+                        <f:selectItems value="#{deployerController.availableVersions}" var="version" itemLabel="#{version}" />
+                    </p:selectOneMenu>
+                    <p:commandButton action="#{deployerController.downloadDatabase}" ajax="false" value="Download" styleClass="small-button" />
+                </h:panelGrid>
+
+                <p:outputLabel for="database" value="Database" />
+                <h:panelGrid columns="2">
+                    <p:selectOneMenu id="database" value="#{deployerController.dbSnapshotName}" style="width:200px">
+                        <f:selectItems value="#{deployerController.dbSnapshotsList}" var="database" itemLabel="#{database}" />
+                    </p:selectOneMenu>
+                    <p:commandButton action="#{deployerController.downloadDatabase}" ajax="false" value="Download" styleClass="small-button" />
+                </h:panelGrid>
+            </h:panelGrid>
             <div>
-                <label>subdomain</label>
-                <h:inputText value="#{deployerController.subdomain}"></h:inputText>
-            </div>
-            <br></br>
-            <div>
-                <label>Application version in #{deployerController.area}</label>
-                <h:commandButton action="#{deployerController.downloadVersion}" value="Download"></h:commandButton>
-                <h:selectOneRadio value="#{deployerController.version}" layout="pageDirection">
-                    <f:selectItems value="#{deployerController.availableVersions}" var="version" itemLabel="#{version}"></f:selectItems>
-                </h:selectOneRadio>
-            </div>
-            <br></br>
-            <div>
-                <label>Database Snapshot Base</label>
-                <h:commandButton action="#{deployerController.downloadDatabase}" value="Download"></h:commandButton>
-                <h:selectOneRadio value="#{deployerController.dbSnapshotName}" layout="pageDirection">
-                    <f:selectItems value="#{deployerController.dbSnapshotsList}" var="dbSnapshot" itemLabel="#{dbSnapshotName}"></f:selectItems>
-                </h:selectOneRadio>
-            </div>
-            <br></br>
-            <div>
-                <h:selectBooleanCheckbox value="#{deployerController.forceDownload}" id="forceDownload"></h:selectBooleanCheckbox>
+                <p:selectBooleanCheckbox value="#{deployerController.forceDownload}" id="forceDownload" />
                 <label for="forceDownload">Force download even if cached file is found</label>
             </div>
             <div>
-                <h:selectBooleanCheckbox value="#{deployerController.overwrite}" id="overwrite"></h:selectBooleanCheckbox>
+                <p:selectBooleanCheckbox value="#{deployerController.overwrite}" id="overwrite" />
                 <label for="overwrite">Overwrites existing cluster if 'subdomain' is already used</label>
             </div>
-            <br></br>
+            <br />
             <div>
-                <h:commandButton action="#{deployerController.deploy}" value="Deploy"></h:commandButton>
+                <p:commandButton action="#{deployerController.deploy}" ajax="false" value="Deploy" />
             </div>
         </h:form>
     </ui:define>

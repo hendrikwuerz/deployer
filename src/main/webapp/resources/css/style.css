@@ -1,0 +1,88 @@
+
+/*
+Main menu
+*/
+
+/* Main menu fade down menu visible */
+.ui-layout-north {
+    z-index:20 !important;
+    overflow:visible !important;
+}
+.ui-layout-north .ui-layout-unit-content {
+    overflow:visible !important;
+}
+
+/* main menu padding between entries */
+.ui-menubar.main-menu {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.ui-menubar.main-menu .ui-menuitem,
+.ui-menubar.sub-menu .ui-menuitem {
+    padding: 0 5px;
+}
+
+.ui-button.change-host:not(.ui-state-hover) {
+    background: none;
+}
+.ui-button.change-host {
+    margin-left: 10px;
+    border: 0;
+    box-shadow: none;
+}
+
+
+/*
+Sub menu
+*/
+.ui-menubar.sub-menu {
+    background: #c4c4c4;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.ui-menubar.sub-menu {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+
+/*
+ title of current page
+ */
+.title {
+    margin: 0;
+    font-size: 1.4em;
+}
+
+
+/*
+ content of current page
+ */
+.ui-widget-content {
+    border: none;
+}
+.ui-layout-center {
+    padding: 0 5px;
+}
+
+.ui-button.small-button .ui-button-text {
+    padding: 0.1em 0.3em;
+}
+
+/*
+Page specific styles
+*/
+
+/* cluster / container list */
+.backup-enabled,
+.instance-up,
+.container-up,
+.cluster-up {
+    background-color: #acffac;
+}
+.backup-disabled,
+.instance-down,
+.container-down,
+.cluster-down {
+    background-color: #ff9595;
+}

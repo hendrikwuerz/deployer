@@ -81,10 +81,14 @@ public class ClusterInfo {
     }
 
     public String getStatus() {
-        if(containers.stream().filter( container -> container.getStatus().startsWith("Up") ).count() == containers.size()) {
+        if(isUp()) {
             return "Up";
         }
         return "Down";
+    }
+
+    public boolean isUp() {
+        return containers.stream().filter( container -> container.getStatus().startsWith("Up") ).count() == containers.size();
     }
 
     public boolean isCorrect() {

@@ -3,20 +3,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="/consoleHeader.xhtml">
     <ui:define name="title">
-        <h:outputText value="List of containers"></h:outputText>
+        <h:outputText value="Container log" />
     </ui:define>
     <ui:define name="body">
         <h:form>
             <div>
-                <h:inputText value="#{consoleController.selectedContainerId}"></h:inputText>
-                <h:commandButton value="submit"></h:commandButton>
-                <pre>
-                    #{consoleController.logs}
-                </pre>
+                <p:outputLabel>Container ID </p:outputLabel>
+                <p:inputText value="#{consoleController.selectedContainerId}" />
+                <p:commandButton value="submit" styleClass="small-button" style="margin-left: 5px" />
+                <pre>#{consoleController.logs}</pre>
             </div>
         </h:form>
     </ui:define>
