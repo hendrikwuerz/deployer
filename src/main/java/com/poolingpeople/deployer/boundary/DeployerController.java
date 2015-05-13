@@ -47,13 +47,15 @@ public class DeployerController implements Serializable {
 
     public Collection<String> getAvailableVersions() {
         Collection<String> availableVersions = facade.loadVersions(area);
+        // sort results
+        availableVersions = availableVersions.stream().sorted().collect(Collectors.toList());
         // set a default value if nothing is selected
         if(version == null) availableVersions.stream().findAny().ifPresent( element -> version = element);
         return availableVersions;
     }
 
     public Collection<String> getDbSnapshotsList() {
-        return facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).collect(Collectors.toList());
+        return facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).sorted().collect(Collectors.toList());
     }
 
     public String deploy(){
