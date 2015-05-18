@@ -17,11 +17,6 @@
 
     <ui:define name="body">
         <h:form>
-            <h:panelGroup id="messagePanel" layout="block">
-                <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
-            </h:panelGroup>
-
-
 
             <h:outputText escape="false" value="No containers to show" rendered="#{clusterController.clusters.rowCount == 0}"/>
 
@@ -44,13 +39,23 @@
                 </p:column>
                 <p:column headerText="">
                     <p:menuButton value="Options">
-                        <p:menuitem value="Start" actionListener="#{clusterController.start}" ajax="false" icon="ui-icon-arrowthick-1-n" disabled="#{cluster.isUp()}"/>
-                        <p:menuitem value="Stop" actionListener="#{clusterController.stop}" ajax="false" icon="ui-icon-arrowthick-1-s" disabled="#{!cluster.isUp()}"/>
-                        <p:menuitem value="Destroy" actionListener="#{clusterController.destroy}" ajax="false" icon="ui-icon-close"/>
+                        <p:menuitem value="Start" actionListener="#{clusterController.start}" icon="ui-icon-arrowthick-1-n" disabled="#{cluster.isUp()}" update="@form" />
+                        <p:menuitem value="Stop" actionListener="#{clusterController.stop}" icon="ui-icon-arrowthick-1-s" disabled="#{!cluster.isUp()}" update="@form" />
+                        <p:menuitem value="Destroy" actionListener="#{clusterController.destroy}" icon="ui-icon-close" update="@form" />
                     </p:menuButton>
                 </p:column>
             </p:dataTable>
         </h:form>
+
+        <br />
+        <br />
+
+        <p:outputPanel>
+            On this page you can see all available clusters on the selected host. <br />
+            If the row is green the cluster is started, if it is red it's stopped. <br />
+            With the option button, you can start, stop or destroy clusters. When a cluster becomes started all containers in it will be started. <br />
+            If a Cluster number (first column) is red, this cluster is invalid. You can destroy invalid clusters by clicking on "Destroy invalid clustera" in the sub-navigation. <br />
+        </p:outputPanel>
 
     </ui:define>
 </ui:composition>

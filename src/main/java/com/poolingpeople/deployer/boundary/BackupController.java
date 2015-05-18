@@ -74,10 +74,9 @@ public class BackupController {
             FileInputStream fis = new FileInputStream(getStoreFile());
             ObjectInputStream ois = new ObjectInputStream(fis);
             Collection<String> enabledContainers = (Collection<String>) ois.readObject();
-            list.stream().forEach(elem -> {
-                if(enabledContainers.contains(elem.getContainer().getId())) // container should be backup
-                    elem.setBackup(true);
-            });
+            list.stream()
+                    .filter( elem -> enabledContainers.contains(elem.getContainer().getId()) ) // container should be backup
+                    .forEach( elem -> elem.setBackup(true) );
             ois.close();
         } catch (ClassNotFoundException | IOException e) {
             logger.log(Level.WARNING, "No list of backup-container found");

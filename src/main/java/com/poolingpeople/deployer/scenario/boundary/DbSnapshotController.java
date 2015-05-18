@@ -5,6 +5,8 @@ import com.poolingpeople.deployer.dockerapi.boundary.ContainerInfo;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 
 import javax.enterprise.context.RequestScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.model.CollectionDataModel;
 import javax.faces.model.DataModel;
 import javax.inject.Inject;
@@ -58,12 +60,18 @@ public class DbSnapshotController {
         return instanceName;
     }
 
-    public void makeSnapshot(){
-
-        Collection<ContainerInfo> containersInfo = api.listContainers();
+    public void makeSnapshot() {
+        if(dbSnapshotName.equals("")) {
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "A empty snapshot name is not allowed. Please insert a name."));
+            return;
+        }
+        //Collection<ContainerInfo> containersInfo = api.listContainers();
         ContainerInfo current = containers.getRowData();
         dbSnapshotManagerFacade.makeSnapshot(current, dbSnapshotName);
 
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Created", "A snapshot has been created"));
     }
 
     public void setInstanceName(String instanceName) {

@@ -21,8 +21,10 @@
     <ui:define name="body">
         <h:form>
 
+            <h:outputText escape="false" value="No containers can be set for backup" rendered="#{backupController.containers.rowCount == 0}"/>
+
             <p:dataTable var="backupInfo" value="#{backupController.containers}"
-                         rendered="#{cacheController.cachedFiles.rowCount != 0}"
+                         rendered="#{backupController.containers.rowCount != 0}"
                          tableStyle="width:auto"
                          rowStyleClass="#{backupInfo.backup ? 'backup-enabled': 'backup-disabled'}">
 

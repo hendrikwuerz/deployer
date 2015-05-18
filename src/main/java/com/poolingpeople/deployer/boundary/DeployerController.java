@@ -1,6 +1,7 @@
 package com.poolingpeople.deployer.boundary;
 
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -47,17 +48,22 @@ public class DeployerController implements Serializable {
 
     public Collection<String> getAvailableVersions() {
         Collection<String> availableVersions = facade.loadVersions(area);
+        // sort results
+        availableVersions = availableVersions.stream().sorted().collect(Collectors.toList());
         // set a default value if nothing is selected
         if(version == null) availableVersions.stream().findAny().ifPresent( element -> version = element);
         return availableVersions;
     }
 
     public Collection<String> getDbSnapshotsList() {
-        return facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).collect(Collectors.toList());
+        return facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).sorted().collect(Collectors.toList());
     }
 
     public String deploy(){
         facade.deploy(version, subdomain, dbSnapshotName, area, forceDownload, overwrite);
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Deployed", "A new cluster has been deployed"));
         return "/faces/console/clusters-list";
     }
 
