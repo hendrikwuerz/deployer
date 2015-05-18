@@ -38,7 +38,16 @@
                     <h:outputText value="#{file.getLastModified()}" escape="false" />
                 </p:column>
                 <p:column headerText="">
-                    <p:commandButton action="#{cacheController.destroy}" value="Delete me"/>
+
+                        <p:commandButton actionListener="#{cacheController.destroy}" value="Delete me" update="@form">
+                            <p:confirm header="Confirmation" message="Realy delete this cache file?" icon="ui-icon-alert" />
+                        </p:commandButton>
+
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="explode">
+                            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+
                 </p:column>
             </p:dataTable>
         </h:form>

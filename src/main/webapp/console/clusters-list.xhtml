@@ -17,11 +17,6 @@
 
     <ui:define name="body">
         <h:form>
-            <h:panelGroup id="messagePanel" layout="block">
-                <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
-            </h:panelGroup>
-
-
 
             <h:outputText escape="false" value="No containers to show" rendered="#{clusterController.clusters.rowCount == 0}"/>
 
@@ -44,9 +39,9 @@
                 </p:column>
                 <p:column headerText="">
                     <p:menuButton value="Options">
-                        <p:menuitem value="Start" actionListener="#{clusterController.start}" ajax="false" icon="ui-icon-arrowthick-1-n" disabled="#{cluster.isUp()}"/>
-                        <p:menuitem value="Stop" actionListener="#{clusterController.stop}" ajax="false" icon="ui-icon-arrowthick-1-s" disabled="#{!cluster.isUp()}"/>
-                        <p:menuitem value="Destroy" actionListener="#{clusterController.destroy}" ajax="false" icon="ui-icon-close"/>
+                        <p:menuitem value="Start" actionListener="#{clusterController.start}" icon="ui-icon-arrowthick-1-n" disabled="#{cluster.isUp()}" update="@form" />
+                        <p:menuitem value="Stop" actionListener="#{clusterController.stop}" icon="ui-icon-arrowthick-1-s" disabled="#{!cluster.isUp()}" update="@form" />
+                        <p:menuitem value="Destroy" actionListener="#{clusterController.destroy}" icon="ui-icon-close" update="@form" />
                     </p:menuButton>
                 </p:column>
             </p:dataTable>

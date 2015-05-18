@@ -20,6 +20,10 @@
         <p:layoutUnit position="north" size="80" styleClass="north-position">
 
             <h:form>
+
+                <p:growl id="growl-info" severity="info" showDetail="true" life="20000" />
+                <p:growl id="growl-error" severity="warn, error, fatal" showDetail="true" sticky="true" />
+
                 <p:menubar styleClass="main-menu">
                     <p:submenu label="Deploy" styleClass="menu-click menu-deploy">
                         <p:menuitem value="Releases" action="#{deployerController.selectArea}" ajax="false">

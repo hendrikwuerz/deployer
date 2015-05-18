@@ -5,6 +5,8 @@ import com.poolingpeople.deployer.dockerapi.boundary.ContainerInfo;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 
 import javax.enterprise.context.RequestScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.model.CollectionDataModel;
 import javax.faces.model.DataModel;
 import javax.inject.Inject;
@@ -63,6 +65,9 @@ public class ClusterController {
 
     public String destroy(ClusterInfo current) {
         current.getContainers().forEach( container -> api.removeContainer(container.getId(), true) );
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Destroyed",  "Cluster destroyed successfully") );
         return "clusters-list";
     }
 
@@ -85,12 +90,17 @@ public class ClusterController {
         } catch (java.util.NoSuchElementException e) {
             current.getContainers().forEach(container -> api.startContainer(container.getId()));
         }
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Started",  "Cluster started successfully") );
         return "clusters-list";
     }
 
     public String stop() {
         ClusterInfo current = clusters.getRowData();
         current.getContainers().forEach(container -> api.stopContainer(container.getId()));
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Stopped",  "Cluster stopped successfully") );
         return "clusters-list";
     }
 }

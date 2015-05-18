@@ -1,6 +1,7 @@
 package com.poolingpeople.deployer.boundary;
 
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -60,6 +61,9 @@ public class DeployerController implements Serializable {
 
     public String deploy(){
         facade.deploy(version, subdomain, dbSnapshotName, area, forceDownload, overwrite);
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Deployed", "A new cluster has been deployed"));
         return "/faces/console/clusters-list";
     }
 
