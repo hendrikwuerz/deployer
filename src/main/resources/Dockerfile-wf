@@ -1,4 +1,4 @@
-FROM poolingpeople/wildfly
+FROM poolingpeople/wildfly:8.1-8_45
 ENV neo4j {NEO_INSTANCE}
 #ENV pp_app_environment {test (no_backups)|live (backups)}
 ENV pp_app_environment live
