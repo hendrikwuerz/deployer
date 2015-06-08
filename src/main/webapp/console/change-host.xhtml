@@ -28,12 +28,12 @@
                 <p:column headerText="">
                     <p:menuButton value="Options">
                         <p:menuitem value="Start" actionListener="#{dockerEndPoint.startInstance}" ajax="false" icon="ui-icon-arrowthick-1-n" disabled="#{instance.isStarted()}" />
-                        <p:menuitem value="Stop" actionListener="#{clusterController.stop}" ajax="false" icon="ui-icon-arrowthick-1-s" disabled="#{!instance.isStarted()}" />
+                        <p:menuitem value="Stop" actionListener="#{dockerEndPoint.stopInstance}" ajax="false" icon="ui-icon-arrowthick-1-s" disabled="#{!instance.isStarted()}" />
                         <p:menuitem value="Select" actionListener="#{dockerEndPoint.selectInstance}" ajax="false" icon="ui-icon-star" disabled="#{!instance.isStarted()}" />
                     </p:menuButton>
                 </p:column>
             </p:dataTable>
-            <p:commandLink action="#{dockerEndPoint.setHost('localhost')}" value=" Change to localhost "/>
+            <p:commandLink action="#{dockerEndPoint.selectInstance('localhost')}" ajax="false" value=" Change to localhost "/>
             <br />
             <br />
             <div>
