@@ -72,6 +72,11 @@ public class DockerEndPoint  implements Serializable{
         return "change-host";
     }
 
+    public String selectInstance(String host) {
+        setHost(host);
+        return "change-host";
+    }
+
     public String getHost() {
         return host;
     }
