@@ -12,6 +12,9 @@ import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.model.CollectionDataModel;
 import javax.inject.Named;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +25,8 @@ import java.util.stream.Collectors;
 @Named
 @SessionScoped
 public class StresstestEndPoint implements Serializable {
+
+    String serverResponse;
 
     public CollectionDataModel<InstanceInfo> getAvailableMaster() {
         return new CollectionDataModel<>(StresstestEndPoint.loadAvailableInstances("jmeter-master"));
@@ -49,6 +54,35 @@ public class StresstestEndPoint implements Serializable {
     public String stopServer() {
         loadAvailableInstances("jmeter-server").forEach(InstanceInfo::stop);
         return "stresstest-control";
+    }
+
+    public String getServerResponse() {
+        return serverResponse;
+    }
+
+
+    public void runTest() {
+        // prepare output
+        serverResponse = "Starting stresstest";
+
+        SSHExecutor ssh = new SSHExecutor("52.18.199.184", "hendrik");
+        String password = "Wuerz";
+        String command = "cd /home/hendrik/docker-jmeter/hendrik/jmeter-master/; echo " + password + " | sudo -S /home/hendrik/docker-jmeter/hendrik/jmeter-master/example_run_test.sh;";
+        BufferedReader in = new BufferedReader(new InputStreamReader(ssh.execute(command)));
+
+        String msg = null;
+        try {
+            while ((msg = in.readLine()) != null) {
+                System.out.println(msg);
+                serverResponse += "<br />" + msg;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // close connections and remove tmp files
+        ssh.clean();
+        serverResponse += "<br />" + "Finished Stresstest";
     }
 
     public static List<InstanceInfo> loadAvailableInstances(String key){
