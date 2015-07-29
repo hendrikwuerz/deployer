@@ -33,6 +33,8 @@ public class StresstestEndPoint implements Serializable {
     String user = "hendrik";
     String password = "Wuerz";
 
+    String remote = "172.31.37.172,172.31.2.96,172.31.42.20";
+
     String serverResponse;
 
     public String getIp() {
@@ -58,6 +60,15 @@ public class StresstestEndPoint implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getRemote() {
+        return remote;
+    }
+
+    public void setRemote(String remote) {
+        this.remote = remote;
+    }
+
 
     public CollectionDataModel<InstanceInfo> getAvailableMaster() {
         return new CollectionDataModel<>(StresstestEndPoint.loadAvailableInstances("jmeter-master"));
@@ -97,7 +108,7 @@ public class StresstestEndPoint implements Serializable {
         serverResponse = "Starting stresstest";
 
         SSHExecutor ssh = new SSHExecutor(ip, user);
-        String command = "cd /home/hendrik/docker-jmeter/hendrik/jmeter-master/; echo " + password + " | sudo -S /home/hendrik/docker-jmeter/hendrik/jmeter-master/example_run_test.sh;";
+        String command = "cd /home/hendrik/docker-jmeter/hendrik/jmeter-master/; echo " + password + " | sudo -S /home/hendrik/docker-jmeter/hendrik/jmeter-master/example_run_test.sh " + remote + ";";
         System.out.println(command);
         BufferedReader in = new BufferedReader(new InputStreamReader(ssh.execute(command)));
 
