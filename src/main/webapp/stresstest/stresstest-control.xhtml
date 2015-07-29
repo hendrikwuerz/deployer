@@ -44,6 +44,12 @@
                 <p:column headerText="Host">
                     <h:outputText value="#{instance.name}" />
                 </p:column>
+                <p:column headerText="Private IP">
+                    <h:outputText value="#{instance.privateIP}" />
+                </p:column>
+                <p:column headerText="Public IP">
+                    <h:outputText value="#{instance.publicIP}" />
+                </p:column>
                 <p:column headerText="Status">
                     <h:outputText value="#{instance.status}" escape="false" />
                 </p:column>
@@ -65,6 +71,12 @@
 
                 <p:column headerText="Host">
                     <h:outputText value="#{instance.name}" />
+                </p:column>
+                <p:column headerText="Private IP">
+                    <h:outputText value="#{instance.privateIP}" />
+                </p:column>
+                <p:column headerText="Public IP">
+                    <h:outputText value="#{instance.publicIP}" />
                 </p:column>
                 <p:column headerText="Status">
                     <h:outputText value="#{instance.status}" escape="false" />
