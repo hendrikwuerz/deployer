@@ -13,8 +13,8 @@ import com.jcraft.jsch.*;
  */
 public class SSHExecutor {
 
-    private String ip = "52.18.199.184";
-    private String user = "hendrik";
+    private String ip;
+    private String user;
 
     private File tmpFile;
     private ChannelExec channel;
@@ -43,6 +43,37 @@ public class SSHExecutor {
     }
 
     /**
+     * initialize connection
+     */
+    private void connect() throws JSchException, IOException {
+        JSch jsch = new JSch();
+
+        // Create a tmp file for private key
+        tmpFile = File.createTempFile("key", ".key");
+        OutputStream outputStream = new FileOutputStream(tmpFile);
+
+        // Copy private key from resources to tmp file
+        int read = 0;
+        byte[] bytes = new byte[1024];
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("jmeter-private-key");
+        while ((read = inputStream.read(bytes)) != -1) {
+            outputStream.write(bytes, 0, read);
+        }
+        outputStream.close();
+
+        // add private key to ssh
+        jsch.addIdentity(tmpFile.getAbsolutePath());
+
+        // Create a new session for the command
+        session = jsch.getSession(user, ip, 22);
+        Properties config = new Properties();
+        config.put("StrictHostKeyChecking", "no");
+        session.setConfig(config);
+        session.connect();
+
+    }
+
+    /**
      * executes the passed command on the server with the current IP.
      * Will connect with the current user and the private key in resources "jmeter-private-key"
      * Do not forget to call clean() after executing a command
@@ -54,34 +85,7 @@ public class SSHExecutor {
     public InputStream execute(String command) {
 
         try {
-            System.out.println("------------------------- Starting command execution");
-            JSch jsch = new JSch();
-
-            // Create a tmp file for private key
-            tmpFile = File.createTempFile("key", ".key");
-            OutputStream outputStream = new FileOutputStream(tmpFile);
-
-            // Copy private key from resources to tmp file
-            int read = 0;
-            byte[] bytes = new byte[1024];
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("jmeter-private-key");
-            while ((read = inputStream.read(bytes)) != -1) {
-                outputStream.write(bytes, 0, read);
-            }
-            outputStream.close();
-
-            // add private key to ssh
-            System.out.println(tmpFile.getAbsolutePath());
-            jsch.addIdentity(tmpFile.getAbsolutePath());
-
-            Files.lines(tmpFile.toPath()).forEach(System.out::println);
-
-            // Create a new session for the command
-            session = jsch.getSession(user, ip, 22);
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
+            connect();
 
             // execute command
             channel = (ChannelExec) session.openChannel("exec");
@@ -99,6 +103,38 @@ public class SSHExecutor {
 
     }
 
+    public File scp(String remoteFile) {
+
+        try {
+            // connect to the current server
+            connect();
+
+            // use a sftp connection
+            Channel channel = session.openChannel("sftp");
+            channel.connect();
+            ChannelSftp sftpChannel = (ChannelSftp) channel;
+
+            // Create a tmp file local to store the remote file
+            File localFile = File.createTempFile((new File(remoteFile)).getName(), "");
+
+            System.out.println(localFile.getAbsolutePath());
+
+            // copy remote file to local file
+            sftpChannel.get(remoteFile, localFile.getAbsolutePath());
+
+            // end all
+            sftpChannel.exit();
+            session.disconnect();
+            tmpFile.delete();
+
+            return localFile;
+
+        } catch (SftpException | JSchException | IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * cleans all opened channels for command execution
      */
@@ -108,56 +144,4 @@ public class SSHExecutor {
         tmpFile.delete();
     }
 
-    static String convertStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
-    }
-
-    /*
-    public void runTest() {
-        try {
-            System.out.println("------------------------- runTest");
-            JSch jsch = new JSch();
-
-            File tempFile = File.createTempFile("key", ".key");
-            OutputStream outputStream = new FileOutputStream(tempFile);
-
-            int read = 0;
-            byte[] bytes = new byte[1024];
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("jmeter-private-key");
-            while ((read = inputStream.read(bytes)) != -1) {
-                outputStream.write(bytes, 0, read);
-            }
-            outputStream.close();
-
-            System.out.println(tempFile.getAbsolutePath());
-            jsch.addIdentity(tempFile.getAbsolutePath());
-
-            Files.lines(tempFile.toPath()).forEach(System.out::println);
-
-            Session session = jsch.getSession(user, ip, 22);
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
-
-            ChannelExec channel = (ChannelExec) session.openChannel("exec");
-            BufferedReader in = new BufferedReader(new InputStreamReader(channel.getInputStream()));
-            //channel.setCommand("sudo pwd;");
-            channel.setCommand("cd /home/hendrik/docker-jmeter/hendrik/jmeter-master/; echo " + pass + " | sudo -S /home/hendrik/docker-jmeter/hendrik/jmeter-master/example_run_test.sh;");
-            channel.connect();
-
-            String msg = null;
-            while ((msg = in.readLine()) != null) {
-                System.out.println(msg);
-            }
-
-            channel.disconnect();
-            session.disconnect();
-
-        } catch (JSchException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-    */
 }

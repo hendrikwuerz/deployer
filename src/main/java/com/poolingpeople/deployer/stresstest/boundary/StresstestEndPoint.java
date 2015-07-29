@@ -8,14 +8,17 @@ import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
 import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
+import sun.nio.ch.IOUtil;
 
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.faces.model.CollectionDataModel;
 import javax.inject.Named;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Serializable;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,7 +68,7 @@ public class StresstestEndPoint implements Serializable {
         // prepare output
         serverResponse = "Starting stresstest";
 
-        SSHExecutor ssh = new SSHExecutor("52.18.199.184", "hendrik");
+        SSHExecutor ssh = new SSHExecutor("52.18.254.52", "hendrik");
         String password = "Wuerz";
         String command = "cd /home/hendrik/docker-jmeter/hendrik/jmeter-master/; echo " + password + " | sudo -S /home/hendrik/docker-jmeter/hendrik/jmeter-master/example_run_test.sh;";
         BufferedReader in = new BufferedReader(new InputStreamReader(ssh.execute(command)));
@@ -83,6 +86,37 @@ public class StresstestEndPoint implements Serializable {
         // close connections and remove tmp files
         ssh.clean();
         serverResponse += "<br />" + "Finished Stresstest";
+
+        // get analysed data
+
+    }
+
+    public void getResult() {
+        SSHExecutor ssh = new SSHExecutor("52.18.254.52", "hendrik");
+        File tmpFile = ssh.scp("/home/hendrik/jmeter/logs/min.tar");
+
+        try {
+
+            // parse tmp file to byte array to return it to client
+            Path path = Paths.get(tmpFile.getAbsolutePath());
+            byte[] data = Files.readAllBytes(path);
+            tmpFile.delete();
+
+            // return file
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.setResponseHeader("Content-Type", "application/tar");
+            externalContext.setResponseHeader("Content-Length", String.valueOf(data.length));
+            externalContext.setResponseHeader("Content-Disposition", "attachment;filename=\"min.tar\"");
+            try {
+                externalContext.getResponseOutputStream().write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            facesContext.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static List<InstanceInfo> loadAvailableInstances(String key){

@@ -65,6 +65,7 @@
             <br />
             <p:commandButton value="Run Test" actionListener="#{stresstestEndPoint.runTest}" ajax="true" onstart="alert('Test will be started');" update="serverResponse"/>
             <p:commandButton value="View current status" ajax="false" update="serverResponse"/>
+            <p:commandButton value="Get result" actionListener="#{stresstestEndPoint.getResult}" ajax="false" update="serverResponse"/>
             <br />
             <br />
             <h:outputText value="Log results of last run" style="margin-top: 20px" escape="false" />
