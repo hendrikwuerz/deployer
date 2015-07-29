@@ -82,57 +82,46 @@ public class SSHExecutor {
      * @return
      *          The input stream from the server or null when no connection was possible
      */
-    public InputStream execute(String command) {
+    public InputStream execute(String command) throws IOException, JSchException {
 
-        try {
-            connect();
+        connect();
 
-            // execute command
-            channel = (ChannelExec) session.openChannel("exec");
-            InputStream serverInputStream = channel.getInputStream();
-            channel.setCommand(command);
-            channel.connect();
+        // execute command
+        channel = (ChannelExec) session.openChannel("exec");
+        InputStream serverInputStream = channel.getInputStream();
+        channel.setCommand(command);
+        channel.connect();
 
-            // return stream
-            return serverInputStream;
+        // return stream
+        return serverInputStream;
 
-        } catch (JSchException | IOException e) {
-            e.printStackTrace();
-            return null;
-        }
 
     }
 
-    public File scp(String remoteFile) {
+    public File scp(String remoteFile) throws IOException, JSchException, SftpException {
 
-        try {
-            // connect to the current server
-            connect();
+        // connect to the current server
+        connect();
 
-            // use a sftp connection
-            Channel channel = session.openChannel("sftp");
-            channel.connect();
-            ChannelSftp sftpChannel = (ChannelSftp) channel;
+        // use a sftp connection
+        Channel channel = session.openChannel("sftp");
+        channel.connect();
+        ChannelSftp sftpChannel = (ChannelSftp) channel;
 
-            // Create a tmp file local to store the remote file
-            File localFile = File.createTempFile((new File(remoteFile)).getName(), "");
+        // Create a tmp file local to store the remote file
+        File localFile = File.createTempFile((new File(remoteFile)).getName(), "");
 
-            System.out.println(localFile.getAbsolutePath());
+        System.out.println(localFile.getAbsolutePath());
 
-            // copy remote file to local file
-            sftpChannel.get(remoteFile, localFile.getAbsolutePath());
+        // copy remote file to local file
+        sftpChannel.get(remoteFile, localFile.getAbsolutePath());
 
-            // end all
-            sftpChannel.exit();
-            session.disconnect();
-            tmpFile.delete();
+        // end all
+        sftpChannel.exit();
+        session.disconnect();
+        tmpFile.delete();
 
-            return localFile;
-
-        } catch (SftpException | JSchException | IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return localFile;
     }
 
     /**

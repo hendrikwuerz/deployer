@@ -21,6 +21,13 @@
 
     <ui:define name="body">
         <h:form>
+
+            IP (Master) <p:inputText id="ip" value="#{stresstestEndPoint.ip}" style="width:200px; margin-right: 20px;" />
+            User (Master) <p:inputText id="user" value="#{stresstestEndPoint.user}" style="width:200px; margin-right: 20px;" />
+            Password (Master) <p:inputText id="password" value="#{stresstestEndPoint.password}" style="width:200px; margin-right: 20px;" />
+
+            <br />
+            <br />
             <h:outputText value="JMeter Master" />
             <br />
             <p:commandButton value="Start JMeter Master" actionListener="#{stresstestEndPoint.startMaster}" ajax="false" />
