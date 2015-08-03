@@ -7,6 +7,7 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
+import com.poolingpeople.deployer.stresstest.boundary.StresstestEndPoint;
 
 import java.util.Arrays;
 
@@ -37,6 +38,13 @@ public class InstanceInfo {
                 .getValue();
     }
 
+    public String getPrivateIP() {
+        return instance.getPrivateIpAddress();
+    }
+
+    public String getPublicIP() {
+        return instance.getPublicIpAddress();
+    }
 
     public String getStatus() {
         return instance.getState().getName();
@@ -62,6 +70,11 @@ public class InstanceInfo {
 
         StopInstancesRequest stopInstancesRequest = new StopInstancesRequest(Arrays.asList(instance.getInstanceId()));
         ec2.stopInstances(stopInstancesRequest);
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " - Private IP: " + getPrivateIP() + " - Public IP: " + getPublicIP() + " - Status: " + getStatus();
     }
 
 }

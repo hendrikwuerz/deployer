@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/consoleHeader.xhtml">
+
+    <ui:define name="title">
+        <h:outputText value="Stresstest Management" />
+    </ui:define>
+
+    <ui:define name="submenu">
+        <p:menuitem value="Start JMeter Master" actionListener="#{stresstestEndPoint.startMaster}" ajax="false" />
+        <p:menuitem value="Stop JMeter Master" actionListener="#{stresstestEndPoint.stopMaster}" ajax="false" />
+        <p:menuitem value="Start JMeter Server" actionListener="#{stresstestEndPoint.startServer}" ajax="false" />
+        <p:menuitem value="Stop JMeter Server" actionListener="#{stresstestEndPoint.stopServer}" ajax="false" />
+    </ui:define>
+
+    <ui:define name="body">
+        <h:form>
+
+            IP (Master) <p:inputText id="ip" value="#{stresstestEndPoint.ip}" style="width:200px; margin-right: 20px;" />
+            User (Master) <p:inputText id="user" value="#{stresstestEndPoint.user}" style="width:200px; margin-right: 20px;" />
+            Password (Master) <p:inputText id="password" value="#{stresstestEndPoint.password}" style="width:200px; margin-right: 20px;" />
+            <br />
+            <br />
+            IPs (Slaves) <p:inputText id="remote" value="#{stresstestEndPoint.remote}" style="width:400px; margin-right: 20px;" />
+
+            <br />
+            <br />
+            <h:outputText value="JMeter Master" />
+            <br />
+            <p:commandButton value="Start JMeter Master" actionListener="#{stresstestEndPoint.startMaster}" ajax="false" />
+            <p:commandButton value="Stop JMeter Master" actionListener="#{stresstestEndPoint.stopMaster}" ajax="false" />
+            <br />
+            <p:dataTable var="instance" value="#{stresstestEndPoint.availableMaster}"
+                         rendered="#{stresstestEndPoint.availableMaster.rowCount != 0}"
+                         tableStyle="width:auto"
+                         rowStyleClass="#{instance.isStarted() ? 'instance-up': 'instance-down'}">
+
+                <p:column headerText="Host">
+                    <h:outputText value="#{instance.name}" />
+                </p:column>
+                <p:column headerText="Private IP">
+                    <h:outputText value="#{instance.privateIP}" />
+                </p:column>
+                <p:column headerText="Public IP">
+                    <h:outputText value="#{instance.publicIP}" />
+                </p:column>
+                <p:column headerText="Status">
+                    <h:outputText value="#{instance.status}" escape="false" />
+                </p:column>
+            </p:dataTable>
+
+            <br />
+            <br />
+            <br />
+
+            <h:outputText value="JMeter Server" style="margin-top: 20px"/>
+            <br />
+            <p:commandButton value="Start JMeter Server" actionListener="#{stresstestEndPoint.startServer}" ajax="false" />
+            <p:commandButton value="Stop JMeter Server" actionListener="#{stresstestEndPoint.stopServer}" ajax="false" />
+            <br />
+            <p:dataTable var="instance" value="#{stresstestEndPoint.availableServer}"
+                         rendered="#{stresstestEndPoint.availableServer.rowCount != 0}"
+                         tableStyle="width:auto"
+                         rowStyleClass="#{instance.isStarted() ? 'instance-up': 'instance-down'}">
+
+                <p:column headerText="Host">
+                    <h:outputText value="#{instance.name}" />
+                </p:column>
+                <p:column headerText="Private IP">
+                    <h:outputText value="#{instance.privateIP}" />
+                </p:column>
+                <p:column headerText="Public IP">
+                    <h:outputText value="#{instance.publicIP}" />
+                </p:column>
+                <p:column headerText="Status">
+                    <h:outputText value="#{instance.status}" escape="false" />
+                </p:column>
+            </p:dataTable>
+            <br />
+            <br />
+            <br />
+            <p:commandButton value="Run Test" actionListener="#{stresstestEndPoint.runTest}" ajax="false" onstart="alert('Test will be started');" update="serverResponse"/>
+            <p:commandButton value="View current status" ajax="true" update="serverResponse"/>
+            <p:commandButton value="Get result (all)" actionListener="#{stresstestEndPoint.getResult}" ajax="false" update="serverResponse"/>
+            <p:commandButton value="Get result (only final)" actionListener="#{stresstestEndPoint.getResultMin}" ajax="false" update="serverResponse"/>
+            <br />
+            <br />
+            <h:outputText value="Log results of last run" style="margin-top: 20px" escape="false" />
+            <br />
+            <h:outputText value="#{stresstestEndPoint.serverResponse}" style="margin-top: 20px" escape="false" id="serverResponse" />
+            <p:poll interval="5" update="serverResponse" />
+        </h:form>
+
+    </ui:define>
+</ui:composition>
+</html>

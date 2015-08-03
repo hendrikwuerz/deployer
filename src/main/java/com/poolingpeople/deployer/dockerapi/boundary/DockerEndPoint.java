@@ -8,6 +8,7 @@ import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
 import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
+import com.poolingpeople.deployer.scenario.boundary.AWSInstances;
 import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
 
 import javax.enterprise.context.SessionScoped;
@@ -40,21 +41,8 @@ public class DockerEndPoint  implements Serializable{
     }
 
     public CollectionDataModel<InstanceInfo> getAvailableHosts() {
-        availableHosts = new CollectionDataModel<>(DockerEndPoint.loadAvailableHosts());
+        availableHosts = new CollectionDataModel<>(AWSInstances.loadAvailableInstances("deployer"));
         return availableHosts;
-    }
-
-    public static List<InstanceInfo> loadAvailableHosts(){
-        AmazonEC2 ec2 = new AmazonEC2Client(new AWSCredentials());
-        ec2.setRegion(Region.getRegion(Regions.EU_WEST_1));
-        DescribeInstancesResult result = ec2.describeInstances();
-        List<Instance> instances = result.getReservations().stream().map(res -> (Instance) res.getInstances().get(0)).collect(Collectors.toList());
-
-        return instances.stream()
-                .filter(instance -> instance.getTags().stream().filter(tag -> tag.getKey().equals("deployer") && tag.getValue().equals("true"))
-                        .count() > 0) // check if there is a tag with deployer==true
-                .map(InstanceInfo::new)
-                .collect(Collectors.toList());
     }
 
     public String startInstance() {
