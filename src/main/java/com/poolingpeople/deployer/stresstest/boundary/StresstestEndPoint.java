@@ -177,9 +177,18 @@ public class StresstestEndPoint implements Serializable {
     }
 
     public void getResult() throws SftpException, JSchException, IOException {
+        getResultFile("/home/hendrik/jmeter/logs/log.tar");
+    }
+
+    //ADD Download of min
+    public void getResultMin() throws SftpException, JSchException, IOException {
+        getResultFile("/home/hendrik/jmeter/logs/min.tar");
+    }
+
+    private void getResultFile(String filename) throws SftpException, JSchException, IOException {
         SSHExecutor ssh = new SSHExecutor(ip, user);
 
-        File tmpFile = ssh.scp("/home/hendrik/jmeter/logs/log.tar");
+        File tmpFile = ssh.scp(filename);
 
         // parse tmp file to byte array to return it to client
         Path path = Paths.get(tmpFile.getAbsolutePath());
