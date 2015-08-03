@@ -1,16 +1,11 @@
 package com.poolingpeople.deployer.stresstest.boundary;
 
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
 import com.poolingpeople.deployer.scenario.boundary.AWSInstances;
 import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
+
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -39,6 +34,10 @@ public class StresstestEndPoint implements Serializable {
     String password = "Wuerz";
 
     String remote = "172.31.37.172,172.31.2.96,172.31.42.20";
+
+    CollectionDataModel<InstanceInfo> awsMaster;
+    CollectionDataModel<InstanceInfo> awsServer;
+    long lastAWSUpdate;
 
     String serverResponse;
 
@@ -76,11 +75,23 @@ public class StresstestEndPoint implements Serializable {
 
 
     public CollectionDataModel<InstanceInfo> getAvailableMaster() {
-        return new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG));
+        if(lastAWSUpdate < System.currentTimeMillis() - 30 * 1000) { // update
+            updateInstances();
+        }
+        return awsMaster;
     }
 
     public CollectionDataModel<InstanceInfo> getAvailableServer() {
-        return new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG));
+        if(lastAWSUpdate < System.currentTimeMillis() - 30 * 1000) { // update
+            updateInstances();
+        }
+        return awsServer;
+    }
+
+    private void updateInstances() {
+        awsMaster = new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG));
+        awsServer = new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG));
+        lastAWSUpdate = System.currentTimeMillis();
     }
 
     public String startMaster() {
@@ -144,19 +155,24 @@ public class StresstestEndPoint implements Serializable {
         System.out.println(command);
         BufferedReader in = new BufferedReader(new InputStreamReader(ssh.execute(command)));
 
-        String msg = null;
-        try {
-            while ((msg = in.readLine()) != null) {
-                System.out.println(msg);
-                serverResponse += "<br />" + msg;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        new Thread() {
+            public void run() {
 
-        // close connections and remove tmp files
-        ssh.clean();
-        serverResponse += "<br />" + "Finished Stresstest";
+                String msg = null;
+                try {
+                    while ((msg = in.readLine()) != null) {
+                        System.out.println(msg);
+                        serverResponse += "<br />" + msg;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                // close connections and remove tmp files
+                ssh.clean();
+                serverResponse += "<br />" + "Finished Stresstest";
+            }
+        }.start();
 
     }
 

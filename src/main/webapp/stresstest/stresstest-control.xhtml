@@ -85,14 +85,15 @@
             <br />
             <br />
             <br />
-            <p:commandButton value="Run Test" actionListener="#{stresstestEndPoint.runTest}" ajax="true" onstart="alert('Test will be started');" update="serverResponse"/>
-            <p:commandButton value="View current status" ajax="false" update="serverResponse"/>
-            <p:commandButton value="Get result" actionListener="#{stresstestEndPoint.getResult}" ajax="false" update="serverResponse"/>
+            <p:commandButton value="Run Test" actionListener="#{stresstestEndPoint.runTest}" onstart="alert('Test will be started');" update="serverResponse"/>
+            <p:commandButton value="View current status" ajax="true" update="serverResponse"/>
+            <p:commandButton value="Get result" actionListener="#{stresstestEndPoint.getResult}" update="serverResponse"/>
             <br />
             <br />
             <h:outputText value="Log results of last run" style="margin-top: 20px" escape="false" />
             <br />
             <h:outputText value="#{stresstestEndPoint.serverResponse}" style="margin-top: 20px" escape="false" id="serverResponse"/>
+            <p:poll interval="5" update="serverResponse" />
         </h:form>
 
     </ui:define>
