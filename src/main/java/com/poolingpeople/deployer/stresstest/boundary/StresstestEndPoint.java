@@ -128,6 +128,9 @@ public class StresstestEndPoint implements Serializable {
             remote = server.stream().map(InstanceInfo::getPrivateIP).collect(Collectors.joining(","));
         }
 
+        serverResponse+= "<br />Master: " + ip;
+        serverResponse+= "<br />Server: " + remote;
+
         // Check instances to be running
         if(!AWSInstances.isIPRunning(ip, instances)) throw new RuntimeException("JMeter Master with IP " + ip + " is not running");
         Arrays.stream(remote.split(",")).forEach( serverIP -> {
