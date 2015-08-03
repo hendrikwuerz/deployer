@@ -9,6 +9,7 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
+import com.poolingpeople.deployer.scenario.boundary.AWSInstances;
 import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
@@ -19,6 +20,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +31,10 @@ import java.util.stream.Collectors;
 @SessionScoped
 public class StresstestEndPoint implements Serializable {
 
-    String ip = "52.18.254.52";
+    private static final String JMETER_MASTER_AWS_TAG = "jmeter-master";
+    private static final String JMETER_SERVER_AWS_TAG = "jmeter-server";
+
+    String ip;
     String user = "hendrik";
     String password = "Wuerz";
 
@@ -71,30 +76,30 @@ public class StresstestEndPoint implements Serializable {
 
 
     public CollectionDataModel<InstanceInfo> getAvailableMaster() {
-        return new CollectionDataModel<>(StresstestEndPoint.loadAvailableInstances("jmeter-master"));
+        return new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG));
     }
 
     public CollectionDataModel<InstanceInfo> getAvailableServer() {
-        return new CollectionDataModel<>(StresstestEndPoint.loadAvailableInstances("jmeter-server"));
+        return new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG));
     }
 
     public String startMaster() {
-        loadAvailableInstances("jmeter-master").forEach(InstanceInfo::start);
+        AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG).forEach(InstanceInfo::start);
         return "stresstest-control";
     }
 
     public String stopMaster() {
-        loadAvailableInstances("jmeter-master").forEach(InstanceInfo::stop);
+        AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG).forEach(InstanceInfo::stop);
         return "stresstest-control";
     }
 
     public String startServer() {
-        loadAvailableInstances("jmeter-server").forEach(InstanceInfo::start);
+        AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG).forEach(InstanceInfo::start);
         return "stresstest-control";
     }
 
     public String stopServer() {
-        loadAvailableInstances("jmeter-server").forEach(InstanceInfo::stop);
+        AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG).forEach(InstanceInfo::stop);
         return "stresstest-control";
     }
 
@@ -107,6 +112,30 @@ public class StresstestEndPoint implements Serializable {
         // prepare output
         serverResponse = "Starting stresstest";
 
+
+        // load default values if none are set
+        List<Instance> instances = AWSInstances.loadAvailableInstances();
+
+        // insert default ip -> First found JMeter Master
+        if(ip == null || ip.equals("")) {
+            InstanceInfo master = AWSInstances.findInstance(JMETER_MASTER_AWS_TAG, instances).get(0);
+            ip = master.getPrivateIP(); // !!! Only works on AWS not local
+        }
+
+        // insert default remotes -> All known JMeter Server
+        if(remote == null || remote.equals("")) {
+            List<InstanceInfo> server = AWSInstances.findInstance(JMETER_SERVER_AWS_TAG, instances);
+            remote = server.stream().map(InstanceInfo::getPrivateIP).collect(Collectors.joining(","));
+        }
+
+        // Check instances to be running
+        if(!AWSInstances.isIPRunning(ip, instances)) throw new RuntimeException("JMeter Master with IP " + ip + " is not running");
+        Arrays.stream(remote.split(",")).forEach( serverIP -> {
+            if(!AWSInstances.isIPRunning(serverIP, instances)) throw new RuntimeException("JMeter Server with IP " + serverIP + " is not running");
+        });
+
+
+        // start test
         SSHExecutor ssh = new SSHExecutor(ip, user);
         String command = "cd /home/hendrik/docker-jmeter/hendrik/jmeter-master/; echo " + password + " | sudo -S /home/hendrik/docker-jmeter/hendrik/jmeter-master/example_run_test.sh " + remote + ";";
         System.out.println(command);
@@ -152,16 +181,4 @@ public class StresstestEndPoint implements Serializable {
         facesContext.responseComplete();
     }
 
-    public static List<InstanceInfo> loadAvailableInstances(String key){
-        AmazonEC2 ec2 = new AmazonEC2Client(new AWSCredentials());
-        ec2.setRegion(Region.getRegion(Regions.EU_WEST_1));
-        DescribeInstancesResult result = ec2.describeInstances();
-        List<Instance> instances = result.getReservations().stream().map(res -> (Instance) res.getInstances().get(0)).collect(Collectors.toList());
-
-        return instances.stream()
-                .filter(instance -> instance.getTags().stream().filter(tag -> tag.getKey().equals(key) && tag.getValue().equals("true"))
-                        .count() > 0) // check if there is a tag with deployer==true
-                .map(InstanceInfo::new)
-                .collect(Collectors.toList());
-    }
 }

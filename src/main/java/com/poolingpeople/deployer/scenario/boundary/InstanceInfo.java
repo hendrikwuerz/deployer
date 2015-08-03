@@ -72,4 +72,9 @@ public class InstanceInfo {
         ec2.stopInstances(stopInstancesRequest);
     }
 
+    @Override
+    public String toString() {
+        return getName() + " - Private IP: " + getPrivateIP() + " - Public IP: " + getPublicIP() + " - Status: " + getStatus();
+    }
+
 }
