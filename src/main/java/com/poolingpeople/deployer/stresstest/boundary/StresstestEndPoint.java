@@ -3,9 +3,7 @@ package com.poolingpeople.deployer.stresstest.boundary;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.*;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
@@ -21,10 +19,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +33,8 @@ public class StresstestEndPoint implements Serializable {
     private static final String JMETER_MASTER_AWS_TAG = "jmeter-master";
     private static final String JMETER_SERVER_AWS_TAG = "jmeter-server";
     private static final String BUCKET_NAME = "poolingpeople";
+    private static final String RESULT_TAR = "/home/hendrik/jmeter/logs/log.tar";
+    private static final String RESULT_TAR_MIN = "/home/hendrik/jmeter/logs/min.tar";
 
     String ip;
     String user = "hendrik";
@@ -257,20 +255,79 @@ public class StresstestEndPoint implements Serializable {
                 // close connections and remove tmp files
                 ssh.clean();
                 serverResponse += "<br />" + "Finished Stresstest";
+
+                try {
+                    copyResultsToS3();
+                    serverResponse += "<br />" + "Results saved on s3";
+                } catch (JSchException | SftpException | IOException e) {
+                    e.printStackTrace();
+                    serverResponse += "<br />" + "!!!! Results could not be stored on S3 !!!!";
+                }
             }
         }.start();
 
     }
 
+    /**
+     * stores the result file on s3
+     * @throws JSchException
+     * @throws SftpException
+     * @throws IOException
+     */
+    private void copyResultsToS3() throws JSchException, SftpException, IOException {
+
+        // copy result file to tmp file
+        SSHExecutor ssh = new SSHExecutor(ip, user);
+        File tmpFile = ssh.download(RESULT_TAR);
+
+        // Map file to byte array
+        Path path = Paths.get(tmpFile.getAbsolutePath());
+        byte[] data = Files.readAllBytes(path);
+
+        // Upload data to s3
+        AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(data.length);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+        String filename = dateFormat.format(new Date());
+        s3client.putObject(
+                new PutObjectRequest(
+                        BUCKET_NAME,
+                        "stresstest/results/" + filename + ".tar",
+                        new ByteArrayInputStream(data),
+                        objectMetadata
+                ));
+    }
+
+    /**
+     * download the full result file with all generated data
+     * @throws SftpException
+     * @throws JSchException
+     * @throws IOException
+     */
     public void getResult() throws SftpException, JSchException, IOException {
-        getResultFile("/home/hendrik/jmeter/logs/log.tar");
+        getResultFile(RESULT_TAR);
     }
 
-    //ADD Download of min
+    /**
+     * download the small result file with only minimized data and svg-diagrams
+     * @throws SftpException
+     * @throws JSchException
+     * @throws IOException
+     */
     public void getResultMin() throws SftpException, JSchException, IOException {
-        getResultFile("/home/hendrik/jmeter/logs/min.tar");
+        getResultFile(RESULT_TAR_MIN);
     }
 
+    /**
+     * downloads the passed file from the server and let the user save it
+     * @param filename
+     *          The file on the server to be downloaded
+     * @throws SftpException
+     * @throws JSchException
+     * @throws IOException
+     */
     private void getResultFile(String filename) throws SftpException, JSchException, IOException {
         SSHExecutor ssh = new SSHExecutor(ip, user);
 
