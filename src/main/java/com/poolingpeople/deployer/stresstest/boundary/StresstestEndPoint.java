@@ -285,6 +285,7 @@ public class StresstestEndPoint implements Serializable {
         // Map file to byte array
         Path path = Paths.get(tmpFile.getAbsolutePath());
         byte[] data = Files.readAllBytes(path);
+        tmpFile.delete();
 
         // Upload data to s3
         AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
@@ -292,11 +293,44 @@ public class StresstestEndPoint implements Serializable {
         objectMetadata.setContentLength(data.length);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-        String filename = dateFormat.format(new Date());
+        String currentTime = dateFormat.format(new Date());
         s3client.putObject(
                 new PutObjectRequest(
                         BUCKET_NAME,
-                        "stresstest/results/" + filename + ".tar",
+                        "stresstest/results/" + currentTime + "/log.tar",
+                        new ByteArrayInputStream(data),
+                        objectMetadata
+                ));
+
+        // create file with global test data
+        File settings = File.createTempFile("settings", ".txt");
+        PrintWriter writer = new PrintWriter(settings, "UTF-8");
+        writer.println("Testplan: " + plan);
+        writer.println("Master: " + ip);
+        writer.println("Remote: " + remote);
+        writer.println("User: " + user);
+        String passwordPrintable = String.valueOf(password.charAt(0));
+        for(int i = 1; i < password.length(); i++) { passwordPrintable += "*"; }
+        writer.println("Password: " + passwordPrintable);
+        writer.println("Time: " + currentTime);
+        writer.println("Timestamp: " + System.currentTimeMillis());
+        writer.println("");
+        writer.println("----------------------------------------------------------");
+        writer.println("Log from run");
+        writer.println("");
+        writer.println(serverResponse.replaceAll("<br />", "\n"));
+        writer.close();
+
+        // copy global test data to s3
+        path = Paths.get(settings.getAbsolutePath());
+        data = Files.readAllBytes(path);
+        settings.delete();
+        objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(data.length);
+        s3client.putObject(
+                new PutObjectRequest(
+                        BUCKET_NAME,
+                        "stresstest/results/" + currentTime + "/settings.txt",
                         new ByteArrayInputStream(data),
                         objectMetadata
                 ));
