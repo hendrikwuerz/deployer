@@ -254,7 +254,7 @@ public class StresstestEndPoint implements Serializable {
 
                 // close connections and remove tmp files
                 ssh.clean();
-                serverResponse += "<br />" + "Finished Stresstest";
+                serverResponse += "<br />" + "Copy results to s3";
 
                 try {
                     copyResultsToS3();
@@ -263,6 +263,8 @@ public class StresstestEndPoint implements Serializable {
                     e.printStackTrace();
                     serverResponse += "<br />" + "!!!! Results could not be stored on S3 !!!!";
                 }
+
+                serverResponse += "<br />" + "Finished Stresstest";
             }
         }.start();
 
