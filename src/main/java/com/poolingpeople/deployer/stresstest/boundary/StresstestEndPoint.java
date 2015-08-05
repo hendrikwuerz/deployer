@@ -1,8 +1,14 @@
 package com.poolingpeople.deployer.stresstest.boundary;
 
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
+import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
 import com.poolingpeople.deployer.scenario.boundary.AWSInstances;
 import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
 
@@ -15,7 +21,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,12 +36,14 @@ public class StresstestEndPoint implements Serializable {
 
     private static final String JMETER_MASTER_AWS_TAG = "jmeter-master";
     private static final String JMETER_SERVER_AWS_TAG = "jmeter-server";
+    private static final String BUCKET_NAME = "poolingpeople";
 
     String ip;
     String user = "hendrik";
     String password = "Wuerz";
 
     String remote = "172.31.37.172,172.31.2.96,172.31.42.20";
+    String plan;
 
     CollectionDataModel<InstanceInfo> awsMaster;
     CollectionDataModel<InstanceInfo> awsServer;
@@ -73,7 +83,20 @@ public class StresstestEndPoint implements Serializable {
         this.remote = remote;
     }
 
+    public String getPlan() {
+        return plan;
+    }
 
+    public void setPlan(String plan) {
+        this.plan = plan;
+    }
+
+    /**
+     * get all instances with AWS Tag jmeter-master
+     * uses caching. Only if data is older than 30 seconds a new request will be send
+     * @return
+     *          All JMeter master instances (normally just one)
+     */
     public CollectionDataModel<InstanceInfo> getAvailableMaster() {
         if(lastAWSUpdate < System.currentTimeMillis() - 30 * 1000) { // update
             updateInstances();
@@ -81,6 +104,12 @@ public class StresstestEndPoint implements Serializable {
         return awsMaster;
     }
 
+    /**
+     * get all instances with AWS Tag jmeter-server
+     * uses caching. Only if data is older than 30 seconds a new request will be send
+     * @return
+     *          All JMeter server instances (normally about 3)
+     */
     public CollectionDataModel<InstanceInfo> getAvailableServer() {
         if(lastAWSUpdate < System.currentTimeMillis() - 30 * 1000) { // update
             updateInstances();
@@ -88,38 +117,85 @@ public class StresstestEndPoint implements Serializable {
         return awsServer;
     }
 
+    /**
+     * updates the cached data of available JMeter server and master.
+     * Sends a request to aws
+     */
     private void updateInstances() {
         awsMaster = new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG));
         awsServer = new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG));
         lastAWSUpdate = System.currentTimeMillis();
     }
 
+    /**
+     * gets all available test plans on s3 stored in  poolingpeople/stresstest/plans
+     * @return
+     *          All available test plans
+     */
+    public Collection<String> getPlans() {
+
+        AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
+        List<S3ObjectSummary> objects = s3client.listObjects(BUCKET_NAME).getObjectSummaries();
+
+        if(objects == null) return new ArrayList<>();
+
+        return objects.stream().map(S3ObjectSummary::getKey)
+                .filter(o -> { String[] path = o.split("/"); return path.length > 2 && path[0].equals("stresstest") && path[1].equals("plans"); })
+                .collect(Collectors.toList());
+
+    }
+
+    /**
+     * starts all JMeter master instances on AWS (normally just one)
+     */
     public String startMaster() {
         AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG).forEach(InstanceInfo::start);
         return "stresstest-control";
     }
 
+    /**
+     * stops all JMeter master instances on AWS (normally just one)
+     */
     public String stopMaster() {
         AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG).forEach(InstanceInfo::stop);
         return "stresstest-control";
     }
 
+    /**
+     * starts all JMeter server instances on AWS (normally about 3)
+     */
     public String startServer() {
         AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG).forEach(InstanceInfo::start);
         return "stresstest-control";
     }
 
+    /**
+     * stops all JMeter server instances on AWS (normally about 3)
+     */
     public String stopServer() {
         AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG).forEach(InstanceInfo::stop);
         return "stresstest-control";
     }
 
+    /**
+     * gets the current status of server responses.
+     * If test is running the console output of the server can be get with this
+     * @return
+     *          The output of current (or last) running test
+     */
     public String getServerResponse() {
         return serverResponse;
     }
 
 
-    public void runTest() throws IOException, JSchException {
+    /**
+     * starts a new stress test with the set parameters
+     * @throws IOException
+     * @throws JSchException
+     * @throws SftpException
+     *          when test file upload is not possible
+     */
+    public void runTest() throws IOException, JSchException, SftpException {
         // prepare output
         serverResponse = "Starting stresstest";
 
@@ -141,6 +217,7 @@ public class StresstestEndPoint implements Serializable {
 
         serverResponse+= "<br />Master: " + ip;
         serverResponse+= "<br />Server: " + remote;
+        serverResponse+= "<br />Plan: " + plan;
 
         // Check instances to be running
         if(!AWSInstances.isIPRunning(ip, instances)) throw new RuntimeException("JMeter Master with IP " + ip + " is not running");
@@ -151,10 +228,19 @@ public class StresstestEndPoint implements Serializable {
 
         // start test
         SSHExecutor ssh = new SSHExecutor(ip, user);
+
+        // copy selected testplan to JMeter Master
+        AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
+        S3Object s3Object = s3client.getObject(new GetObjectRequest(BUCKET_NAME, plan));
+        InputStream stream = s3Object.getObjectContent();
+        ssh.upload("/home/hendrik/jmeter", "neo4jTest.jmx", stream);
+
+        // run the test!
         String command = "cd /home/hendrik/docker-jmeter/hendrik/jmeter-master/; echo " + password + " | sudo -S /home/hendrik/docker-jmeter/hendrik/jmeter-master/example_run_test.sh " + remote + ";";
         System.out.println(command);
         BufferedReader in = new BufferedReader(new InputStreamReader(ssh.execute(command)));
 
+        // handle console output from JMeter Master in another thread
         new Thread() {
             public void run() {
 
@@ -188,7 +274,7 @@ public class StresstestEndPoint implements Serializable {
     private void getResultFile(String filename) throws SftpException, JSchException, IOException {
         SSHExecutor ssh = new SSHExecutor(ip, user);
 
-        File tmpFile = ssh.scp(filename);
+        File tmpFile = ssh.download(filename);
 
         // parse tmp file to byte array to return it to client
         Path path = Paths.get(tmpFile.getAbsolutePath());
