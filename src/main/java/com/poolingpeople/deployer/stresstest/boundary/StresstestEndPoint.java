@@ -37,8 +37,8 @@ public class StresstestEndPoint implements Serializable {
     private static final String RESULT_TAR_MIN = "/home/hendrik/jmeter/logs/min.tar";
 
     String ip;
-    String user = "hendrik";
-    String password = "Wuerz";
+    String user = "";
+    String password = "";
 
     String remote = "172.31.37.172,172.31.2.96,172.31.42.20";
     String plan;
