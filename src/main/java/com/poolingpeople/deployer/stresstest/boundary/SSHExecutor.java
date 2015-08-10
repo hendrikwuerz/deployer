@@ -98,7 +98,17 @@ public class SSHExecutor {
 
     }
 
-    public File scp(String remoteFile) throws IOException, JSchException, SftpException {
+    /**
+     * gets a file from the server
+     * @param remoteFile
+     *          The path to the remote file on the server
+     * @return
+     *          A temp copy of the file
+     * @throws IOException
+     * @throws JSchException
+     * @throws SftpException
+     */
+    public File download(String remoteFile) throws IOException, JSchException, SftpException {
 
         // connect to the current server
         connect();
@@ -122,6 +132,38 @@ public class SSHExecutor {
         tmpFile.delete();
 
         return localFile;
+    }
+
+
+    /**
+     * uploads a file to the server
+     * @param remotePath
+     *          The remote path where the file should be stored
+     * @param remoteFileName
+     *          The filename of the remote file in the remotePath
+     * @param data
+     *          The data in the file
+     * @throws IOException
+     * @throws JSchException
+     * @throws SftpException
+     */
+    public void upload(String remotePath, String remoteFileName, InputStream data) throws IOException, JSchException, SftpException {
+
+        // connect to the current server
+        connect();
+
+        // use a sftp connection
+        Channel channel = session.openChannel("sftp");
+        channel.connect();
+        ChannelSftp sftpChannel = (ChannelSftp) channel;
+
+        sftpChannel.cd(remotePath);
+        sftpChannel.put(data, remoteFileName);
+
+        // end all
+        sftpChannel.exit();
+        session.disconnect();
+        tmpFile.delete();
     }
 
     /**

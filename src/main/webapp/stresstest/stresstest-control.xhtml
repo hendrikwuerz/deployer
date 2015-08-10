@@ -31,6 +31,12 @@
 
             <br />
             <br />
+            Testplan
+            <p:selectOneMenu id="plan" value="#{stresstestEndPoint.plan}" style="width:200px">
+                <f:selectItems value="#{stresstestEndPoint.plans}" var="plan" itemLabel="#{plan}" />
+            </p:selectOneMenu>
+            <br />
+            <br />
             <h:outputText value="JMeter Master" />
             <br />
             <p:commandButton value="Start JMeter Master" actionListener="#{stresstestEndPoint.startMaster}" ajax="false" />
