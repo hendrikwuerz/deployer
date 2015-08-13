@@ -3,4 +3,5 @@
 target
 src/main/resources/aws-secret-key
 src/main/resources/aws-access-key
+src/main/resources/jmeter-private-key
 scripts/deployment/deployer.war
