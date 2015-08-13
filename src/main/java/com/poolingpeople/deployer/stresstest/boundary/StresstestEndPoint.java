@@ -219,16 +219,16 @@ public class StresstestEndPoint implements Serializable {
         // start test
         SSHExecutor ssh = new SSHExecutor(ip, user);
 
-        // copy selected testplan to JMeter Master
-        AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
-        S3Object s3Object = s3client.getObject(new GetObjectRequest(BUCKET_NAME, plan));
-        InputStream stream = s3Object.getObjectContent();
-
         // get JMETER_HOME
         InputStream inputStream = ssh.execute("echo ${JMETER_HOME}");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
         jmeterHome = bufferedReader.readLine();
         serverResponse += "<br />JMETER_HOME: " + jmeterHome;
+
+        // copy selected testplan to JMeter Master
+        AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
+        S3Object s3Object = s3client.getObject(new GetObjectRequest(BUCKET_NAME, plan));
+        InputStream stream = s3Object.getObjectContent();
 
         //ssh.upload("/home/hendrik/jmeter", "neo4jTest.jmx", stream);
         ssh.upload(jmeterHome + "/jmeter", "test.jmx", stream);
