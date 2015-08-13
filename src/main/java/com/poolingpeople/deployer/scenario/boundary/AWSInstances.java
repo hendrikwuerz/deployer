@@ -7,8 +7,8 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -27,7 +27,14 @@ public class AWSInstances {
         AmazonEC2 ec2 = new AmazonEC2Client(new AWSCredentials());
         ec2.setRegion(Region.getRegion(Regions.EU_WEST_1));
         DescribeInstancesResult result = ec2.describeInstances();
-        return result.getReservations().stream().map(res -> (Instance) res.getInstances().get(0)).collect(Collectors.toList());
+        ArrayList<Instance> instances = new ArrayList<>();
+        // get add reservations (if two instances are created at once only one reservation is set)
+        result.getReservations().stream().forEach(res -> {
+            List<Instance> resInst = res.getInstances();
+            // Each reservation can have multiple instances
+            resInst.stream().forEach(instances::add);
+        });
+        return instances;
     }
 
     /**
