@@ -1,11 +1,10 @@
 package com.poolingpeople.deployer.stresstest.boundary;
 
 
-import java.io.*;
-import java.nio.file.Files;
-import java.util.Properties;
-
 import com.jcraft.jsch.*;
+
+import java.io.*;
+import java.util.Properties;
 
 
 /**
