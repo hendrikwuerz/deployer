@@ -37,7 +37,7 @@ public class StresstestEndPoint implements Serializable {
     private static final String RESULT_TAR_MIN = "/jmeter/logs/min.tar";
 
     String ip;
-    String user = "";
+    String user = "jmeter";
 
     String jmeterHome; // filled with env variable from jmeter master
     String remote = "";
@@ -140,6 +140,7 @@ public class StresstestEndPoint implements Serializable {
      */
     public String startMaster() {
         AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG).forEach(InstanceInfo::start);
+        lastAWSUpdate = 0;
         return "stresstest-control";
     }
 
@@ -148,6 +149,7 @@ public class StresstestEndPoint implements Serializable {
      */
     public String stopMaster() {
         AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG).forEach(InstanceInfo::stop);
+        lastAWSUpdate = 0;
         return "stresstest-control";
     }
 
@@ -156,6 +158,7 @@ public class StresstestEndPoint implements Serializable {
      */
     public String startServer() {
         AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG).forEach(InstanceInfo::start);
+        lastAWSUpdate = 0;
         return "stresstest-control";
     }
 
@@ -164,6 +167,7 @@ public class StresstestEndPoint implements Serializable {
      */
     public String stopServer() {
         AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG).forEach(InstanceInfo::stop);
+        lastAWSUpdate = 0;
         return "stresstest-control";
     }
 
