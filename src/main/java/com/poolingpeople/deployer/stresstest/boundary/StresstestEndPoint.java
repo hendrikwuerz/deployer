@@ -111,7 +111,7 @@ public class StresstestEndPoint implements Serializable {
      * updates the cached data of available JMeter server and master.
      * Sends a request to aws
      */
-    private void updateInstances() {
+    public void updateInstances() {
         awsMaster = new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG));
         awsServer = new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG));
         lastAWSUpdate = System.currentTimeMillis();
