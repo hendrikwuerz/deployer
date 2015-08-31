@@ -26,6 +26,7 @@ public class DeployerController implements Serializable {
     private String subdomain;
     private String version;
     private String dbSnapshotName;
+    private String appEnvironment = "live";
     private String area;
     private boolean forceDownload; // force download even if cache file was found
     private boolean overwrite; // overwrites existing cluster if 'subdomain' is already used
@@ -46,6 +47,14 @@ public class DeployerController implements Serializable {
         return subdomain;
     }
 
+    public String getAppEnvironment() {
+        return appEnvironment;
+    }
+
+    public void setAppEnvironment(String appEnvironment) {
+        this.appEnvironment = appEnvironment;
+    }
+
     public Collection<String> getAvailableVersions() {
         Collection<String> availableVersions = facade.loadVersions(area);
         // sort results
@@ -60,7 +69,7 @@ public class DeployerController implements Serializable {
     }
 
     public String deploy(){
-        facade.deploy(version, subdomain, dbSnapshotName, area, forceDownload, overwrite);
+        facade.deploy(version, subdomain, dbSnapshotName, area, forceDownload, overwrite, appEnvironment);
 
         FacesContext context = FacesContext.getCurrentInstance();
         context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Deployed", "A new cluster has been deployed"));

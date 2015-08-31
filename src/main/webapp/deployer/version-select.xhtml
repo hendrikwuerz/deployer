@@ -32,6 +32,8 @@
                     </p:selectOneMenu>
                     <p:commandButton action="#{deployerController.downloadDatabase}" ajax="false" value="Download" styleClass="small-button" />
                 </h:panelGrid>
+                <p:outputLabel for="appEnvironment" value="App environment" />
+                <p:inputText id="appEnvironment" value="#{deployerController.appEnvironment}" style="width:200px" />
             </h:panelGrid>
             <div style="margin-left: 8px">
                 <div>

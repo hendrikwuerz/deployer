@@ -101,7 +101,7 @@ public class DeployerFacade implements Serializable {
         return name.split(ClusterConfig.clusterSeparator).length == 5;
     }
 
-    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area, boolean forceDownload, boolean overwriteExistingSubdomain){
+    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area, boolean forceDownload, boolean overwriteExistingSubdomain, String appEnvironment) {
 
         txIds.clear();
 
@@ -129,7 +129,7 @@ public class DeployerFacade implements Serializable {
         try {
 
             deployNeo4jDb(dbSnapshotName);
-            deployWarApplication(version, area, forceDownload);
+            deployWarApplication(version, area, appEnvironment, forceDownload);
 
             // reload proxy after deployment
             consoleFacade.createProxy();
@@ -249,7 +249,7 @@ public class DeployerFacade implements Serializable {
      * @param forceDownload
      *          whether cached files can be used or not
      */
-    private void deployWarApplication(String version, String area, boolean forceDownload){
+    private void deployWarApplication(String version, String area, String appEnvironment, boolean forceDownload){
 
         CreateContainerBodyWriter builder = null;
         String containerId = null;
@@ -257,6 +257,7 @@ public class DeployerFacade implements Serializable {
         byte[] bytes = versionsApi.getWarForVersion(version, area, forceDownload);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileBytes(bytes);
+        applicationDockerPackage.setAppEnvironment(appEnvironment);
         applicationDockerPackage.prepareTarStream();
 
         dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());

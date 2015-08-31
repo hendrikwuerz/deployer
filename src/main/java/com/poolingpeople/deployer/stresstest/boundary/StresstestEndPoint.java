@@ -33,14 +33,14 @@ public class StresstestEndPoint implements Serializable {
     private static final String JMETER_MASTER_AWS_TAG = "jmeter-master";
     private static final String JMETER_SERVER_AWS_TAG = "jmeter-server";
     private static final String BUCKET_NAME = "poolingpeople";
-    private static final String RESULT_TAR = "/home/hendrik/jmeter/logs/log.tar";
-    private static final String RESULT_TAR_MIN = "/home/hendrik/jmeter/logs/min.tar";
+    private static final String RESULT_TAR = "/jmeter/logs/log.tar";
+    private static final String RESULT_TAR_MIN = "/jmeter/logs/min.tar";
 
     String ip;
-    String user = "";
-    String password = "";
+    String user = "jmeter";
 
-    String remote = "172.31.37.172,172.31.2.96,172.31.42.20";
+    String jmeterHome; // filled with env variable from jmeter master
+    String remote = "";
     String plan;
 
     CollectionDataModel<InstanceInfo> awsMaster;
@@ -63,14 +63,6 @@ public class StresstestEndPoint implements Serializable {
 
     public void setUser(String user) {
         this.user = user;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getRemote() {
@@ -119,7 +111,7 @@ public class StresstestEndPoint implements Serializable {
      * updates the cached data of available JMeter server and master.
      * Sends a request to aws
      */
-    private void updateInstances() {
+    public void updateInstances() {
         awsMaster = new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG));
         awsServer = new CollectionDataModel<>(AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG));
         lastAWSUpdate = System.currentTimeMillis();
@@ -148,6 +140,7 @@ public class StresstestEndPoint implements Serializable {
      */
     public String startMaster() {
         AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG).forEach(InstanceInfo::start);
+        lastAWSUpdate = 0;
         return "stresstest-control";
     }
 
@@ -156,6 +149,7 @@ public class StresstestEndPoint implements Serializable {
      */
     public String stopMaster() {
         AWSInstances.loadAvailableInstances(JMETER_MASTER_AWS_TAG).forEach(InstanceInfo::stop);
+        lastAWSUpdate = 0;
         return "stresstest-control";
     }
 
@@ -164,6 +158,7 @@ public class StresstestEndPoint implements Serializable {
      */
     public String startServer() {
         AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG).forEach(InstanceInfo::start);
+        lastAWSUpdate = 0;
         return "stresstest-control";
     }
 
@@ -172,6 +167,7 @@ public class StresstestEndPoint implements Serializable {
      */
     public String stopServer() {
         AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG).forEach(InstanceInfo::stop);
+        lastAWSUpdate = 0;
         return "stresstest-control";
     }
 
@@ -227,14 +223,23 @@ public class StresstestEndPoint implements Serializable {
         // start test
         SSHExecutor ssh = new SSHExecutor(ip, user);
 
+        // get JMETER_HOME
+        InputStream inputStream = ssh.execute("echo ${JMETER_HOME}");
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+        jmeterHome = bufferedReader.readLine();
+        serverResponse += "<br />JMETER_HOME: " + jmeterHome;
+
         // copy selected testplan to JMeter Master
         AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
         S3Object s3Object = s3client.getObject(new GetObjectRequest(BUCKET_NAME, plan));
         InputStream stream = s3Object.getObjectContent();
-        ssh.upload("/home/hendrik/jmeter", "neo4jTest.jmx", stream);
+
+        //ssh.upload("/home/hendrik/jmeter", "neo4jTest.jmx", stream);
+        ssh.upload(jmeterHome + "/jmeter", "test.jmx", stream);
 
         // run the test!
-        String command = "cd /home/hendrik/docker-jmeter/hendrik/jmeter-master/; echo " + password + " | sudo -S /home/hendrik/docker-jmeter/hendrik/jmeter-master/example_run_test.sh " + remote + ";";
+        //String command = "cd " + jmeterHome + "/docker/jmeter-master/; echo " + password + " | sudo -S " + jmeterHome + "/docker/jmeter-master/run_test.sh " + remote + ";";
+        String command = jmeterHome + "/docker/jmeter-master/run_test.sh " + remote + ";";
         System.out.println(command);
         BufferedReader in = new BufferedReader(new InputStreamReader(ssh.execute(command)));
 
@@ -280,7 +285,7 @@ public class StresstestEndPoint implements Serializable {
 
         // copy result file to tmp file
         SSHExecutor ssh = new SSHExecutor(ip, user);
-        File tmpFile = ssh.download(RESULT_TAR);
+        File tmpFile = ssh.download(jmeterHome + RESULT_TAR);
 
         // Map file to byte array
         Path path = Paths.get(tmpFile.getAbsolutePath());
@@ -309,9 +314,6 @@ public class StresstestEndPoint implements Serializable {
         writer.println("Master: " + ip);
         writer.println("Remote: " + remote);
         writer.println("User: " + user);
-        String passwordPrintable = String.valueOf(password.charAt(0));
-        for(int i = 1; i < password.length(); i++) { passwordPrintable += "*"; }
-        writer.println("Password: " + passwordPrintable);
         writer.println("Time: " + currentTime);
         writer.println("Timestamp: " + System.currentTimeMillis());
         writer.println("");
@@ -343,7 +345,7 @@ public class StresstestEndPoint implements Serializable {
      * @throws IOException
      */
     public void getResult() throws SftpException, JSchException, IOException {
-        getResultFile(RESULT_TAR);
+        getResultFile(jmeterHome + RESULT_TAR);
     }
 
     /**
@@ -353,7 +355,7 @@ public class StresstestEndPoint implements Serializable {
      * @throws IOException
      */
     public void getResultMin() throws SftpException, JSchException, IOException {
-        getResultFile(RESULT_TAR_MIN);
+        getResultFile(jmeterHome + RESULT_TAR_MIN);
     }
 
     /**
