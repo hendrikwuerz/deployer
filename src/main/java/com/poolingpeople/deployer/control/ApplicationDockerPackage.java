@@ -38,6 +38,7 @@ public class ApplicationDockerPackage extends DockerCluster {
 
     protected String replaceClusterBars(String original){
         return original.replace("{NEO_INSTANCE}", clusterConfig.getNeo4jId())
+                .replace("{EMAIL_PASSWORD}", System.getenv("EMAIL_PASSWORD")) // this is an env var set on the deployer system
                 .replace("{PP_FINAL_NAME}", clusterConfig.getFullApplicationName() + ".war")
                 .replace("{PP_APP_ENVIRONMENT}", appEnvironment);
     }
