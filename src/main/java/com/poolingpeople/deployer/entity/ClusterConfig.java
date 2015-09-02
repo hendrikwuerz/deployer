@@ -202,6 +202,20 @@ public class ClusterConfig {
         return this;
     }
 
+    /**
+     * On systems with other (no-pp) docker container, check is the passed name
+     * matches the conventions.
+     * Used before passing container to loadFromContainerName(String)
+     * @param containerName
+     *          The name to be checked
+     * @return
+     *          true if this is a pp-container, false otherwise
+     */
+    public static boolean isLoadableContainerName(String containerName) {
+        String[] conf = containerName.split(clusterSeparator);
+        return conf.length == 5;
+    }
+
     public ClusterConfig loadFromContainerName(String containerName){
 
         String[] conf = containerName.split(clusterSeparator);
