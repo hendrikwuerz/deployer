@@ -105,6 +105,11 @@ public class DeployerFacade implements Serializable {
 
         txIds.clear();
 
+        if(!appEnvironment.equals("test") && !appEnvironment.equals("production")) {
+            rollBack();
+            throw new RuntimeException("appEnvironment must be 'test' or 'production'");
+        }
+
         if(!isValidSubdomain(subdomain)) {
             rollBack();
             throw new RuntimeException("Subdomain not valid");
