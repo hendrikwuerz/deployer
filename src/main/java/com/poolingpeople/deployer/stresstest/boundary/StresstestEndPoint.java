@@ -260,7 +260,7 @@ public class StresstestEndPoint implements Serializable {
         // run the test!
         //String command = "cd " + jmeterHome + "/docker/jmeter-master/; echo " + password + " | sudo -S " + jmeterHome + "/docker/jmeter-master/run_test.sh " + remote + ";";
         String command = jmeterHome + "/docker/jmeter-master/run_test.sh " + remote + ";";
-        System.out.println(command);
+        serverResponse += "<br />" + command;
         BufferedReader in = new BufferedReader(new InputStreamReader(ssh.execute(command)));
 
         // handle console output from JMeter Master in another thread
@@ -270,7 +270,6 @@ public class StresstestEndPoint implements Serializable {
                 String msg = null;
                 try {
                     while ((msg = in.readLine()) != null) {
-                        System.out.println(msg);
                         serverResponse += "<br />" + msg;
                     }
                 } catch (IOException e) {

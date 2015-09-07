@@ -13,11 +13,8 @@
     </ui:define>
 
     <ui:define name="submenu">
-        <p:menuitem value="Start JMeter Master" actionListener="#{stresstestEndPoint.startMaster}" ajax="false" />
-        <p:menuitem value="Stop JMeter Master" actionListener="#{stresstestEndPoint.stopMaster}" ajax="false" />
-        <p:menuitem value="Start JMeter Server" actionListener="#{stresstestEndPoint.startServer}" ajax="false" />
-        <p:menuitem value="Stop JMeter Server" actionListener="#{stresstestEndPoint.stopServer}" ajax="false" />
         <p:menuitem value="Update AWS Status" actionListener="#{stresstestEndPoint.updateInstances}" ajax="false" />
+        <p:menuitem value="Update Testplans" actionListener="#{stresstestEndPoint.updatePlans}" ajax="false" />
     </ui:define>
 
     <ui:define name="body">
