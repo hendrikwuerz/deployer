@@ -43,6 +43,9 @@ public class StresstestEndPoint implements Serializable {
     String remote = "";
     String plan;
 
+    Collection<String> plans;
+    long lastPlanUpdate;
+
     CollectionDataModel<InstanceInfo> awsMaster;
     CollectionDataModel<InstanceInfo> awsServer;
     long lastAWSUpdate;
@@ -118,19 +121,36 @@ public class StresstestEndPoint implements Serializable {
     }
 
     /**
-     * gets all available test plans on s3 stored in  poolingpeople/stresstest/plans
+     * returns the testplans. If cached date is older than 60 sec it becomes updated
      * @return
-     *          All available test plans
+     *          The available test plans
      */
     public Collection<String> getPlans() {
+        if(lastPlanUpdate < System.currentTimeMillis() - 60 * 1000) { // update
+            updatePlans();
+        }
+        return plans;
+    }
+
+    /**
+     * gets all available test plans on s3 stored in  poolingpeople/stresstest/plans
+     * stores the available plans in "plans"
+     */
+    public void updatePlans() {
+
+        lastPlanUpdate = System.currentTimeMillis();
 
         AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
-        List<S3ObjectSummary> objects = s3client.listObjects(BUCKET_NAME).getObjectSummaries();
+        ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+                .withBucketName(BUCKET_NAME)
+                .withPrefix("stresstest/plans");
 
-        if(objects == null) return new ArrayList<>();
+        List<S3ObjectSummary> objects = s3client.listObjects(listObjectsRequest).getObjectSummaries();
 
-        return objects.stream().map(S3ObjectSummary::getKey)
-                .filter(o -> { String[] path = o.split("/"); return path.length > 2 && path[0].equals("stresstest") && path[1].equals("plans"); })
+        if(objects == null) plans = new ArrayList<>();
+
+        plans = objects.stream().map(S3ObjectSummary::getKey)
+                .filter(o -> { String[] path = o.split("/"); return path.length > 2; }) // ignore folder
                 .collect(Collectors.toList());
 
     }
