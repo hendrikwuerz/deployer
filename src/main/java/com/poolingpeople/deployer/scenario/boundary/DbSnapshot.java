@@ -117,15 +117,18 @@ public class DbSnapshot {
         return data;
     }
 
-    public Collection<String> getDbSnapshotsList(){
-
+    public Collection<String> getDbSnapshotsList() {
         AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
-        List<S3ObjectSummary> objects = s3client.listObjects(bucketName).getObjectSummaries();
+        ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+                .withBucketName(bucketName)
+                .withPrefix("neo4j-db/");
+
+        List<S3ObjectSummary> objects = s3client.listObjects(listObjectsRequest).getObjectSummaries();
 
         if(objects == null) return new ArrayList<>();
 
         return objects.stream().map(o -> o.getKey())
-                .filter(o -> { String[] path = o.split("/"); return path.length > 1 && path[0].equals("neo4j-db"); })
+                .filter(o -> { String[] path = o.split("/"); return path.length > 1; })
                 .collect(Collectors.toList());
 
     }

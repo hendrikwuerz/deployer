@@ -19,7 +19,7 @@ public class ClusterConfigProvider {
     public Collection<ClusterConfig> getCurrentClusters(String domain){
 
         Collection<List<ClusterConfig>> cfgs =
-                getActiveContainerNames().stream().filter(name -> !name.equals("proxy"))
+                getActiveContainerNames().stream().filter(ClusterConfig::isLoadableContainerName) // only get pp container
                         .map(cf -> new ClusterConfig().loadFromContainerName(cf))
                         .collect(Collectors.groupingBy(ClusterConfig::getId))
                         .values();

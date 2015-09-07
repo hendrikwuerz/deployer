@@ -26,7 +26,7 @@ public class DeployerController implements Serializable {
     private String subdomain;
     private String version;
     private String dbSnapshotName;
-    private String appEnvironment = "live";
+    private String appEnvironment = "test";
     private String area;
     private boolean forceDownload; // force download even if cache file was found
     private boolean overwrite; // overwrites existing cluster if 'subdomain' is already used
