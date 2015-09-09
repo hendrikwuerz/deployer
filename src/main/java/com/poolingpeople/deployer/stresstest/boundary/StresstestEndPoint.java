@@ -213,6 +213,9 @@ public class StresstestEndPoint implements Serializable {
         // prepare output
         serverResponse = "Starting stresstest";
 
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+        String currentTime = dateFormat.format(new Date());
+        serverResponse+= "<br />Starting at: " + currentTime;
 
         // load default values if none are set
         List<Instance> instances = AWSInstances.loadAvailableInstances();
@@ -278,7 +281,8 @@ public class StresstestEndPoint implements Serializable {
 
                 // close connections and remove tmp files
                 ssh.clean();
-                serverResponse += "<br />" + "Copy results to s3";
+                serverResponse += "<br />" + "Copy results to s3 will be done by JMeter Master";
+
 
                 try {
                     copyResultsToS3();
@@ -302,6 +306,7 @@ public class StresstestEndPoint implements Serializable {
      */
     private void copyResultsToS3() throws JSchException, SftpException, IOException {
 
+        /* upload of tar will be done by jmeter master
         // copy result file to tmp file
         SSHExecutor ssh = new SSHExecutor(ip, user);
         File tmpFile = ssh.download(jmeterHome + RESULT_TAR);
@@ -310,21 +315,22 @@ public class StresstestEndPoint implements Serializable {
         Path path = Paths.get(tmpFile.getAbsolutePath());
         byte[] data = Files.readAllBytes(path);
         tmpFile.delete();
+        */
 
         // Upload data to s3
         AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(data.length);
+        //ObjectMetadata objectMetadata = new ObjectMetadata();
+        //objectMetadata.setContentLength(data.length);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
         String currentTime = dateFormat.format(new Date());
-        s3client.putObject(
+        /*s3client.putObject(
                 new PutObjectRequest(
                         BUCKET_NAME,
                         "stresstest/results/" + currentTime + "/log.tar",
                         new ByteArrayInputStream(data),
                         objectMetadata
-                ));
+                ));*/
 
         // create file with global test data
         File settings = File.createTempFile("settings", ".txt");
@@ -343,10 +349,10 @@ public class StresstestEndPoint implements Serializable {
         writer.close();
 
         // copy global test data to s3
-        path = Paths.get(settings.getAbsolutePath());
-        data = Files.readAllBytes(path);
+        Path path = Paths.get(settings.getAbsolutePath());
+        byte[] data = Files.readAllBytes(path);
         settings.delete();
-        objectMetadata = new ObjectMetadata();
+        ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(data.length);
         s3client.putObject(
                 new PutObjectRequest(
