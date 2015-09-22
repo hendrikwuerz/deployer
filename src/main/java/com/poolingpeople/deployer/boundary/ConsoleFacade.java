@@ -41,6 +41,7 @@ public class ConsoleFacade {
                 .setImage("proxy")
                 .createHostConfig()
                 .bindTcpPort("80", "80")
+                .bindTcpPort("7474", "7474")
                 .buildHostConfig();
 
         containerId = dockerApi.createContainer(builder, "proxy");
