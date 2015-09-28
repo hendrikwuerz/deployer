@@ -9,13 +9,17 @@ import com.jcraft.jsch.SftpException;
 import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
 import com.poolingpeople.deployer.scenario.boundary.AWSInstances;
 import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
+import org.xml.sax.SAXException;
 
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.CollectionDataModel;
 import javax.inject.Named;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,6 +46,12 @@ public class StresstestEndPoint implements Serializable {
     String jmeterHome; // filled with env variable from jmeter master
     String remote = "";
     String plan;
+    String finalTestPlan;
+
+    private String testPlanIp;
+    private String testPlanPort;
+    private String testPlanThreads;
+    private String testPlanLoops;
 
     Collection<String> plans;
     long lastPlanUpdate;
@@ -82,6 +92,38 @@ public class StresstestEndPoint implements Serializable {
 
     public void setPlan(String plan) {
         this.plan = plan;
+    }
+
+    public String getTestPlanIp() {
+        return testPlanIp;
+    }
+
+    public void setTestPlanIp(String testPlanIp) {
+        this.testPlanIp = testPlanIp;
+    }
+
+    public String getTestPlanPort() {
+        return testPlanPort;
+    }
+
+    public void setTestPlanPort(String testPlanPort) {
+        this.testPlanPort = testPlanPort;
+    }
+
+    public String getTestPlanThreads() {
+        return testPlanThreads;
+    }
+
+    public void setTestPlanThreads(String testPlanThreads) {
+        this.testPlanThreads = testPlanThreads;
+    }
+
+    public String getTestPlanLoops() {
+        return testPlanLoops;
+    }
+
+    public void setTestPlanLoops(String testPlanLoops) {
+        this.testPlanLoops = testPlanLoops;
     }
 
     /**
@@ -210,6 +252,29 @@ public class StresstestEndPoint implements Serializable {
      *          when test file upload is not possible
      */
     public void runTest() throws IOException, JSchException, SftpException {
+        // validate input data
+        if(ip == null || ip.equals("")) {
+            throw new RuntimeException("No IP for JMeter Master set");
+        }
+        if(remote == null || remote.equals("")) {
+            throw new RuntimeException("No IP for JMeter Server set. Use private IP comma separated (without space)");
+        }
+        try {
+            if(!testPlanPort.equals(""))Integer.parseInt(testPlanPort);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("The destination port has to be an Integer");
+        }
+        try {
+            if(!testPlanThreads.equals(""))Integer.parseInt(testPlanThreads);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("The threads have to be an Integer");
+        }
+        try {
+            if(!testPlanLoops.equals(""))Integer.parseInt(testPlanLoops);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("The loops have to be an Integer");
+        }
+
         // prepare output
         serverResponse = "Starting stresstest";
 
@@ -220,21 +285,13 @@ public class StresstestEndPoint implements Serializable {
         // load default values if none are set
         List<Instance> instances = AWSInstances.loadAvailableInstances();
 
-        // insert default ip -> First found JMeter Master
-        if(ip == null || ip.equals("")) {
-            InstanceInfo master = AWSInstances.findInstance(JMETER_MASTER_AWS_TAG, instances).get(0);
-            ip = master.getPrivateIP(); // !!! Only works on AWS not local
-        }
-
-        // insert default remotes -> All known JMeter Server
-        if(remote == null || remote.equals("")) {
-            List<InstanceInfo> server = AWSInstances.findInstance(JMETER_SERVER_AWS_TAG, instances);
-            remote = server.stream().map(InstanceInfo::getPrivateIP).collect(Collectors.joining(","));
-        }
-
         serverResponse+= "<br />Master: " + ip;
         serverResponse+= "<br />Server: " + remote;
         serverResponse+= "<br />Plan: " + plan;
+        serverResponse+= "<br />Destination Server: " + testPlanIp;
+        serverResponse+= "<br />Destination Port: " + testPlanPort;
+        serverResponse+= "<br />Threads: " + testPlanThreads;
+        serverResponse+= "<br />Loops: " + testPlanLoops;
 
         // Check instances to be running
         if(!AWSInstances.isIPRunning(ip, instances)) throw new RuntimeException("JMeter Master with IP " + ip + " is not running");
@@ -256,6 +313,20 @@ public class StresstestEndPoint implements Serializable {
         AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
         S3Object s3Object = s3client.getObject(new GetObjectRequest(BUCKET_NAME, plan));
         InputStream stream = s3Object.getObjectContent();
+
+        // insert custom data into test plan
+        TestplanConfig testplanConfig = new TestplanConfig();
+        testplanConfig.setIp(testPlanIp)
+                .setPort(testPlanPort)
+                .setThreads(testPlanThreads)
+                .setLoops(testPlanLoops);
+
+        try {
+            finalTestPlan = testplanConfig.parseTestPlan(stream);
+        } catch (ParserConfigurationException | SAXException | TransformerException e) {
+            throw new RuntimeException("The selected test plan can not be modified with your custom data. Leave the fields blank or make sure that the testplan contains a 'user defined variable' as first element, containing the changed vars");
+        }
+        stream = new ByteArrayInputStream(finalTestPlan.getBytes(StandardCharsets.UTF_8));
 
         //ssh.upload("/home/hendrik/jmeter", "neo4jTest.jmx", stream);
         ssh.upload(jmeterHome + "/jmeter", "test.jmx", stream);
@@ -361,6 +432,19 @@ public class StresstestEndPoint implements Serializable {
                         new ByteArrayInputStream(data),
                         objectMetadata
                 ));
+
+        // save testplan
+        data = finalTestPlan.getBytes();
+        objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(data.length);
+        s3client.putObject(
+                new PutObjectRequest(
+                        BUCKET_NAME,
+                        "stresstest/results/" + currentTime + "/testPlan.jmx",
+                        new ByteArrayInputStream(data),
+                        objectMetadata
+                ));
+
     }
 
     /**
