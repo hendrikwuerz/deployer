@@ -33,6 +33,13 @@
             </p:selectOneMenu>
             <br />
             <br />
+            Destination Server <p:inputText id="testplan_ip" value="#{stresstestEndPoint.testPlanIp}" style="width:400px; margin-right: 20px;" />
+            Destination Port<p:inputText id="testplan_port" value="#{stresstestEndPoint.testPlanPort}" style="width:100px; margin-right: 20px;" />
+            Threads <p:inputText id="testplan_threads" value="#{stresstestEndPoint.testPlanThreads}" style="width:100px; margin-right: 20px;" />
+            Loops <p:inputText id="testplan_loops" value="#{stresstestEndPoint.testPlanLoops}" style="width:100px; margin-right: 20px;" />
+
+            <br />
+            <br />
             <h:outputText value="JMeter Master" />
             <br />
             <p:commandButton value="Start JMeter Master" actionListener="#{stresstestEndPoint.startMaster}" ajax="false" />
