@@ -20,6 +20,13 @@
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>com.poolingpeople.deployer.boundary.DeployerRest</servlet-name>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>com.poolingpeople.deployer.boundary.DeployerRest</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30

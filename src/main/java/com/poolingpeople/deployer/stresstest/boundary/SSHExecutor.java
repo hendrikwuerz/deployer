@@ -120,7 +120,7 @@ public class SSHExecutor {
         // Create a tmp file local to store the remote file
         File localFile = File.createTempFile((new File(remoteFile)).getName(), "");
 
-        System.out.println(localFile.getAbsolutePath());
+        //System.out.println(localFile.getAbsolutePath());
 
         // copy remote file to local file
         sftpChannel.get(remoteFile, localFile.getAbsolutePath());
