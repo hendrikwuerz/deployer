@@ -4,7 +4,6 @@ import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPoint;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Application;
 
 /**
  * Created by hendrik on 30.09.15.

@@ -13,6 +13,7 @@
     </ui:define>
 
     <ui:define name="submenu">
+        <p:menuitem value="Auto config" actionListener="#{stresstestEndPoint.autoConfig}" ajax="false" />
         <p:menuitem value="Update AWS Status" actionListener="#{stresstestEndPoint.updateInstances}" ajax="false" />
         <p:menuitem value="Update Testplans" actionListener="#{stresstestEndPoint.updatePlans}" ajax="false" />
     </ui:define>

@@ -11,6 +11,7 @@ import com.poolingpeople.deployer.scenario.boundary.AWSInstances;
 import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
 import org.xml.sax.SAXException;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
  * Created by hendrik on 20.07.15.
  */
 @Named
-@SessionScoped
+@ApplicationScoped
 public class StresstestEndPoint implements Serializable {
 
     private static final String JMETER_MASTER_AWS_TAG = "jmeter-master";
@@ -216,6 +217,17 @@ public class StresstestEndPoint implements Serializable {
     }
 
     /**
+     * gets an advice for the JMeter Master
+     * @return
+     *          Advice String to insert as JMeter Master
+     */
+    public String getMasterAdvice() {
+        List<Instance> instances = AWSInstances.loadAvailableInstances();
+        InstanceInfo master = AWSInstances.findInstance(JMETER_MASTER_AWS_TAG, instances).get(0);
+        return master.getPrivateIP(); // !!! Only works on AWS not local
+    }
+
+    /**
      * starts all JMeter server instances on AWS (normally about 3)
      */
     public String startServer() {
@@ -231,6 +243,54 @@ public class StresstestEndPoint implements Serializable {
         AWSInstances.loadAvailableInstances(JMETER_SERVER_AWS_TAG).forEach(InstanceInfo::stop);
         lastAWSUpdate = 0;
         return "stresstest-control";
+    }
+
+    /**
+     * gets an advice for the JMeter Servers
+     * @return
+     *          Advice String to insert as JMeter Servers
+     */
+    public String getServersAdvice() {
+        List<Instance> instances = AWSInstances.loadAvailableInstances();
+        List<InstanceInfo> server = AWSInstances.findInstance(JMETER_SERVER_AWS_TAG, instances);
+        return server.stream().map(InstanceInfo::getPrivateIP).collect(Collectors.joining(","));
+    }
+
+    /**
+     * starts all instances and select the default servers
+     */
+    public void autoConfig() {
+        startMaster();
+        startServer();
+        setIp(getMasterAdvice());
+        setRemote(getServersAdvice());
+    }
+
+    /**
+     * checks if the set IPs for Master and Server are available
+     * @param exception
+     *          if true and not all instances are online an exception is thrown.
+     * @return
+     *          true if all is online
+     *          false or an exception if not
+     */
+    public boolean selectedInstancesAvailable(boolean exception) {
+        try {
+            selectedInstancesAvailable();
+            return true;
+        } catch (RuntimeException e) {
+            if(exception) throw e;
+            else return false;
+        }
+    }
+
+    private void selectedInstancesAvailable() {
+        List<Instance> instances = AWSInstances.loadAvailableInstances();
+        if(!AWSInstances.isIPRunning(ip, instances)) throw new RuntimeException("JMeter Master with IP " + ip + " is not running");
+        Arrays.stream(remote.split(",")).forEach(serverIP -> {
+            if (!AWSInstances.isIPRunning(serverIP, instances))
+                throw new RuntimeException("JMeter Server with IP " + serverIP + " is not running");
+        });
     }
 
     /**
@@ -282,9 +342,6 @@ public class StresstestEndPoint implements Serializable {
         String currentTime = dateFormat.format(new Date());
         serverResponse+= "<br />Starting at: " + currentTime;
 
-        // load default values if none are set
-        List<Instance> instances = AWSInstances.loadAvailableInstances();
-
         serverResponse+= "<br />Master: " + ip;
         serverResponse+= "<br />Server: " + remote;
         serverResponse+= "<br />Plan: " + plan;
@@ -294,11 +351,7 @@ public class StresstestEndPoint implements Serializable {
         serverResponse+= "<br />Loops: " + testPlanLoops;
 
         // Check instances to be running
-        if(!AWSInstances.isIPRunning(ip, instances)) throw new RuntimeException("JMeter Master with IP " + ip + " is not running");
-        Arrays.stream(remote.split(",")).forEach( serverIP -> {
-            if(!AWSInstances.isIPRunning(serverIP, instances)) throw new RuntimeException("JMeter Server with IP " + serverIP + " is not running");
-        });
-
+        selectedInstancesAvailable(true);
 
         // start test
         SSHExecutor ssh = new SSHExecutor(ip, user);
