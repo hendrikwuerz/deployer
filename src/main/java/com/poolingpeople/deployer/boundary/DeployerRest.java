@@ -2,23 +2,16 @@ package com.poolingpeople.deployer.boundary;
 
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPoint;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.MediaType;
 
 /**
  * Created by hendrik on 30.09.15.
  */
 
 @Path("/deployer") // set the path to REST web services
-public class DeployerRest extends Application {
+public class DeployerRest {
 
     @Inject
     DeployerFacade facade;
