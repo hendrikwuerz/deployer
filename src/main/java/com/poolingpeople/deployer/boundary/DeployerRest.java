@@ -28,14 +28,12 @@ public class DeployerRest extends Application {
 
 
     @POST
-    @Path("deploy")
+    @Path("deploy/{subdomain}/{dbSnapshotName}")
     @Consumes("application/x-webarchive")
-    public String deployApplication(byte[] warFile) {
-        String version = "0.1.5";
-        String subdomain = "sub";
-        String dbSnapshotName = "empty.tar";
+    public String deployApplication(@PathParam("subdomain") String subdomain, @PathParam("dbSnapshotName") String dbSnapshotName, byte[] warFile) {
+        String version = "restDeployment"; // needed for container naming
         boolean overwrite = true;
-        String appEnvironment = "test";
+        String appEnvironment = "test"; // deployment over rest is only possible in test environment
 
         facade.deploy(warFile, version, subdomain, dbSnapshotName, overwrite, appEnvironment);
 
