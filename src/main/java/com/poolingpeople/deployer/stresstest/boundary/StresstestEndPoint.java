@@ -40,6 +40,7 @@ public class StresstestEndPoint implements Serializable {
     private static final String BUCKET_NAME = "poolingpeople";
     private static final String RESULT_TAR = "/jmeter/logs/log.tar";
     private static final String RESULT_TAR_MIN = "/jmeter/logs/min.tar";
+    private static final String RESULT_JTL = "/jmeter/logs/jtl.jtl";
 
     String ip;
     String user = "jmeter";
@@ -544,6 +545,16 @@ public class StresstestEndPoint implements Serializable {
     }
 
     /**
+     * download global jtl file
+     * @throws SftpException
+     * @throws JSchException
+     * @throws IOException
+     */
+    public void getResultJtl() throws SftpException, JSchException, IOException {
+        getResultFile(jmeterHome + RESULT_JTL, "jtl.jtl");
+    }
+
+    /**
      * downloads the passed file from the server and let the user save it
      * @param filename
      *          The file on the server to be downloaded
@@ -552,6 +563,20 @@ public class StresstestEndPoint implements Serializable {
      * @throws IOException
      */
     private void getResultFile(String filename) throws SftpException, JSchException, IOException {
+        getResultFile(filename, "log.tar");
+    }
+
+    /**
+     * downloads the passed file from the server and let the user save it
+     * @param filename
+     *          The file on the server to be downloaded
+     * @param finalName
+     *          The filename to be displayed on download
+     * @throws SftpException
+     * @throws JSchException
+     * @throws IOException
+     */
+    private void getResultFile(String filename, String finalName) throws SftpException, JSchException, IOException {
         SSHExecutor ssh = new SSHExecutor(ip, user);
 
         File tmpFile = ssh.download(filename);
@@ -566,7 +591,7 @@ public class StresstestEndPoint implements Serializable {
         ExternalContext externalContext = facesContext.getExternalContext();
         externalContext.setResponseHeader("Content-Type", "application/tar");
         externalContext.setResponseHeader("Content-Length", String.valueOf(data.length));
-        externalContext.setResponseHeader("Content-Disposition", "attachment;filename=\"log.tar\"");
+        externalContext.setResponseHeader("Content-Disposition", "attachment;filename=\"" + finalName + "\"");
         try {
             externalContext.getResponseOutputStream().write(data);
         } catch (IOException e) {

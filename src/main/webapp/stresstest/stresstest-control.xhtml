@@ -98,6 +98,7 @@
             <p:commandButton value="Run Test" actionListener="#{stresstestEndPoint.runTest}" ajax="false" onstart="alert('Test will be started');" update="serverResponse"/>
             <p:commandButton value="Get result (all)" actionListener="#{stresstestEndPoint.getResult}" ajax="false" update="serverResponse"/>
             <p:commandButton value="Get result (only final)" actionListener="#{stresstestEndPoint.getResultMin}" ajax="false" update="serverResponse"/>
+            <p:commandButton value="Get jtl" actionListener="#{stresstestEndPoint.getResultJtl}" ajax="false" update="serverResponse"/>
             <br />
             <br />
         </h:form>
