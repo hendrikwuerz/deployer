@@ -271,6 +271,29 @@ public class StresstestRest {
         return stress.getServerResponse();
     }
 
+    /**
+     * checks if a test is running at the moment
+     * @return "yes" if a test is running. "false" otherwise
+     */
+    @GET
+    @Path("running")
+    public String isRunning() {
+        return (stress.isTestRunning() ? "yes" : "no");
+    }
+
+    /**
+     * set the running status of a test. If a test is running, a new one can not be started.
+     * If the deployer has the wrong status this can be corrected here.
+     * !!! Normally this method should newver be called
+     * @return "ok" if status is set
+     */
+    @PUT
+    @Path("running")
+    public String setIsRunning(String running) {
+        stress.setTestIsRunning(running.equals("true"));
+        return "ok";
+    }
+
 
     /**
      * starts all instances and select the default servers

@@ -62,6 +62,7 @@ public class StresstestEndPoint implements Serializable {
     long lastAWSUpdate;
 
     String serverResponse;
+    private boolean testIsRunning = false;
 
     public String getIp() {
         return ip;
@@ -125,6 +126,14 @@ public class StresstestEndPoint implements Serializable {
 
     public void setTestPlanLoops(String testPlanLoops) {
         this.testPlanLoops = testPlanLoops;
+    }
+
+    public boolean isTestRunning() {
+        return testIsRunning;
+    }
+
+    public void setTestIsRunning(boolean running) {
+        testIsRunning = running;
     }
 
     /**
@@ -312,114 +321,128 @@ public class StresstestEndPoint implements Serializable {
      *          when test file upload is not possible
      */
     public void runTest() throws IOException, JSchException, SftpException {
-        // validate input data
-        if(ip == null || ip.equals("")) {
-            throw new RuntimeException("No IP for JMeter Master set");
+
+        if(testIsRunning) {
+            throw new RuntimeException("A stresstest is already running. Please wait until it is finished.");
         }
-        if(remote == null || remote.equals("")) {
-            throw new RuntimeException("No IP for JMeter Server set. Use private IP comma separated (without space)");
-        }
-        try {
-            if(!testPlanPort.equals(""))Integer.parseInt(testPlanPort);
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("The destination port has to be an Integer");
-        }
-        try {
-            if(!testPlanThreads.equals(""))Integer.parseInt(testPlanThreads);
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("The threads have to be an Integer");
-        }
-        try {
-            if(!testPlanLoops.equals(""))Integer.parseInt(testPlanLoops);
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("The loops have to be an Integer");
-        }
+        testIsRunning = true;
 
-        // prepare output
-        serverResponse = "Starting stresstest";
+        try { // exceptions will be thrown after setting running to false
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-        String currentTime = dateFormat.format(new Date());
-        serverResponse+= "<br />Starting at: " + currentTime;
-
-        serverResponse+= "<br />Master: " + ip;
-        serverResponse+= "<br />Server: " + remote;
-        serverResponse+= "<br />Plan: " + plan;
-        serverResponse+= "<br />Destination Server: " + testPlanIp;
-        serverResponse+= "<br />Destination Port: " + testPlanPort;
-        serverResponse+= "<br />Threads: " + testPlanThreads;
-        serverResponse+= "<br />Loops: " + testPlanLoops;
-
-        // Check instances to be running
-        selectedInstancesAvailable(true);
-
-        // start test
-        SSHExecutor ssh = new SSHExecutor(ip, user);
-
-        // get JMETER_HOME
-        InputStream inputStream = ssh.execute("echo ${JMETER_HOME}");
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-        jmeterHome = bufferedReader.readLine();
-        serverResponse += "<br />JMETER_HOME: " + jmeterHome;
-
-        // copy selected testplan to JMeter Master
-        AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
-        S3Object s3Object = s3client.getObject(new GetObjectRequest(BUCKET_NAME, plan));
-        InputStream stream = s3Object.getObjectContent();
-
-        // insert custom data into test plan
-        TestplanConfig testplanConfig = new TestplanConfig();
-        testplanConfig.setIp(testPlanIp)
-                .setPort(testPlanPort)
-                .setThreads(testPlanThreads)
-                .setLoops(testPlanLoops);
-
-        try {
-            finalTestPlan = testplanConfig.parseTestPlan(stream);
-        } catch (ParserConfigurationException | SAXException | TransformerException e) {
-            throw new RuntimeException("The selected test plan can not be modified with your custom data. Leave the fields blank or make sure that the testplan contains a 'user defined variable' as first element, containing the changed vars");
-        }
-        stream = new ByteArrayInputStream(finalTestPlan.getBytes(StandardCharsets.UTF_8));
-
-        //ssh.upload("/home/hendrik/jmeter", "neo4jTest.jmx", stream);
-        ssh.upload(jmeterHome + "/jmeter", "test.jmx", stream);
-
-        // run the test!
-        //String command = "cd " + jmeterHome + "/docker/jmeter-master/; echo " + password + " | sudo -S " + jmeterHome + "/docker/jmeter-master/run_test.sh " + remote + ";";
-        String command = jmeterHome + "/docker/jmeter-master/run_test.sh " + remote + ";";
-        serverResponse += "<br />" + command;
-        BufferedReader in = new BufferedReader(new InputStreamReader(ssh.execute(command)));
-
-        // handle console output from JMeter Master in another thread
-        new Thread() {
-            public void run() {
-
-                String msg = null;
-                try {
-                    while ((msg = in.readLine()) != null) {
-                        serverResponse += "<br />" + msg;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                // close connections and remove tmp files
-                ssh.clean();
-                serverResponse += "<br />" + "Copy results to s3 will be done by JMeter Master";
-
-
-                try {
-                    copyResultsToS3();
-                    serverResponse += "<br />" + "Results saved on s3";
-                } catch (JSchException | SftpException | IOException e) {
-                    e.printStackTrace();
-                    serverResponse += "<br />" + "!!!! Results could not be stored on S3 !!!!";
-                }
-
-                serverResponse += "<br />" + "Finished Stresstest";
+            // validate input data
+            if(ip == null || ip.equals("")) {
+                throw new RuntimeException("No IP for JMeter Master set");
             }
-        }.start();
+            if(remote == null || remote.equals("")) {
+                throw new RuntimeException("No IP for JMeter Server set. Use private IP comma separated (without space)");
+            }
+            try {
+                if(!testPlanPort.equals(""))Integer.parseInt(testPlanPort);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("The destination port has to be an Integer");
+            }
+            try {
+                if(!testPlanThreads.equals(""))Integer.parseInt(testPlanThreads);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("The threads have to be an Integer");
+            }
+            try {
+                if(!testPlanLoops.equals(""))Integer.parseInt(testPlanLoops);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("The loops have to be an Integer");
+            }
 
+            // prepare output
+            serverResponse = "Starting stresstest";
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+            String currentTime = dateFormat.format(new Date());
+            serverResponse+= "<br />Starting at: " + currentTime;
+
+            serverResponse+= "<br />Master: " + ip;
+            serverResponse+= "<br />Server: " + remote;
+            serverResponse+= "<br />Plan: " + plan;
+            serverResponse+= "<br />Destination Server: " + testPlanIp;
+            serverResponse+= "<br />Destination Port: " + testPlanPort;
+            serverResponse+= "<br />Threads: " + testPlanThreads;
+            serverResponse+= "<br />Loops: " + testPlanLoops;
+
+            // Check instances to be running
+            selectedInstancesAvailable(true);
+
+            // start test
+            SSHExecutor ssh = new SSHExecutor(ip, user);
+
+            // get JMETER_HOME
+            InputStream inputStream = ssh.execute("echo ${JMETER_HOME}");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+            jmeterHome = bufferedReader.readLine();
+            serverResponse += "<br />JMETER_HOME: " + jmeterHome;
+
+            // copy selected testplan to JMeter Master
+            AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
+            S3Object s3Object = s3client.getObject(new GetObjectRequest(BUCKET_NAME, plan));
+            InputStream stream = s3Object.getObjectContent();
+
+            // insert custom data into test plan
+            TestplanConfig testplanConfig = new TestplanConfig();
+            testplanConfig.setIp(testPlanIp)
+                    .setPort(testPlanPort)
+                    .setThreads(testPlanThreads)
+                    .setLoops(testPlanLoops);
+
+            try {
+                finalTestPlan = testplanConfig.parseTestPlan(stream);
+            } catch (ParserConfigurationException | SAXException | TransformerException e) {
+                throw new RuntimeException("The selected test plan can not be modified with your custom data. Leave the fields blank or make sure that the testplan contains a 'user defined variable' as first element, containing the changed vars");
+            }
+            stream = new ByteArrayInputStream(finalTestPlan.getBytes(StandardCharsets.UTF_8));
+
+            //ssh.upload("/home/hendrik/jmeter", "neo4jTest.jmx", stream);
+            ssh.upload(jmeterHome + "/jmeter", "test.jmx", stream);
+
+            // run the test!
+            //String command = "cd " + jmeterHome + "/docker/jmeter-master/; echo " + password + " | sudo -S " + jmeterHome + "/docker/jmeter-master/run_test.sh " + remote + ";";
+            String command = jmeterHome + "/docker/jmeter-master/run_test.sh " + remote + ";";
+            serverResponse += "<br />" + command;
+            BufferedReader in = new BufferedReader(new InputStreamReader(ssh.execute(command)));
+
+            // handle console output from JMeter Master in another thread
+            new Thread() {
+                public void run() {
+
+                    String msg = null;
+                    try {
+                        while ((msg = in.readLine()) != null) {
+                            serverResponse += "<br />" + msg;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    // close connections and remove tmp files
+                    ssh.clean();
+                    serverResponse += "<br />" + "Copy results to s3 will be done by JMeter Master";
+
+
+                    try {
+                        copyResultsToS3();
+                        serverResponse += "<br />" + "Results saved on s3";
+                    } catch (JSchException | SftpException | IOException e) {
+                        e.printStackTrace();
+                        serverResponse += "<br />" + "!!!! Results could not be stored on S3 !!!!";
+                    }
+
+                    serverResponse += "<br />" + "Finished Stresstest";
+                    testIsRunning = false;
+                }
+            }.start();
+
+        } catch (Exception e) {
+            // if any exception is throws the test will not be finished -> remember that nothing is running and throw the exception again
+            testIsRunning = false;
+            throw e;
+        }
     }
 
     /**
