@@ -133,6 +133,90 @@ public class StresstestRest {
     }
 
     /**
+     * set the destination application IP
+     * @return "ok" if set
+     */
+    @PUT
+    @Path("/destination/ip")
+    public String setDestinationIp(String ip) {
+        stress.setTestPlanIp(ip);
+        return "ok";
+    }
+
+    /**
+     * get the destination application IP
+     * @return the destination application IP
+     */
+    @GET
+    @Path("/destination/ip")
+    public String getDestinationIp() {
+        return stress.getTestPlanIp();
+    }
+
+    /**
+     * set the destination application port
+     * @return "ok" if set
+     */
+    @PUT
+    @Path("/destination/port")
+    public String setDestinationPort(String port) {
+        stress.setTestPlanPort(port);
+        return "ok";
+    }
+
+    /**
+     * get the port of the destination application
+     * @return the destination port
+     */
+    @GET
+    @Path("/destination/port")
+    public String getDestinationPort() {
+        return stress.getTestPlanPort();
+    }
+
+    /**
+     * set amount of threads which the test plan will use
+     * @return "ok" if set
+     */
+    @PUT
+    @Path("/destination/threads")
+    public String setDestinationThreads(String threads) {
+        stress.setTestPlanThreads(threads);
+        return "ok";
+    }
+
+    /**
+     * get amount of threads which the test plan will use
+     * @return the amount of threads
+     */
+    @GET
+    @Path("/destination/threads")
+    public String getDestinationThreads() {
+        return stress.getTestPlanThreads();
+    }
+
+    /**
+     * set amount of loops which the test plan will use
+     * @return "ok" if set
+     */
+    @PUT
+    @Path("/destination/loops")
+    public String setDestinationLoops(String loops) {
+        stress.setTestPlanLoops(loops);
+        return "ok";
+    }
+
+    /**
+     * get amount of loops which the test plan will use
+     * @return the amount of loops
+     */
+    @GET
+    @Path("/destination/loops")
+    public String getDestinationLoops() {
+        return stress.getTestPlanLoops();
+    }
+
+    /**
      * starts all instances and select the default servers
      * @return "ok" if starting
      */
@@ -185,6 +269,23 @@ public class StresstestRest {
     @Path("status")
     public String status() {
         return stress.getServerResponse();
+    }
+
+
+    /**
+     * starts all instances and select the default servers
+     * @return "ok" if starting
+     */
+    @GET
+    @Path("config")
+    public String getConfig() {
+        return  "JMeter Master:    " + stress.getIp() + System.lineSeparator() +
+                "JMeter Server:    " + stress.getRemote() + System.lineSeparator() +
+                "Testplan:         " + stress.getPlan() + System.lineSeparator() +
+                "Destination IP:   " + stress.getTestPlanIp() + System.lineSeparator() +
+                "Destination Port: " + stress.getTestPlanPort() + System.lineSeparator() +
+                "Threads:          " + stress.getTestPlanThreads() + System.lineSeparator() +
+                "Loops:            " + stress.getTestPlanLoops() + System.lineSeparator();
     }
 
 
