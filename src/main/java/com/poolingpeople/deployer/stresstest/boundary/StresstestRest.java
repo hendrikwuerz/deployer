@@ -118,7 +118,7 @@ public class StresstestRest {
     @PUT
     @Path("/server")
     public String setServer(String server) {
-        stress.setIp(server);
+        stress.setRemote(server);
         return "ok";
     }
 
