@@ -6,6 +6,7 @@ import com.poolingpeople.deployer.boundary.DeployerFacade;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -312,5 +313,10 @@ public class StresstestRest {
     }
 
 
+    @GET
+    @Path("get/jtl")
+    public File getJtl() throws SftpException, JSchException, IOException {
+        return stress.getResultJtl(true);
+    }
 
 }

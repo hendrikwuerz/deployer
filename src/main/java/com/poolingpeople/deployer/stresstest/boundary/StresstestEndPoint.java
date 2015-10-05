@@ -555,6 +555,18 @@ public class StresstestEndPoint implements Serializable {
     }
 
     /**
+     * download global jtl file
+     * @throws SftpException
+     * @throws JSchException
+     * @throws IOException
+     * @return
+     *          The local copy of the jtl file
+     */
+    public File getResultJtl(boolean getFileObject) throws SftpException, JSchException, IOException {
+        return copyResultFile(jmeterHome + RESULT_JTL);
+    }
+
+    /**
      * downloads the passed file from the server and let the user save it
      * @param filename
      *          The file on the server to be downloaded
@@ -564,6 +576,22 @@ public class StresstestEndPoint implements Serializable {
      */
     private void getResultFile(String filename) throws SftpException, JSchException, IOException {
         getResultFile(filename, "log.tar");
+    }
+
+    /**
+     * copy the selected file to the deployer and returns the local file
+     * @param filename
+     *          The file on the server to be downloaded
+     * @throws SftpException
+     * @throws JSchException
+     * @throws IOException
+     */
+    private File copyResultFile(String filename) throws SftpException, JSchException, IOException {
+        SSHExecutor ssh = new SSHExecutor(ip, user);
+
+        File tmpFile = ssh.download(filename);
+
+        return tmpFile;
     }
 
     /**
@@ -577,9 +605,7 @@ public class StresstestEndPoint implements Serializable {
      * @throws IOException
      */
     private void getResultFile(String filename, String finalName) throws SftpException, JSchException, IOException {
-        SSHExecutor ssh = new SSHExecutor(ip, user);
-
-        File tmpFile = ssh.download(filename);
+        File tmpFile = copyResultFile(filename);
 
         // parse tmp file to byte array to return it to client
         Path path = Paths.get(tmpFile.getAbsolutePath());
