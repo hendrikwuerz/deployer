@@ -8,6 +8,8 @@ import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,8 +49,21 @@ public class AWSInstances {
      *          A sub-list with only instances having the wished tag
      */
     public static List<InstanceInfo> findInstance(String key, List<Instance> instances) {
+        return findInstance(Arrays.asList(key), instances);
+    }
+
+    /**
+     * creates a list with all instances having a special key set as tag
+     * @param keys
+     *          The returned instances must have a tag in this list. Only one matching tag is enough to be selected
+     * @param instances
+     *          A list with all instances. See loadAvailableInstances()
+     * @return
+     *          A sub-list with only instances having the wished tag
+     */
+    public static List<InstanceInfo> findInstance(List<String> keys, List<Instance> instances) {
         return instances.stream()
-                .filter(instance -> instance.getTags().stream().filter(tag -> tag.getKey().equals(key) && tag.getValue().equals("true"))
+                .filter(instance -> instance.getTags().stream().filter(tag -> keys.contains(tag.getKey()) && tag.getValue().equals("true"))
                         .count() > 0) // check if there is a tag with key==true
                 .map(InstanceInfo::new)
                 .collect(Collectors.toList());
@@ -88,6 +103,17 @@ public class AWSInstances {
      */
     public static List<InstanceInfo> loadAvailableInstances(String key){
         return findInstance(key, loadAvailableInstances());
+    }
+
+    /**
+     * reloads available instances an searches for tags with the passed key
+     * @param keys
+     *          All accepted keys
+     * @return
+     *          A sub-list with only instances having the wished tag
+     */
+    public static List<InstanceInfo> loadAvailableInstances(List<String> keys){
+        return findInstance(keys, loadAvailableInstances());
     }
 
 }

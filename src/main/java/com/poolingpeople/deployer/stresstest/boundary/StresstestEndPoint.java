@@ -35,8 +35,8 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class StresstestEndPoint implements Serializable {
 
-    private static final String JMETER_MASTER_AWS_TAG = "jmeter-master";
-    private static final String JMETER_SERVER_AWS_TAG = "jmeter-server";
+    public static final String JMETER_MASTER_AWS_TAG = "jmeter-master";
+    public static final String JMETER_SERVER_AWS_TAG = "jmeter-server";
     private static final String BUCKET_NAME = "poolingpeople";
     private static final String RESULT_TAR = "/jmeter/logs/log.tar";
     private static final String RESULT_TAR_MIN = "/jmeter/logs/min.tar";
