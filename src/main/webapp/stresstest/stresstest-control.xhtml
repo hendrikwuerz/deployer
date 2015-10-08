@@ -13,12 +13,13 @@
     </ui:define>
 
     <ui:define name="submenu">
+        <p:menuitem value="Auto config" actionListener="#{stresstestEndPoint.autoConfig}" ajax="false" />
         <p:menuitem value="Update AWS Status" actionListener="#{stresstestEndPoint.updateInstances}" ajax="false" />
         <p:menuitem value="Update Testplans" actionListener="#{stresstestEndPoint.updatePlans}" ajax="false" />
     </ui:define>
 
     <ui:define name="body">
-        <h:form>
+        <h:form rendered="#{!stresstestEndPoint.testRunning}">
 
             IP (Master) <p:inputText id="ip" value="#{stresstestEndPoint.ip}" style="width:200px; margin-right: 20px;" />
             <br />
@@ -28,7 +29,7 @@
             <br />
             <br />
             Testplan
-            <p:selectOneMenu id="plan" value="#{stresstestEndPoint.plan}" style="width:200px">
+            <p:selectOneMenu id="plan" value="#{stresstestEndPoint.plan}">
                 <f:selectItems value="#{stresstestEndPoint.plans}" var="plan" itemLabel="#{plan}" />
             </p:selectOneMenu>
             <br />
@@ -95,11 +96,24 @@
             <br />
             <br />
             <p:commandButton value="Run Test" actionListener="#{stresstestEndPoint.runTest}" ajax="false" onstart="alert('Test will be started');" update="serverResponse"/>
-            <p:commandButton value="View current status" ajax="true" update="serverResponse"/>
             <p:commandButton value="Get result (all)" actionListener="#{stresstestEndPoint.getResult}" ajax="false" update="serverResponse"/>
             <p:commandButton value="Get result (only final)" actionListener="#{stresstestEndPoint.getResultMin}" ajax="false" update="serverResponse"/>
+            <p:commandButton value="Get jtl" actionListener="#{stresstestEndPoint.getResultJtl}" ajax="false" update="serverResponse"/>
             <br />
             <br />
+        </h:form>
+
+        <h:form rendered="#{stresstestEndPoint.testRunning}">
+            A stresstest is already running. You can not start a new one until the old one is finished. See the log below for current status.
+            <br />
+            If this is a bug and you are sure that nothing is running at the moment you can click
+            <p:commandLink action="#{stresstestEndPoint.setTestIsRunning(false)}" ajax="false" value="here"/>.
+            <br />
+            <br />
+        </h:form>
+
+        <h:form>
+            <p:commandButton value="View current status" ajax="true" update="serverResponse"/>
             <h:outputText value="Log results of last run" style="margin-top: 20px" escape="false" />
             <br />
             <h:outputText value="#{stresstestEndPoint.serverResponse}" style="margin-top: 20px" escape="false" id="serverResponse" />

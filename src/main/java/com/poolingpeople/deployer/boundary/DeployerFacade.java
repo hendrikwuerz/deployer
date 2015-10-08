@@ -102,7 +102,11 @@ public class DeployerFacade implements Serializable {
     }
 
     public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area, boolean forceDownload, boolean overwriteExistingSubdomain, String appEnvironment) {
+        byte[] warFile = versionsApi.getWarForVersion(version, area, forceDownload);
+        deploy(warFile, version, subdomain, dbSnapshotName, overwriteExistingSubdomain, appEnvironment);
+    }
 
+    public void deploy(@NotNull byte[] warFile, @NotNull String version, @NotNull String subdomain, String dbSnapshotName, boolean overwriteExistingSubdomain, String appEnvironment) {
         txIds.clear();
 
         if(!appEnvironment.equals("test") && !appEnvironment.equals("production")) {
@@ -134,7 +138,7 @@ public class DeployerFacade implements Serializable {
         try {
 
             deployNeo4jDb(dbSnapshotName);
-            deployWarApplication(version, area, appEnvironment, forceDownload);
+            deployWarApplication(warFile, appEnvironment);
 
             // reload proxy after deployment
             consoleFacade.createProxy();
@@ -143,7 +147,6 @@ public class DeployerFacade implements Serializable {
             rollBack();
             throw e;
         }
-
     }
 
     public boolean isValidSubdomain(String subdomain) {
@@ -253,15 +256,28 @@ public class DeployerFacade implements Serializable {
      *          "snapshots" or "releases"
      * @param forceDownload
      *          whether cached files can be used or not
+     * @param appEnvironment
+     *          test or production environment for deployment
      */
     private void deployWarApplication(String version, String area, String appEnvironment, boolean forceDownload){
+        byte[] bytes = versionsApi.getWarForVersion(version, area, forceDownload);
+        deployWarApplication(bytes, appEnvironment);
+    }
+
+    /**
+     * deploys the application to docker and starts the server
+     * @param warFile
+     *          The war file as a byte array
+     * @param appEnvironment
+     *          test or production environment for deployment
+     */
+    private void deployWarApplication(byte[] warFile, String appEnvironment) {
 
         CreateContainerBodyWriter builder = null;
         String containerId = null;
 
-        byte[] bytes = versionsApi.getWarForVersion(version, area, forceDownload);
         applicationDockerPackage.setClusterConfig(clusterConfig);
-        applicationDockerPackage.setWarFileBytes(bytes);
+        applicationDockerPackage.setWarFileBytes(warFile);
         applicationDockerPackage.setAppEnvironment(appEnvironment);
         applicationDockerPackage.prepareTarStream();
 

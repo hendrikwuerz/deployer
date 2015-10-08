@@ -66,8 +66,12 @@ public class ClusterController {
     public String destroy(ClusterInfo current) {
         current.getContainers().forEach( container -> api.removeContainer(container.getId(), true) );
 
-        FacesContext context = FacesContext.getCurrentInstance();
-        context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Destroyed",  "Cluster destroyed successfully") );
+        try {
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Destroyed", "Cluster destroyed successfully"));
+        } catch(NullPointerException e) {
+            logger.fine("Cluster destroyed successfully");
+        }
         return "clusters-list";
     }
 
