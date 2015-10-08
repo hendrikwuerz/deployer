@@ -338,17 +338,17 @@ public class StresstestEndPoint implements Serializable {
                 throw new RuntimeException("No IP for JMeter Server set. Use private IP comma separated (without space)");
             }
             try {
-                if(!testPlanPort.equals(""))Integer.parseInt(testPlanPort);
+                if(testPlanPort != null && !testPlanPort.equals(""))Integer.parseInt(testPlanPort);
             } catch (NumberFormatException e) {
                 throw new RuntimeException("The destination port has to be an Integer");
             }
             try {
-                if(!testPlanThreads.equals(""))Integer.parseInt(testPlanThreads);
+                if(testPlanThreads != null && !testPlanThreads.equals(""))Integer.parseInt(testPlanThreads);
             } catch (NumberFormatException e) {
                 throw new RuntimeException("The threads have to be an Integer");
             }
             try {
-                if(!testPlanLoops.equals(""))Integer.parseInt(testPlanLoops);
+                if(testPlanLoops != null && !testPlanLoops.equals(""))Integer.parseInt(testPlanLoops);
             } catch (NumberFormatException e) {
                 throw new RuntimeException("The loops have to be an Integer");
             }
