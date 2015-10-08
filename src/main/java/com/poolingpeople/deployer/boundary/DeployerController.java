@@ -139,7 +139,7 @@ public class DeployerController implements Serializable {
      * download the docker tar file for the selected version
      */
     public void downloadVersion() {
-        downloadTar(facade.downloadWar(version, area, forceDownload));
+        downloadTar(facade.downloadWar(version, area, appEnvironment, forceDownload));
     }
 
     /**

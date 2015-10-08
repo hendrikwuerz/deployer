@@ -190,12 +190,12 @@ public class DeployerFacade implements Serializable {
      * @return
      *          the compressed tar file as a byte array
      */
-    public byte[] downloadWar(String version, String area, boolean forceDownload) {
+    public byte[] downloadWar(String version, String area, String appEnvironment, boolean forceDownload) {
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version.toLowerCase()) // docker does not accept capitals
                 .setServerDomain(endPointProvider.getHost());
-        return getTarBytesForWar(version, area, forceDownload);
+        return getTarBytesForWar(version, area, appEnvironment, forceDownload);
     }
 
     /**
@@ -310,10 +310,11 @@ public class DeployerFacade implements Serializable {
      * @return
      *          a byte array with a compressed tar file for docker
      */
-    private byte[] getTarBytesForWar(String version, String area, boolean forceDownload) {
+    private byte[] getTarBytesForWar(String version, String area, String appEnvironment, boolean forceDownload) {
         byte[] b = versionsApi.getWarForVersion(version, area, forceDownload);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileBytes(b);
+        applicationDockerPackage.setAppEnvironment(appEnvironment);
         applicationDockerPackage.prepareTarStream();
 
         return applicationDockerPackage.getBytes();
