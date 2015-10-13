@@ -18,24 +18,40 @@ public class DbSnapshot {
 
     String bucketName = "poolingpeople";
     String snapshotName;
-    byte[] data;
+    InputStream stream;
 
-    public void save(){
+    public void save() throws IOException {
 
-        if(data == null) throw new RuntimeException("data is not set");
+        if(snapshotName == null || snapshotName.equals("")) throw new RuntimeException("no snapshot name is set");
+        if(stream == null) throw new RuntimeException("data is not set");
+
+        // copy stream to tmp file
+        // this is needed to get the file size
+        File tmpFile = File.createTempFile("neo4j_snapshot", ".db");
+        OutputStream outputStream = new FileOutputStream(tmpFile);
+        byte[] buffer = new byte[1024]; // Adjust if you want
+        int bytesRead;
+        while ((bytesRead = stream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, bytesRead);
+        }
 
         AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
 
+        // get the total file size
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(data.length);
+        objectMetadata.setContentLength(tmpFile.length());
 
+        // copy file to s3
         s3client.putObject(
                 new PutObjectRequest(
                         bucketName,
                         "neo4j-db/" + snapshotName + ".tar",
-                        new ByteArrayInputStream(data),
+                        new FileInputStream(tmpFile),
                         objectMetadata
                 ));
+
+        // delete temp file
+        tmpFile.delete();
     }
 
     public void remove(){
@@ -80,18 +96,8 @@ public class DbSnapshot {
         }
     }
 
-    public DbSnapshot setData(InputStream data) {
-
-        try {
-
-            this.data = IOUtils.toByteArray(data);
-
-        } catch (IOException e) {
-
-            throw new RuntimeException(e);
-
-        }
-
+    public DbSnapshot setStream(InputStream data) {
+        this.stream = data;
         return this;
     }
 
@@ -111,10 +117,6 @@ public class DbSnapshot {
 
     public String getSnapshotName() {
         return snapshotName;
-    }
-
-    public byte[] getData() {
-        return data;
     }
 
     public Collection<String> getDbSnapshotsList() {
