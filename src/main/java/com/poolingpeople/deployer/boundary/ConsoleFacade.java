@@ -7,6 +7,8 @@ import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.entity.ClusterConfig;
 
 import javax.inject.Inject;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -23,7 +25,7 @@ public class ConsoleFacade {
     @Inject
     DockerApi dockerApi;
 
-    public void createProxy(){
+    public void createProxy() throws IOException {
         Collection<ClusterConfig> clusterConfigs = clusterConfigProvider.getCurrentClusters("");
 
         try {
@@ -33,7 +35,7 @@ public class ConsoleFacade {
         }
 
         proxyDockerPackage.setClusterConfigs(clusterConfigs).prepareTarStream();
-        dockerApi.buildImage("proxy", proxyDockerPackage.getBytes());
+        dockerApi.buildImage("proxy", new ByteArrayInputStream(proxyDockerPackage.getBytes()));
 
         String containerId = null;
 

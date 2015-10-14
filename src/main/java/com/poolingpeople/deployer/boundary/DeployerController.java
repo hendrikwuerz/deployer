@@ -68,7 +68,7 @@ public class DeployerController implements Serializable {
         return facade.loadDbSnapshots().stream().map(s -> s.split("/")[1]).sorted().collect(Collectors.toList());
     }
 
-    public String deploy(){
+    public String deploy() throws IOException {
         facade.deploy(version, subdomain, dbSnapshotName, area, forceDownload, overwrite, appEnvironment);
 
         FacesContext context = FacesContext.getCurrentInstance();
@@ -138,14 +138,14 @@ public class DeployerController implements Serializable {
     /**
      * download the docker tar file for the selected version
      */
-    public void downloadVersion() {
+    public void downloadVersion() throws IOException {
         downloadTar(facade.downloadWar(version, area, appEnvironment, forceDownload));
     }
 
     /**
      * download the docker tar file for the selected database snapshot
      */
-    public void downloadDatabase() {
+    public void downloadDatabase() throws IOException {
         downloadTar(facade.downloadNeo4J(dbSnapshotName));
     }
 }

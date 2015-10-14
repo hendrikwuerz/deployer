@@ -53,7 +53,7 @@ public class DockerApi implements Serializable{
         return "";
     }
 
-    public String buildImage(String imageName, byte[] tarBytes){
+    public String buildImage(String imageName, InputStream tarStream){
         String url = endPoint.getURI() + "/build?t={imageName}";
 
         Client client = ClientBuilder.newClient();
@@ -62,7 +62,7 @@ public class DockerApi implements Serializable{
                 .resolveTemplate("imageName", imageName)
                 .request()
                 .accept(MediaType.APPLICATION_JSON)
-                .post(entity(new ByteArrayInputStream(tarBytes), "application/tar"), Response.class);
+                .post(entity(tarStream, "application/tar"), Response.class);
 
         checkStatusResponseCode(response.getStatus());
         String r = response.readEntity(String.class);
