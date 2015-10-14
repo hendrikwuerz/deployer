@@ -3,6 +3,8 @@ package com.poolingpeople.deployer.scenario.boundary;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
@@ -25,15 +27,9 @@ public class DbSnapshot {
         if(snapshotName == null || snapshotName.equals("")) throw new RuntimeException("no snapshot name is set");
         if(stream == null) throw new RuntimeException("data is not set");
 
-        // copy stream to tmp file
+        // copy stream to tmp file and compress it
         // this is needed to get the file size
-        File tmpFile = File.createTempFile("neo4j_snapshot", ".db");
-        OutputStream outputStream = new FileOutputStream(tmpFile);
-        byte[] buffer = new byte[1024]; // Adjust if you want
-        int bytesRead;
-        while ((bytesRead = stream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, bytesRead);
-        }
+        File tmpFile = compress(stream);
 
         AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
 
@@ -45,13 +41,40 @@ public class DbSnapshot {
         s3client.putObject(
                 new PutObjectRequest(
                         bucketName,
-                        "neo4j-db/" + snapshotName + ".tar",
+                        "neo4j-db/" + snapshotName + ".tar.gz",
                         new FileInputStream(tmpFile),
                         objectMetadata
                 ));
 
         // delete temp file
         tmpFile.delete();
+    }
+
+    private File compress(InputStream stream) throws IOException {
+
+        File compressedFile = File.createTempFile("compressed_snapshot", ".tar.gz");
+        FileOutputStream gzipFileStream = new FileOutputStream(compressedFile);
+        GzipCompressorOutputStream gzippedOut;
+
+        try {
+
+            gzippedOut = new GzipCompressorOutputStream(gzipFileStream);
+
+            // read tar file and compress it
+            byte[] buffer = new byte[1024 * 1024];
+            int bytesRead;
+            while ((bytesRead = stream.read(buffer)) != -1) {
+                gzippedOut.write(buffer, 0, bytesRead);
+            }
+            stream.close();
+
+            gzippedOut.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return compressedFile;
     }
 
     public void remove(){
