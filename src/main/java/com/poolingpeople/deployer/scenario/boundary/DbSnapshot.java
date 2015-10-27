@@ -3,7 +3,6 @@ package com.poolingpeople.deployer.scenario.boundary;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
@@ -50,7 +49,7 @@ public class DbSnapshot {
         tmpFile.delete();
     }
 
-    private File compress(InputStream stream) throws IOException {
+    public File compress(InputStream stream) throws IOException {
 
         File compressedFile = File.createTempFile("compressed_snapshot", ".tar.gz");
         FileOutputStream gzipFileStream = new FileOutputStream(compressedFile);
@@ -61,17 +60,14 @@ public class DbSnapshot {
             gzippedOut = new GzipCompressorOutputStream(gzipFileStream);
 
             // read tar file and compress it
-            byte[] buffer = new byte[1024 * 1024];
-            int bytesRead;
-            while ((bytesRead = stream.read(buffer)) != -1) {
-                gzippedOut.write(buffer, 0, bytesRead);
-            }
-            stream.close();
+            IOUtils.copy(stream, gzippedOut, 8 * 1024);
 
             gzippedOut.close();
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            stream.close();
         }
 
         return compressedFile;
@@ -85,7 +81,7 @@ public class DbSnapshot {
         throw new RuntimeException("not implemented");
     }
 
-    public InputStream fetchSnapshot(){
+    public S3Object fetchSnapshot(){
 
         if("".equals(snapshotName) || snapshotName == null){
             throw new RuntimeException("Snapshot name must be given");
@@ -98,9 +94,10 @@ public class DbSnapshot {
                         bucketName,
                         "neo4j-db/" + snapshotName));
 
-        InputStream stream = s3Object.getObjectContent();
+        // s3Object.getObjectMetadata().getContentLength();
+        // InputStream stream = s3Object.getObjectContent();
 
-        return stream;
+        return s3Object;
     }
 
     private void persistOnFile(String filePath, InputStream inputStream){

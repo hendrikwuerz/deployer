@@ -63,25 +63,18 @@ public abstract class DockerCluster {
 
         compressedFile = File.createTempFile("compressed_tar", ".tar.gz");
         FileOutputStream gzipFileStream = new FileOutputStream(compressedFile);
-        GzipCompressorOutputStream gzippedOut;
+        GzipCompressorOutputStream gzippedOut = new GzipCompressorOutputStream(gzipFileStream);
+        InputStream stream = new FileInputStream(tarFile);
 
         try {
 
-            gzippedOut = new GzipCompressorOutputStream(gzipFileStream);
-
-            // read tar file and compress it
-            InputStream stream = new FileInputStream(tarFile);
-            byte[] buffer = new byte[1024 * 1024];
-            int bytesRead;
-            while ((bytesRead = stream.read(buffer)) != -1) {
-                gzippedOut.write(buffer, 0, bytesRead);
-            }
-            stream.close();
-
-            gzippedOut.close();
+            IOUtils.copy(stream, gzippedOut, 8 * 1024);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            stream.close();
+            gzippedOut.close();
         }
 
         tarStream = new FileInputStream(compressedFile);

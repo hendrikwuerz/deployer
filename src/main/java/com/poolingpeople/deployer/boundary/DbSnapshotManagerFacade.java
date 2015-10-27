@@ -5,7 +5,8 @@ import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 
 import javax.inject.Inject;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by alacambra on 03.03.15.
