@@ -4,6 +4,8 @@ import com.poolingpeople.deployer.entity.ClusterConfig;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.utils.IOUtils;
+import sun.nio.ch.IOUtil;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -17,48 +19,66 @@ public abstract class DockerCluster {
     ClusterConfig clusterConfig;
     TarArchiveOutputStream tarArchiveOS;
 
-    byte[] tarBytes;
+    InputStream tarStream;
+    File tarFile;
+    File compressedFile;
 
     Logger logger = Logger.getLogger(this.getClass().getName());
 
-    public byte[] getBytes(){
-        return tarBytes;
+    public InputStream getTarStream() {
+        return tarStream;
+    }
+
+    public byte[] getBytes() {
+        //return tarBytes;
+        try {
+            byte[] data = IOUtils.toByteArray(new FileInputStream(compressedFile));
+            cleanTempFiles();
+            return data;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        cleanTempFiles();
+        return new byte[0];
     }
 
     protected abstract DockerCluster addResources();
 
-    public DockerCluster prepareTarStream(){
+    public DockerCluster prepareTarStream() throws IOException {
 
-        ByteArrayOutputStream tarByteStream = new ByteArrayOutputStream();
+        tarFile = File.createTempFile("deployment_tar", ".tar");
+        FileOutputStream tarByteStream = new FileOutputStream(tarFile);
         tarArchiveOS = new TarArchiveOutputStream(tarByteStream, "UTF-8");
         tarArchiveOS.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 
         addResources();
 
-        tarBytes = tarByteStream.toByteArray();
         compressTarStream();
 
 //        materializeTarFile("/home/alacambra/some.tar.gz");
         return this;
     }
 
-    protected void compressTarStream(){
+    protected void compressTarStream() throws IOException {
 
-        ByteArrayOutputStream gzipByteStream = new ByteArrayOutputStream();
-        GzipCompressorOutputStream gzippedOut;
+        compressedFile = File.createTempFile("compressed_tar", ".tar.gz");
+        FileOutputStream gzipFileStream = new FileOutputStream(compressedFile);
+        GzipCompressorOutputStream gzippedOut = new GzipCompressorOutputStream(gzipFileStream);
+        InputStream stream = new FileInputStream(tarFile);
 
         try {
 
-            gzippedOut = new GzipCompressorOutputStream(gzipByteStream);
-            gzippedOut.write(tarBytes);
-            gzippedOut.close();
+            IOUtils.copy(stream, gzippedOut, 8 * 1024);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            stream.close();
+            gzippedOut.close();
         }
 
-        tarBytes = gzipByteStream.toByteArray();
-        logger.finer("Final tar has " + tarBytes.length + " bytes");
+        tarStream = new FileInputStream(compressedFile);
+        logger.finer("Final tar has " + compressedFile.length() + " bytes");
     }
 
     abstract String replaceClusterBars(String original);
@@ -87,16 +107,8 @@ public abstract class DockerCluster {
 
     public void materializeTarFile(String path){
 
-        File f = new File(path);
-        FileOutputStream fos = null;
+        compressedFile.renameTo(new File(path));
 
-        try {
-            fos = new FileOutputStream(f);
-            fos.write(tarBytes);
-            fos.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public TarArchiveOutputStream getTarArchiveOS() {
@@ -134,5 +146,9 @@ public abstract class DockerCluster {
         this.clusterConfig = clusterConfig;
     }
 
+    public void cleanTempFiles() {
+        if(tarFile != null && tarFile.exists()) tarFile.delete();
+        if(compressedFile != null && compressedFile.exists()) compressedFile.delete();
+    }
 
 }

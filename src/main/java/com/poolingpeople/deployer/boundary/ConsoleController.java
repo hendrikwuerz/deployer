@@ -81,7 +81,7 @@ public class ConsoleController{
         return api.listImage();
     }
 
-    public void reloadProxy(){
+    public void reloadProxy() throws IOException {
         facade.createProxy();
     }
 

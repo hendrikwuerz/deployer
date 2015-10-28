@@ -10,6 +10,7 @@ import com.poolingpeople.deployer.dockerapi.boundary.DockerApi;
 import com.poolingpeople.deployer.dockerapi.boundary.DockerEndPoint;
 import com.poolingpeople.deployer.scenario.boundary.AWSCredentials;
 import com.poolingpeople.deployer.scenario.boundary.AWSInstances;
+import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 import com.poolingpeople.deployer.scenario.boundary.InstanceInfo;
 import org.apache.commons.compress.utils.IOUtils;
 
@@ -44,6 +45,9 @@ public class BackupController {
 
     @Inject
     DockerApi dockerApi;
+
+    @Inject
+    DbSnapshot dbSnapshot;
 
     @Resource
     private TimerService timerService;
@@ -198,45 +202,46 @@ public class BackupController {
         // Backup all selected databases
         list.stream().filter(BackupInfo::isBackup).forEach(backupInfo -> {
 
+            DockerEndPoint dockerEndPoint = new DockerEndPoint();
+            dockerEndPoint.setHost(backupInfo.getHost());
+
             ContainerInfo containerInfo = backupInfo.getContainer();
 
-            byte[] data;
+            InputStream dbInputStream = dockerApi.copyFiles(dockerEndPoint, containerInfo.getId(), "/var/lib/neo4j/data/graph.db/");
+
+            File compressedFile = null;
             try {
+                compressedFile = dbSnapshot.compress(dbInputStream);
 
-                DockerEndPoint dockerEndPoint = new DockerEndPoint();
-                dockerEndPoint.setHost(backupInfo.getHost());
+                AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
 
-                InputStream dbInputStream = dockerApi.copyFiles(dockerEndPoint, containerInfo.getId(), "/var/lib/neo4j/data/graph.db/");
-                data = IOUtils.toByteArray(dbInputStream);
+                ObjectMetadata objectMetadata = new ObjectMetadata();
+                objectMetadata.setContentLength(compressedFile.length());
+
+                // Save chronological backup
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+                String filename = "neo4j-db-backups/" + df.format(new Date()) + "_" + containerInfo.getDomainLink() + ".tar.gz";
+                s3client.putObject(
+                        new PutObjectRequest(
+                                "poolingpeople",
+                                filename,
+                                new FileInputStream(compressedFile),
+                                objectMetadata
+                        ));
+
+                // Save latest backup
+                s3client.putObject(
+                        new PutObjectRequest(
+                                "poolingpeople",
+                                "neo4j-db/" + containerInfo.getDomainLink() + ".tar.gz",
+                                new FileInputStream(compressedFile),
+                                objectMetadata
+                        ));
+                if (compressedFile.exists()) compressedFile.delete();
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-            AmazonS3 s3client = new AmazonS3Client(new AWSCredentials());
-
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentLength(data.length);
-
-
-            // Save chronological backup
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-            String filename = "neo4j-db-backups/" + df.format(new Date()) + "_" + containerInfo.getDomainLink() + ".tar";
-            s3client.putObject(
-                    new PutObjectRequest(
-                            "poolingpeople",
-                            filename,
-                            new ByteArrayInputStream(data),
-                            objectMetadata
-                    ));
-
-            // Save latest backup
-            s3client.putObject(
-                    new PutObjectRequest(
-                            "poolingpeople",
-                            "neo4j-db/" + containerInfo.getDomainLink() + ".tar",
-                            new ByteArrayInputStream(data),
-                            objectMetadata
-                    ));
         });
     }
 

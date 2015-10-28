@@ -1,7 +1,11 @@
 package com.poolingpeople.deployer.control;
 
+import com.amazonaws.services.s3.model.S3Object;
 import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
@@ -23,18 +27,23 @@ public class Neo4jDockerPackage extends DockerCluster {
 
     public void addDbSnapshot() {
 
+        S3Object s3Object = dbSnapshot.fetchSnapshot();
+
+        long contentLength = s3Object.getObjectMetadata().getContentLength();
+        InputStream stream = s3Object.getObjectContent();
+
         try {
 
-            InputStream stream = dbSnapshot.fetchSnapshot();
-
-            byte[] bytes = IOUtils.toByteArray(stream);
-            stream.close();
-
+            // init a new entry in the tar archive
             TarArchiveEntry entry = new TarArchiveEntry(dbSnapshot.getSnapshotName());
-            entry.setSize(bytes.length);
+            entry.setSize(contentLength);
             tarArchiveOS.putArchiveEntry(entry);
-            tarArchiveOS.write(bytes);
+
+            IOUtils.copy(stream, tarArchiveOS, 8 * 1024);
+
+            // entry is written
             tarArchiveOS.closeArchiveEntry();
+            stream.close();
 
         } catch (IOException e) {
             throw new RuntimeException(e);

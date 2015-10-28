@@ -11,6 +11,7 @@ import javax.faces.model.CollectionDataModel;
 import javax.faces.model.DataModel;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -60,7 +61,7 @@ public class DbSnapshotController {
         return instanceName;
     }
 
-    public void makeSnapshot() {
+    public void makeSnapshot() throws IOException {
         if(dbSnapshotName.equals("")) {
             FacesContext context = FacesContext.getCurrentInstance();
             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "A empty snapshot name is not allowed. Please insert a name."));

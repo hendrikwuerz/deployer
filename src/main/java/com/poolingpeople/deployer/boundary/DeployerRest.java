@@ -7,6 +7,7 @@ import com.poolingpeople.deployer.stresstest.boundary.StresstestEndPoint;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -103,7 +104,7 @@ public class DeployerRest {
     @POST
     @Path("deploy/{host}/{subdomain}/{dbSnapshotName}")
     @Consumes("application/x-webarchive")
-    public String deployApplication(@PathParam("host") String host, @PathParam("subdomain") String subdomain, @PathParam("dbSnapshotName") String dbSnapshotName, byte[] warFile) {
+    public String deployApplication(@PathParam("host") String host, @PathParam("subdomain") String subdomain, @PathParam("dbSnapshotName") String dbSnapshotName, byte[] warFile) throws IOException {
         String version = "restDeployment"; // needed for container naming
         boolean overwrite = true;
         String appEnvironment = "test"; // deployment over rest is only possible in test environment
@@ -117,7 +118,7 @@ public class DeployerRest {
 
     @POST
     @Path("deploy/{host}/{subdomain}/{dbSnapshotName}/{area}/{version}")
-    public String deployApplication(@PathParam("host") String host, @PathParam("subdomain") String subdomain, @PathParam("dbSnapshotName") String dbSnapshotName, @PathParam("area") String area, @PathParam("version") String version) {
+    public String deployApplication(@PathParam("host") String host, @PathParam("subdomain") String subdomain, @PathParam("dbSnapshotName") String dbSnapshotName, @PathParam("area") String area, @PathParam("version") String version) throws IOException {
 
         if(!area.equals("releases") && !area.equals("snapshots")) {
             throw new RuntimeException("Unknown area passed. Only 'releases' or 'snapshots' are allowed here");

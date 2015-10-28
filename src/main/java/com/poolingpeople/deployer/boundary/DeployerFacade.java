@@ -15,6 +15,8 @@ import com.poolingpeople.deployer.scenario.boundary.DbSnapshot;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
@@ -101,12 +103,12 @@ public class DeployerFacade implements Serializable {
         return name.split(ClusterConfig.clusterSeparator).length == 5;
     }
 
-    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area, boolean forceDownload, boolean overwriteExistingSubdomain, String appEnvironment) {
+    public void deploy(@NotNull String version, @NotNull String subdomain, String dbSnapshotName, String area, boolean forceDownload, boolean overwriteExistingSubdomain, String appEnvironment) throws IOException {
         byte[] warFile = versionsApi.getWarForVersion(version, area, forceDownload);
         deploy(warFile, version, subdomain, dbSnapshotName, overwriteExistingSubdomain, appEnvironment);
     }
 
-    public void deploy(@NotNull byte[] warFile, @NotNull String version, @NotNull String subdomain, String dbSnapshotName, boolean overwriteExistingSubdomain, String appEnvironment) {
+    public void deploy(@NotNull byte[] warFile, @NotNull String version, @NotNull String subdomain, String dbSnapshotName, boolean overwriteExistingSubdomain, String appEnvironment) throws IOException {
         txIds.clear();
 
         if(!appEnvironment.equals("test") && !appEnvironment.equals("production")) {
@@ -143,7 +145,7 @@ public class DeployerFacade implements Serializable {
             // reload proxy after deployment
             consoleFacade.createProxy();
 
-        }catch (RuntimeException e){
+        }catch (RuntimeException | IOException e){
             rollBack();
             throw e;
         }
@@ -174,7 +176,7 @@ public class DeployerFacade implements Serializable {
      * @return
      *          the compressed tar file as a byte array
      */
-    public byte[] downloadNeo4J(String dbSnapshotName) {
+    public byte[] downloadNeo4J(String dbSnapshotName) throws IOException {
         clusterConfig.setDbScenario(dbSnapshotName);
         return getTarBytesForNeo4j(dbSnapshotName);
     }
@@ -190,12 +192,12 @@ public class DeployerFacade implements Serializable {
      * @return
      *          the compressed tar file as a byte array
      */
-    public byte[] downloadWar(String version, String area, boolean forceDownload) {
+    public byte[] downloadWar(String version, String area, String appEnvironment, boolean forceDownload) throws IOException {
         clusterConfig
                 .setAppBaseName("rest")
                 .setAppVersion(version.toLowerCase()) // docker does not accept capitals
                 .setServerDomain(endPointProvider.getHost());
-        return getTarBytesForWar(version, area, forceDownload);
+        return getTarBytesForWar(version, area, appEnvironment, forceDownload);
     }
 
     /**
@@ -203,7 +205,7 @@ public class DeployerFacade implements Serializable {
      * @param dbSnapshotName
      *          The name of the snapshot to be deployed
      */
-    private void deployNeo4jDb(String dbSnapshotName){
+    private void deployNeo4jDb(String dbSnapshotName) throws IOException {
 
 
         CreateContainerBodyWriter builder = null;
@@ -214,7 +216,9 @@ public class DeployerFacade implements Serializable {
         neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
 
-        dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getBytes());
+        dockerApi.buildImage(clusterConfig.getNeo4jId(), neo4jDockerPackage.getTarStream());
+
+        neo4jDockerPackage.cleanTempFiles();
 
         builder = new CreateContainerBodyWriter();
         builder.setImage(clusterConfig.getNeo4jId())
@@ -240,7 +244,7 @@ public class DeployerFacade implements Serializable {
      * @return
      *          a byte array with a compressed tar file for docker
      */
-    private byte[] getTarBytesForNeo4j(String dbSnapshotName) {
+    private byte[] getTarBytesForNeo4j(String dbSnapshotName) throws IOException {
         neo4jDockerPackage.setDbSnapshot(dbSnapshot.setBucketName("poolingpeople").setSnapshotName(dbSnapshotName));
         neo4jDockerPackage.setClusterConfig(clusterConfig);
         neo4jDockerPackage.prepareTarStream();
@@ -259,7 +263,7 @@ public class DeployerFacade implements Serializable {
      * @param appEnvironment
      *          test or production environment for deployment
      */
-    private void deployWarApplication(String version, String area, String appEnvironment, boolean forceDownload){
+    private void deployWarApplication(String version, String area, String appEnvironment, boolean forceDownload) throws IOException {
         byte[] bytes = versionsApi.getWarForVersion(version, area, forceDownload);
         deployWarApplication(bytes, appEnvironment);
     }
@@ -271,7 +275,7 @@ public class DeployerFacade implements Serializable {
      * @param appEnvironment
      *          test or production environment for deployment
      */
-    private void deployWarApplication(byte[] warFile, String appEnvironment) {
+    private void deployWarApplication(byte[] warFile, String appEnvironment) throws IOException {
 
         CreateContainerBodyWriter builder = null;
         String containerId = null;
@@ -281,7 +285,7 @@ public class DeployerFacade implements Serializable {
         applicationDockerPackage.setAppEnvironment(appEnvironment);
         applicationDockerPackage.prepareTarStream();
 
-        dockerApi.buildImage(clusterConfig.getWildflyId(), applicationDockerPackage.getBytes());
+        dockerApi.buildImage(clusterConfig.getWildflyId(), new ByteArrayInputStream(applicationDockerPackage.getBytes()));
 
         builder = new CreateContainerBodyWriter()
                 .setImage(clusterConfig.getWildflyId())
@@ -294,6 +298,7 @@ public class DeployerFacade implements Serializable {
         containerId = dockerApi.createContainer(builder, clusterConfig.getWildflyId());
         txIds.add(containerId);
 
+        applicationDockerPackage.cleanTempFiles();
         logger.finer("Container created:" + containerId);
         dockerApi.startContainer(containerId);
     }
@@ -310,10 +315,11 @@ public class DeployerFacade implements Serializable {
      * @return
      *          a byte array with a compressed tar file for docker
      */
-    private byte[] getTarBytesForWar(String version, String area, boolean forceDownload) {
+    private byte[] getTarBytesForWar(String version, String area, String appEnvironment, boolean forceDownload) throws IOException {
         byte[] b = versionsApi.getWarForVersion(version, area, forceDownload);
         applicationDockerPackage.setClusterConfig(clusterConfig);
         applicationDockerPackage.setWarFileBytes(b);
+        applicationDockerPackage.setAppEnvironment(appEnvironment);
         applicationDockerPackage.prepareTarStream();
 
         return applicationDockerPackage.getBytes();
