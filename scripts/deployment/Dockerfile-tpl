@@ -1,4 +1,4 @@
-FROM poolingpeople/wildfly
+FROM docker.intern.poolingpeople.com/wildfly:V1
 
 ADD standalone.conf /opt/jboss/wildfly/bin/
 ADD standalone.xml /opt/jboss/wildfly/standalone/configuration/

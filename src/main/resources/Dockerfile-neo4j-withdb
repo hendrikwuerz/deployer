@@ -1,3 +1,3 @@
-FROM poolingpeople/neo4j
+FROM docker.intern.poolingpeople.com/neo4j:old
 RUN rm -Rf /neo4j/data/*
 ADD {DB-SNAPSHOT-NAME} ${NEO4J_HOME}/data/

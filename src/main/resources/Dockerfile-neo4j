@@ -1,1 +1,1 @@
-FROM poolingpeople/neo4j
+FROM docker.intern.poolingpeople.com/neo4j:old
