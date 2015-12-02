@@ -4,6 +4,7 @@ import com.poolingpeople.deployer.entity.ClusterConfig;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
 
 /**
  * Created by alacambra on 2/6/15.
@@ -84,7 +85,8 @@ public class ContainerInfo {
     }
 
     public Collection<Port> getPorts() {
-        return ports;
+        if(ports == null) return new LinkedList<>();
+        else return ports;
     }
 
     public ContainerInfo setPorts(Collection<Port> ports) {
