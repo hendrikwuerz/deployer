@@ -37,8 +37,9 @@
             <br />
             <br />
             <div>
-                Port <p:inputText size="4" value="#{dockerEndPoint.port}" />
-                <p:commandButton value="set" styleClass="small-button" style="margin-left: 5px" />
+                Host <p:inputText size="20" value="#{dockerEndPoint.host}" /> <br/>
+                Port <p:inputText size="4" value="#{dockerEndPoint.port}" /> <br/>
+                <p:commandButton value="set" styleClass="small-button" ajax="false" />
             </div>
 
         </h:form>
