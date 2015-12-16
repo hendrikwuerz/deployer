@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -280,7 +281,7 @@ public class DockerApi implements Serializable{
         } catch (TimeoutException e) {
             logger.warning(url + " seams to be not available");
         }
-        return null;
+        return new LinkedList<>();
     }
 
     public InputStream copyFiles(String containerId, String filePath){
