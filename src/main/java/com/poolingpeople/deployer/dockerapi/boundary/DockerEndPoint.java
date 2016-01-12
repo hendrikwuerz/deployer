@@ -38,6 +38,23 @@ public class DockerEndPoint  implements Serializable{
     }
 
     public DockerEndPoint() {
+        setEnvironmentHostPort();
+    }
+
+    private void setEnvironmentHostPort() {
+        /*
+        In virtual development environment the default host and the default port should point to the vde.
+        The values are passed by environment variables
+         */
+        try {
+            String envHost = System.getenv("DEFAULT_DOCKER_HOST");
+            if(envHost != null && !envHost.equals("")) host = envHost;
+
+            String envPort = System.getenv("DEFAULT_DOCKER_PORT");
+            if(envPort != null && !envPort.equals("")) port = Integer.parseInt(envPort);
+        } catch(SecurityException e) {
+            // ignore exception and use default values if environment variables could not be read
+        }
     }
 
     public CollectionDataModel<InstanceInfo> getAvailableHosts() {
@@ -61,7 +78,11 @@ public class DockerEndPoint  implements Serializable{
     }
 
     public String selectInstance(String host) {
-        setHost(host);
+        if(host == null || host.equals("")) {
+            setEnvironmentHostPort();
+        } else {
+            setHost(host);
+        }
         return "change-host";
     }
 
